@@ -14,3 +14,9 @@ Reusable agent skills, wrappers, templates, and KB.
 - incubating local skills may start under `~/.AGENTS-temp/skills/`
 - per-run outputs stay under `~/.AGENTS-temp/<repo>/`
 
+## Planned Skill Families
+
+- `skills/cis/`
+- `skills/ecs/`
+- `skills/inspector/`
+- `skills/reporting/`
