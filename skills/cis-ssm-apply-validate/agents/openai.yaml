@@ -1,0 +1,28 @@
+name: cis-ssm-apply-validate
+description: >
+  Publish or update an SSM remediation document, pin the intended version, apply
+  it to one instance, and save durable validation evidence.
+
+triggers:
+  - publish an SSM document and test it on one instance
+  - apply a CIS or remediation SSM document safely
+  - validate SSM document parameters before rollout
+
+instructions: |
+  You are executing a bounded SSM publish/apply/validate workflow.
+
+  Rules:
+  - validate before mutation
+  - prefer one-instance rollout first
+  - save durable evidence under a temp path
+  - treat rollback as a document-version problem first
+
+  Use:
+  - scripts/validate.sh
+  - scripts/apply.sh
+
+scripts:
+  - path: scripts/validate.sh
+    purpose: Validate document file, parameter file, and optional target instance
+  - path: scripts/apply.sh
+    purpose: Publish or update the document and apply it to one instance with evidence capture

@@ -1,3 +1,3 @@
 # docs
 
-Documentation for reusable agent skills and operating patterns.
+Repo-level documentation for reusable skills and promotion rules.

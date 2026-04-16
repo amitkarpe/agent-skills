@@ -1,0 +1,38 @@
+name: gitlab-triage
+description: >
+  Read-only GitLab connectivity triage for Route53, classic ELB, CloudOS DNS
+  checks, and backend trace confirmation.
+
+triggers:
+  - verify Route53 records for GitLab
+  - confirm whether gitlab.pro goes through ELB or reaches a specific backend
+  - check GitLab DNS or HTTPS reachability from CloudOS nodes
+  - prove whether a request reached a specific GitLab backend instance
+
+instructions: |
+  You are executing a read-only GitLab DNS/LB/backend triage workflow.
+
+  Rules:
+  - Keep this workflow read-only.
+  - Separate DNS truth from backend truth.
+  - Use backend trace confirmation when backend identity matters.
+  - Save evidence to a durable temp path.
+
+  Use:
+  - scripts/check-route53-gitlab.sh
+  - scripts/check-gitlab-classic-elb.sh
+  - scripts/check-cloudos-gitlab-dns.sh
+  - scripts/trace-gitlab-backend.sh
+  - scripts/probe-gitlab-host.sh
+
+scripts:
+  - path: scripts/check-route53-gitlab.sh
+    purpose: Search Route53 for GitLab-related records
+  - path: scripts/check-gitlab-classic-elb.sh
+    purpose: Inspect classic ELB membership and health for the gitlab ELB
+  - path: scripts/check-cloudos-gitlab-dns.sh
+    purpose: Check GitLab DNS and HTTPS reachability from CloudOS nodes
+  - path: scripts/trace-gitlab-backend.sh
+    purpose: Confirm whether a request reached a specific GitLab backend
+  - path: scripts/probe-gitlab-host.sh
+    purpose: Check direct host-side GitLab health and service state

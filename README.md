@@ -1,6 +1,6 @@
 # agent-skills
 
-Reusable agent skills, wrappers, templates, and KB.
+Canonical local repo for reusable Codex/OpenAI-style skills.
 
 ## Purpose
 
@@ -11,12 +11,31 @@ Reusable agent skills, wrappers, templates, and KB.
 ## Working model
 
 - durable reusable skills live here
-- incubating local skills may start under `~/.AGENTS-temp/skills/`
-- per-run outputs stay under `~/.AGENTS-temp/<repo>/`
+- incubating local skills start under `~/.AGENTS-temp/skills/`
+- extra scripts, raw outputs, one-off docs, reports, and scratch stay under `~/.AGENTS-temp/<repo>/`
+- real implementation code stays in the real repo, not here
 
-## Planned Skill Families
+## Current skills
 
-- `skills/cis/`
-- `skills/ecs/`
-- `skills/inspector/`
-- `skills/reporting/`
+- `skills/ecs-monitoring/`
+- `skills/ecs-recovery/`
+- `skills/awslogs-investigation/`
+- `skills/gitlab-triage/`
+- `skills/repo-summary-and-relation-mapping/`
+- `skills/ec2-quick-create/`
+- `skills/ec2-ttl-alert/`
+- `skills/cis-inspector-scan/`
+- `skills/cis-ssm-apply-validate/`
+
+## Skill shape
+
+- required:
+  - `SKILL.md`
+- usually:
+  - `scripts/`
+- optional:
+  - `references/`
+  - `assets/`
+  - `agents/openai.yaml`
+
+Repo-level usage notes live in `docs/`.

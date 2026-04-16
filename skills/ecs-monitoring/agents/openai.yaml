@@ -1,0 +1,25 @@
+name: ecs-monitoring
+description: >
+  Read-only ECS monitoring workflow for watching service counts, task churn,
+  and unstable services with durable evidence capture.
+
+triggers:
+  - watch ECS services over time
+  - check whether ECS tasks are flapping
+  - collect task stop reasons for a few services
+  - save ECS watch output outside chat
+
+instructions: |
+  You are executing a read-only ECS monitoring workflow.
+
+  Rules:
+  - keep this workflow read-only
+  - use ecs-recovery only after monitoring proves a node or service problem
+  - save outputs to a durable temp path
+
+  Use:
+  - scripts/watch-cluster.sh
+
+scripts:
+  - path: scripts/watch-cluster.sh
+    purpose: Watch ECS services and optional focused tasks over time
