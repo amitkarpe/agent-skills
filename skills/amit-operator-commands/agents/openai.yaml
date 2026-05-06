@@ -1,0 +1,7 @@
+interface:
+  display_name: "Amit Operator Commands"
+  short_description: "Routes short operator phrases to safe workflows"
+  default_prompt: "Use $amit-operator-commands to handle this short operator command safely."
+
+policy:
+  allow_implicit_invocation: true

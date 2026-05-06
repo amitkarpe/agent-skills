@@ -80,6 +80,7 @@ Expose a skill through `~/.codex/skills` when:
 - `skills/aws-ssm-run-command/` (core SSM Run Command engine)
 - `skills/ssm-command-evidence/` (durable evidence wrapper)
 - `skills/skill-autoresearch-loop/`
+- `skills/amit-operator-commands/`
 
 ## Skill shape
 
