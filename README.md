@@ -11,13 +11,23 @@ Canonical local repo for reusable Codex/OpenAI-style skills.
 ## Working model
 
 - durable reusable skills live here
-- incubating local skills start under `~/.AGENTS-temp/agent-skills/`
+- small or clear skills can be created directly under `skills/<skill>/`
+- rough or experimental skills can incubate under `~/.AGENTS-temp/agent-skills/`
 - extra scripts, raw outputs, one-off docs, reports, and scratch stay under `~/.AGENTS-temp/<repo>/`
 - real implementation code stays in the real repo, not here
 
 ## Promotion path
 
-Use this lifecycle for reusable skills:
+Default fast path for reusable skills:
+
+1. create or update under:
+   - `~/git/agent-skills/skills/<skill>/`
+   - use this for small, clear, or already-proven skills
+2. expose globally through:
+   - `~/.codex/skills/<skill>`
+   - this is the path Codex actually discovers across repos
+
+Optional scratch path for uncertain work:
 
 1. incubate under:
    - `~/.AGENTS-temp/agent-skills/`
@@ -50,7 +60,21 @@ Important:
 
 ## When To Promote
 
-Promote a draft skill from temp into `agent-skills` when:
+Create directly in `agent-skills` when:
+
+- the workflow is small and easy to review
+- the command surface is already clear
+- the skill can pass repo checks without a separate scratch harness
+- the change should be versioned immediately
+
+Use `~/.AGENTS-temp/agent-skills/` first when:
+
+- the skill may be thrown away
+- the workflow needs autoresearch or a harness
+- generated outputs, raw logs, or experiments are expected
+- the first draft would create noisy repo churn
+
+Promote a temp draft into `agent-skills` when:
 
 - the same operator loop repeated at least `2-3` times
 - the workflow clearly saves time or tokens
