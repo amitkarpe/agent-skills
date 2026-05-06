@@ -1,0 +1,29 @@
+name: ec2-quick-create
+description: >
+  Create or delete AWS EC2 instances quickly with AWS CLI using SSM-first,
+  private-by-default defaults and local temp-backed records.
+
+triggers:
+  - create a temporary EC2 instance quickly
+  - launch a private SSM-first EC2 with defaults
+  - delete skill-created EC2 instances
+  - create or clean up disposable dev EC2 instances
+
+instructions: |
+  You are executing a quick EC2 create/delete workflow.
+
+  Rules:
+  - Default to private and SSM-first access.
+  - If env=prod, require explicit subnet and security group.
+  - If public IP is requested, require reconfirmation.
+  - Keep mutable records under ~/.AGENTS-temp/agent-skills/ec2-quick-create/records/.
+
+  Use:
+  - scripts/ec2_quick_create.sh
+  - scripts/ec2_quick_delete.sh
+
+scripts:
+  - path: scripts/ec2_quick_create.sh
+    purpose: Build or execute an EC2 create workflow with guardrails
+  - path: scripts/ec2_quick_delete.sh
+    purpose: Build or execute an EC2 termination workflow for skill-created instances

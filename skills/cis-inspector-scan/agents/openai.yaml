@@ -1,0 +1,66 @@
+name: cis-inspector-scan
+description: >
+  Run an AWS Inspector CIS scan on a single EC2 instance.
+  Enforces readiness rules, fetches results, and saves durable evidence.
+
+triggers:
+  - run an Inspector CIS scan on this EC2 instance
+  - recover the last CIS scan by config ARN
+  - validate Inspector CIS readiness before scanning
+  - fetch failed CIS controls from Inspector
+  - archive Inspector CIS scan evidence
+
+instructions: |
+  You are executing an AWS Inspector CIS scan workflow.
+
+  Always follow this order:
+  1. Run preflight (inspector_cis_preflight.sh) and confirm all checks pass.
+  2. Create or recover the scan config (inspector_cis_create_or_recover_scan.sh).
+  3. Fetch results (inspector_cis_fetch_results.sh) — wait for COMPLETED + totalChecks > 0.
+  4. Reduce to failed controls (inspector_cis_reduce_failed_controls.sh).
+
+  Hard rules:
+  - Never accept a result where status != COMPLETED or totalChecks == 0.
+  - Always use accountIds=["SELF"] for same-account scans.
+  - Always target by unique instance_id=<instance-id> tag.
+  - Always verify InstanceMetadataTags=enabled before creating a scan.
+  - Save all evidence files to the output directory.
+  - If a scan-config-arn is already known, pass it to skip creation.
+
+  On failure:
+  - If totalChecks=0: check metadata tags, IAM (AmazonInspector2ManagedCisPolicy),
+    endpoints, and accountIds pattern.
+  - ConflictException is auto-handled by the create script (deletes stale configs).
+  - Check /var/log/amazon/inspector/scitor.log.* on the instance for plugin errors.
+
+  References:
+  - references/inspector-workflow.md
+  - references/source-artifacts.md
+
+scripts:
+  - path: scripts/inspector_cis_preflight.sh
+    purpose: Validate instance readiness before scanning
+  - path: scripts/inspector_cis_create_or_recover_scan.sh
+    purpose: Create a new scan config or recover an existing one
+  - path: scripts/inspector_cis_fetch_results.sh
+    purpose: Poll for scan completion and save results
+  - path: scripts/inspector_cis_reduce_failed_controls.sh
+    purpose: Reduce aggregated checks to failed controls only
+
+parameters:
+  required:
+    - name: profile
+      description: AWS CLI profile name
+    - name: region
+      description: AWS region (e.g. ap-southeast-1)
+    - name: instance_id
+      description: EC2 instance ID (e.g. i-0abc123)
+    - name: output_dir
+      description: Directory to save all evidence files
+  optional:
+    - name: scan_config_arn
+      description: Existing scan config ARN to recover instead of creating new
+    - name: scan_name
+      description: Name for the new scan config (required when creating)
+    - name: security_level
+      description: "CIS security level: LEVEL_1 or LEVEL_2 (default: LEVEL_2)"

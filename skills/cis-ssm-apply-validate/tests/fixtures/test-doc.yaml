@@ -1,0 +1,8 @@
+schemaVersion: '2.2'
+description: Test SSM document
+mainSteps:
+  - action: aws:runShellScript
+    name: testStep
+    inputs:
+      runCommand:
+        - echo "test"

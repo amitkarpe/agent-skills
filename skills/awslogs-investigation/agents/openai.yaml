@@ -1,0 +1,29 @@
+name: awslogs-investigation
+description: >
+  Investigate Docker awslogs failures on EC2-backed ECS nodes by checking
+  Docker journal errors and building a failing-versus-clean node matrix.
+
+triggers:
+  - investigate missing recent CloudWatch logs for ECS tasks
+  - check awslogs failures on ECS EC2 nodes
+  - build a node matrix for Docker awslogs credential failures
+  - compare failing ECS nodes versus clean nodes for awslogs
+
+instructions: |
+  You are executing an awslogs investigation workflow for EC2-backed ECS.
+
+  Rules:
+  - Keep the workflow read-only.
+  - Confirm tasks use Docker awslogs, not CloudWatch Agent.
+  - Compare one failing node to one clean node before cluster-wide conclusions.
+  - Save evidence to a durable temp path.
+
+  Use:
+  - scripts/check-awslogs-node.sh
+  - scripts/check-awslogs-matrix.sh
+
+scripts:
+  - path: scripts/check-awslogs-node.sh
+    purpose: Check Docker journal for awslogs failures on one or more nodes
+  - path: scripts/check-awslogs-matrix.sh
+    purpose: Build a node matrix for active ECS container instances

@@ -1,0 +1,25 @@
+name: ami-validation-ssm
+description: >
+  Launch or reuse an EC2 instance, wait for EC2 and SSM readiness, run a
+  repo-owned validation script, and capture durable outputs for AMI validation.
+
+triggers:
+  - validate an ami over ssm
+  - launch an ec2 instance from an ami and run validation
+  - reuse a retained builder instance for ssm validation
+  - run a repo-owned validation script on an ec2 instance
+
+instructions: |
+  You are executing a reusable AMI validation harness.
+
+  Rules:
+  - Keep repo-specific validation logic in the real repo or temp work area.
+  - Prefer read-only validation first.
+  - Default to terminating launched instances unless a retained debug host is needed.
+
+  Use:
+  - scripts/launch-and-validate.sh
+
+scripts:
+  - path: scripts/launch-and-validate.sh
+    purpose: Launch or reuse an EC2 instance, wait for EC2 and SSM, run validation, and save evidence

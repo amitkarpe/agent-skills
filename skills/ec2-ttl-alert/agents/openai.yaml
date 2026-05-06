@@ -1,0 +1,27 @@
+name: ec2-ttl-alert
+description: >
+  Deploy a lightweight EC2 TTL alert using Lambda, SNS, and EventBridge for one
+  AWS account at a time.
+
+triggers:
+  - deploy a TTL tag alert for EC2
+  - alert on expired or missing EC2 TTL tags
+  - create a daily EC2 cleanup reminder with Lambda and SNS
+
+instructions: |
+  You are deploying a small EC2 TTL alert workflow.
+
+  Rules:
+  - treat this as a single-account deployment by default
+  - keep outputs under ~/.AGENTS-temp/agent-skills/ec2-ttl-alert/
+  - do not claim cross-account Lambda scanning unless assume-role support is added
+
+  Use:
+  - scripts/deploy-ec2-ttl-alert.sh
+  - scripts/ttl_checker.py
+
+scripts:
+  - path: scripts/deploy-ec2-ttl-alert.sh
+    purpose: Deploy or update the SNS, IAM, Lambda, and EventBridge resources
+  - path: scripts/ttl_checker.py
+    purpose: Lambda handler that scans the current account for missing or expired TTL tags

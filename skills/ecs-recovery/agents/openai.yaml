@@ -1,0 +1,34 @@
+name: ecs-recovery
+description: >
+  Controlled ECS node recovery for EC2-backed clusters.
+  Restarts Docker and ECS one node at a time, verifies Docker NAT,
+  and supports optional drain operations when permissions exist.
+
+triggers:
+  - restart docker and ecs on one ECS node safely
+  - recover an EC2-backed ECS node with Docker NAT verification
+  - drain an ECS container instance before recovery
+  - verify Docker NAT returned after restarting docker
+
+instructions: |
+  You are executing a controlled ECS recovery workflow.
+
+  Rules:
+  - Work on one node at a time.
+  - Prefer DRAINING before restart when permissions allow.
+  - Verify Docker NAT after restart.
+  - Stop if service counts worsen and do not recover promptly.
+  - Save evidence to a durable temp path.
+
+  Use:
+  - scripts/restart-docker-ecs-one.sh
+  - scripts/resolve-container-instance.sh
+  - scripts/drain-container-instance.sh
+
+scripts:
+  - path: scripts/restart-docker-ecs-one.sh
+    purpose: Restart docker and ecs on one EC2-backed ECS node and verify NAT
+  - path: scripts/resolve-container-instance.sh
+    purpose: Map EC2 instance ID to ECS container instance ARN
+  - path: scripts/drain-container-instance.sh
+    purpose: Set a container instance to DRAINING when permission exists

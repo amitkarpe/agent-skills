@@ -1,0 +1,25 @@
+name: repo-summary-and-relation-mapping
+description: >
+  Analyze a local repo, summarize its object in a few lines, and map its
+  relationship to sibling repos for cleanup or migration planning.
+
+triggers:
+  - write a short objective summary for this repo
+  - explain how this repo relates to sibling repos
+  - map repo boundaries before cleanup or decomposition
+  - create a local repo summary under AGENTS temp storage
+
+instructions: |
+  You are executing a repo-summary and relation-mapping workflow.
+
+  Rules:
+  - Write local outputs under ~/.AGENTS-temp/<repo-name>/, not /tmp.
+  - Keep summaries short and operational.
+  - Focus on repo object, boundaries, overlap, and migration direction.
+
+  Use:
+  - scripts/collect-repo-facts.sh
+
+scripts:
+  - path: scripts/collect-repo-facts.sh
+    purpose: Collect top-level repo facts and small context previews for summary writing

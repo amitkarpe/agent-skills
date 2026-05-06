@@ -1,0 +1,25 @@
+name: ssm-command-evidence
+description: >
+  Run one SSM command or existing document on one instance, wait for completion,
+  and save durable stdout, stderr, status, and timing evidence.
+
+triggers:
+  - run one AWS Systems Manager command and save evidence
+  - execute one SSM document on one instance with durable output capture
+  - collect stdout and stderr from one host-side SSM change
+  - prove a one-host SSM change before wider rollout
+
+instructions: |
+  You are executing a one-instance SSM evidence workflow.
+
+  Rules:
+  - prefer one instance first
+  - save exact input and output
+  - do not widen the change until one-host proof is clean
+
+  Use:
+  - scripts/run.sh
+
+scripts:
+  - path: scripts/run.sh
+    purpose: Send one SSM command or document, wait, and save durable evidence
