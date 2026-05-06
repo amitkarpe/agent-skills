@@ -15,7 +15,7 @@ usage() {
 Usage: $0 [OPTIONS]
 
 Required:
-  --document-file PATH      Local SSM document YAML file
+  --document-file PATH      Local SSM document YAML or JSON file
   --parameters-file PATH    JSON file with document parameters
   --output-dir PATH         Evidence output directory
 
@@ -76,13 +76,23 @@ log "Document file validated: $DOCUMENT_FILE"
 [[ ! -f "$PARAMETERS_FILE" ]] && error "Parameters file not found: $PARAMETERS_FILE"
 jq empty "$PARAMETERS_FILE" 2>/dev/null || error "Invalid JSON in parameters file: $PARAMETERS_FILE"
 
-# Validate SSM parameter structure (must be object with string or array values)
+# Validate SSM parameter structure (must be object with string or array-of-string values)
 PARAM_TYPE=$(jq -r 'type' "$PARAMETERS_FILE")
 [[ "$PARAM_TYPE" != "object" ]] && error "Parameters must be a JSON object, got: $PARAM_TYPE"
 
-# Check all values are strings or arrays of strings
-INVALID_PARAMS=$(jq -r 'to_entries[] | select(.value | type != "string" and type != "array") | .key' "$PARAMETERS_FILE")
-[[ -n "$INVALID_PARAMS" ]] && error "Invalid parameter values (must be string or array): $INVALID_PARAMS"
+# Check all values are strings or arrays containing only strings
+INVALID_PARAMS=$(jq -r '
+  to_entries[]
+  | select(
+      (.value | type) != "string"
+      and (
+        (.value | type) != "array"
+        or any(.value[]?; type != "string")
+      )
+    )
+  | .key
+' "$PARAMETERS_FILE")
+[[ -n "$INVALID_PARAMS" ]] && error "Invalid parameter values (must be string or array of strings): $INVALID_PARAMS"
 
 log "Parameters file validated: $PARAMETERS_FILE"
 

@@ -63,6 +63,7 @@ If `output_dir` is not provided, it writes to:
 - keep this skill read-only
 - do not restart Docker from this skill
 - treat fresh clean nodes versus older loaded nodes as an important signal
+- do not assume a Docker restart is a durable fix for this failure mode
 - confirm whether the failure is:
   - cluster-wide
   - limited to older nodes
@@ -75,6 +76,10 @@ If `output_dir` is not provided, it writes to:
 3. compare it to one known clean node
 4. if the pattern is real, build a cluster-wide node matrix
 5. hand off to `ecs-recovery` only after the failing-node set is clear
+
+## Known reference
+
+- read `references/DOCKER_AWSLOGS_CREDENTIAL_FAILURE.md` for the known failure pattern and why drain/replacement is safer than assuming restart fixes it
 
 ## Evidence
 

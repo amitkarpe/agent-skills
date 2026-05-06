@@ -6,6 +6,15 @@ set -euo pipefail
 log() { echo "[$(date -Iseconds)] $*"; }
 error() { echo "[$(date -Iseconds)] ERROR: $*" >&2; exit 1; }
 
+document_format_from_path() {
+  local path="$1"
+  case "${path##*.}" in
+    yaml|yml) echo "YAML" ;;
+    json) echo "JSON" ;;
+    *) error "Unsupported document file extension for $path (expected .yaml, .yml, or .json)" ;;
+  esac
+}
+
 # Check dependencies
 command -v jq >/dev/null 2>&1 || error "jq is required but not installed"
 command -v aws >/dev/null 2>&1 || error "aws CLI is required but not installed"
@@ -16,7 +25,7 @@ Usage: $0 [OPTIONS]
 
 Required:
   --document-name NAME      SSM document name
-  --document-file PATH      Local SSM document YAML file
+  --document-file PATH      Local SSM document YAML or JSON file
   --parameters-file PATH    JSON file with document parameters
   --instance-id ID          Target instance
   --output-dir PATH         Evidence output directory
@@ -78,6 +87,8 @@ log "Starting apply workflow"
 AWS_ARGS=()
 [[ -n "$PROFILE" ]] && AWS_ARGS+=(--profile "$PROFILE")
 [[ -n "$REGION" ]] && AWS_ARGS+=(--region "$REGION")
+DOCUMENT_FORMAT="$(document_format_from_path "$DOCUMENT_FILE")"
+NORMALIZED_PARAMETERS_FILE="$OUTPUT_DIR/parameters-normalized.json"
 
 # Run validation first
 log "Running validation"
@@ -149,6 +160,7 @@ elif aws ssm describe-document ${AWS_ARGS[@]+"${AWS_ARGS[@]}"} --name "$DOCUMENT
     UPDATE_OUTPUT=$(aws ssm update-document ${AWS_ARGS[@]+"${AWS_ARGS[@]}"} \
       --name "$DOCUMENT_NAME" \
       --content "file://$DOCUMENT_FILE" \
+      --document-format "$DOCUMENT_FORMAT" \
       --document-version '$LATEST' \
       --output json 2>&1) || true
 
@@ -181,6 +193,7 @@ else
     --name "$DOCUMENT_NAME" \
     --content "file://$DOCUMENT_FILE" \
     --document-type "Command" \
+    --document-format "$DOCUMENT_FORMAT" \
     > "$OUTPUT_DIR/create-response.json" || error "Failed to create document"
 
   DOC_VERSION=$(jq -r '.DocumentDescription.DocumentVersion' "$OUTPUT_DIR/create-response.json")
@@ -193,15 +206,21 @@ aws ssm describe-document ${AWS_ARGS[@]+"${AWS_ARGS[@]}"} \
   --name "$DOCUMENT_NAME" \
   > "$OUTPUT_DIR/document-metadata.json" || error "Failed to get document metadata"
 
-# Copy exact parameters used
-cp "$PARAMETERS_FILE" "$OUTPUT_DIR/parameters-used.json" || error "Failed to copy parameters file"
+# Normalize parameters so send-command always receives arrays of strings
+jq '
+  with_entries(
+    .value |= if type == "string" then [.] else . end
+  )
+' "$PARAMETERS_FILE" > "$NORMALIZED_PARAMETERS_FILE" || error "Failed to normalize parameters file"
+cp "$PARAMETERS_FILE" "$OUTPUT_DIR/parameters-input.json" || error "Failed to copy original parameters file"
+cp "$NORMALIZED_PARAMETERS_FILE" "$OUTPUT_DIR/parameters-used.json" || error "Failed to copy normalized parameters file"
 
 # Send command
 log "Sending command to instance: $INSTANCE_ID"
 aws ssm send-command ${AWS_ARGS[@]+"${AWS_ARGS[@]}"} \
   --document-name "$DOCUMENT_NAME" \
   --instance-ids "$INSTANCE_ID" \
-  --parameters "file://$PARAMETERS_FILE" \
+  --parameters "file://$NORMALIZED_PARAMETERS_FILE" \
   > "$OUTPUT_DIR/send-command-response.json" || error "Failed to send command"
 
 COMMAND_ID=$(jq -r '.Command.CommandId' "$OUTPUT_DIR/send-command-response.json")

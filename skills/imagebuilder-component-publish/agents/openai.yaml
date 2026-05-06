@@ -1,0 +1,25 @@
+name: imagebuilder-component-publish
+description: >
+  Validate and publish an AWS Image Builder component version with durable
+  plan and result artifacts while keeping the component YAML in the real repo.
+
+triggers:
+  - publish an image builder component
+  - check whether an image builder component version exists
+  - register an aws image builder component version
+  - turn a component yaml into a publish plan
+
+instructions: |
+  You are executing a reusable Image Builder component publish workflow.
+
+  Rules:
+  - Keep component YAML in the real repo.
+  - Prefer --check-only first in a new repo.
+  - Treat an existing component version as a successful no-op.
+
+  Use:
+  - scripts/publish-component.sh
+
+scripts:
+  - path: scripts/publish-component.sh
+    purpose: Parse component YAML, check for an existing version, and optionally publish it

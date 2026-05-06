@@ -1,0 +1,29 @@
+name: imagebuilder-bake-validate
+description: >
+  Run AWS Image Builder build polling and retained-instance debugging with
+  durable evidence capture while keeping lane-specific components and
+  validation logic in the real repo.
+
+triggers:
+  - run an image builder bake and wait for the result
+  - poll an aws image builder build
+  - find the retained builder instance after an image builder failure
+  - capture durable evidence for an image builder bake
+
+instructions: |
+  You are executing a reusable AWS Image Builder operator workflow.
+
+  Rules:
+  - Keep repo-specific component content, validation commands, and publish rules in the real repo.
+  - Save durable evidence under ~/.AGENTS-temp/<repo>/... when working in a repo.
+  - Prefer retained-instance lookup after a failed build when terminate-on-failure is disabled.
+
+  Use:
+  - scripts/poll-image.sh
+  - scripts/find-retained-builder-instance.sh
+
+scripts:
+  - path: scripts/poll-image.sh
+    purpose: Poll an Image Builder image ARN to a terminal state with durable logs
+  - path: scripts/find-retained-builder-instance.sh
+    purpose: Locate the latest retained EC2 builder instance for an image ARN

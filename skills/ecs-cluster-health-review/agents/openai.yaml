@@ -1,0 +1,29 @@
+name: ecs-cluster-health-review
+description: >
+  Run a read-only ECS-on-EC2 cluster health review with service desired/running
+  checks, active and draining container-instance inventory, canary-lane status,
+  and durable evidence capture.
+
+triggers:
+  - review ECS cluster health after a canary or maintenance window
+  - check ECS service desired and running counts
+  - inspect active and draining ECS container instances
+  - confirm canary-lane task placement and node status
+  - prepare a small Jira or boss-facing ECS health proof
+
+instructions: |
+  You are executing a read-only ECS cluster health review.
+
+  Rules:
+  - keep this workflow read-only
+  - separate ACTIVE nodes from DRAINING nodes
+  - do not treat a DRAINING zero-task node as an incident by itself
+  - use ecs-recovery only after the failing node set is known
+  - save outputs to a durable temp path
+
+  Use:
+  - scripts/collect-health.sh
+
+scripts:
+  - path: scripts/collect-health.sh
+    purpose: Collect ECS service, task, active-node, draining-node, and canary-lane health evidence

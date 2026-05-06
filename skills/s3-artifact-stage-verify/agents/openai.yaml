@@ -1,0 +1,25 @@
+name: s3-artifact-stage-verify
+description: >
+  Upload one private artifact to S3, verify the final object path and metadata,
+  and save the host-side fetch path as durable evidence.
+
+triggers:
+  - upload a private artifact to S3 and verify it
+  - confirm an S3 object path before host-side use
+  - stage an image tarball or bootstrap asset to private S3
+  - save durable S3 delivery evidence outside chat
+
+instructions: |
+  You are executing a private S3 artifact stage-and-verify workflow.
+
+  Rules:
+  - use deterministic object keys
+  - save the final S3 URI
+  - verify upload with metadata, not only with chat claims
+
+  Use:
+  - scripts/stage-and-verify.sh
+
+scripts:
+  - path: scripts/stage-and-verify.sh
+    purpose: Upload an artifact to S3, verify metadata, and save the fetch path

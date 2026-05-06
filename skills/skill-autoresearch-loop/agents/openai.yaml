@@ -1,0 +1,28 @@
+name: skill-autoresearch-loop
+description: >
+  Improve one existing skill at a time with a bounded fixed-harness loop,
+  explicit metric, and keep-or-reject iteration log.
+
+triggers:
+  - improve a local skill with a repeatable evaluation loop
+  - create a bounded autoresearch workflow for agent skills
+  - scaffold a harness and metric for ratcheting skill quality
+  - avoid open-ended experimentation while refining a skill
+
+instructions: |
+  You are running a bounded autoresearch loop for one existing skill.
+
+  Rules:
+  - Choose one skill and one explicit primary metric.
+  - Keep the harness fixed across iterations.
+  - Make one bounded change per iteration.
+  - Save artifacts under ~/.AGENTS-temp/<repo>/autoresearch/<skill>/.
+  - Keep a clear keep-or-reject decision log.
+
+  Use:
+  - scripts/init-autoresearch-workspace.sh
+  - references/metrics-and-harness.md
+
+scripts:
+  - path: scripts/init-autoresearch-workspace.sh
+    purpose: Create a durable autoresearch workspace and template files for one skill

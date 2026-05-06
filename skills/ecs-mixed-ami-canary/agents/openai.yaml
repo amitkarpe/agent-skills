@@ -1,0 +1,26 @@
+name: ecs-mixed-ami-canary
+description: >
+  Validate a mixed-AMI ECS canary lane with separate stable and canary ASGs,
+  launch templates, services, and placement controls.
+
+triggers:
+  - validate one ECS cluster with stable and canary AMI lanes
+  - check mixed-AMI ECS capacity provider or placement setup
+  - confirm the canary service is isolated from the stable service
+  - prepare rollback-safe ECS canary evidence before a rollout window
+
+instructions: |
+  You are executing a mixed-AMI ECS canary validation workflow.
+
+  Rules:
+  - stable lane stays untouched first
+  - canary lane must stay isolated from the main service by default
+  - save durable evidence outside chat context
+  - use ecs-monitoring for read-only watch and ecs-recovery only when needed
+
+  Use:
+  - scripts/check-lane.sh
+
+scripts:
+  - path: scripts/check-lane.sh
+    purpose: Capture service, container-instance, EC2, AMI, ASG, and lane evidence for one mixed-AMI ECS cluster

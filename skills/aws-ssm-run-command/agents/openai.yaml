@@ -1,0 +1,3 @@
+interface:
+  display_name: "AWS SSM Run Command"
+  short_description: "Reliable send/wait/output SSM wrapper workflow"
