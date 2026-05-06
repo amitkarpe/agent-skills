@@ -51,3 +51,5 @@ Useful repo helpers:
   - `scripts/link-all-skills.sh`
 - run a lightweight repo check:
   - `scripts/check-skill-repo.sh`
+- run repo checks plus all skill smoke tests:
+  - `scripts/run-smoke-tests.sh`

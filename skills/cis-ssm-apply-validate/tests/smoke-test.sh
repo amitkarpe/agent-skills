@@ -9,7 +9,10 @@ echo
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 TEST_DIR="$SCRIPT_DIR/fixtures"
-SMOKE_OUT="/tmp/ssm-smoke-test-$(date +%s)"
+SMOKE_OUT="${HOME}/.AGENTS-temp/agent-skills/cis-ssm-apply-validate/smoke-$(date +%Y%m%d-%H%M%S)"
+BAD_PARAMS="$SMOKE_OUT/smoke-bad-params.json"
+
+mkdir -p "$SMOKE_OUT"
 
 echo "Test output: $SMOKE_OUT"
 echo
@@ -44,18 +47,18 @@ done
 
 # Test 3: Parameter validation catches bad schema
 echo "3. Testing parameter schema validation..."
-echo '{"bad": 123}' > /tmp/smoke-bad-params.json
+echo '{"bad": 123}' > "$BAD_PARAMS"
 rm -rf "$SMOKE_OUT/bad-params"
 if ! "$ROOT_DIR/scripts/validate.sh" \
   --document-file "$TEST_DIR/test-doc.yaml" \
-  --parameters-file /tmp/smoke-bad-params.json \
+  --parameters-file "$BAD_PARAMS" \
   --output-dir "$SMOKE_OUT/bad-params" 2>&1; then
   echo "   ✓ Rejects invalid parameter types"
 else
   echo "   ✗ Should reject invalid parameter types"
   exit 1
 fi
-rm -f /tmp/smoke-bad-params.json
+rm -f "$BAD_PARAMS"
 
 # Test 4: Output directory isolation
 echo "4. Testing output directory isolation..."
