@@ -1,0 +1,7 @@
+interface:
+  display_name: "Linux Backup To S3"
+  short_description: "Restic-based Linux backup and restore workflow"
+  default_prompt: "Use $linux-backup-to-s3 to set up or review my encrypted Linux backup to S3."
+
+policy:
+  allow_implicit_invocation: true

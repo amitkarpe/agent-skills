@@ -107,6 +107,7 @@ Expose a skill through `~/.codex/skills` when:
 - `skills/ssm-command-evidence/` (durable evidence wrapper)
 - `skills/skill-autoresearch-loop/`
 - `skills/amit-operator-commands/`
+- `skills/linux-backup-to-s3/`
 
 ## Skill shape
 
