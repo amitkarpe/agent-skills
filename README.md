@@ -43,6 +43,8 @@ Important:
   - `scripts/check-skill-repo.sh`
 - full smoke check:
   - `scripts/run-smoke-tests.sh`
+- promotion check:
+  - `scripts/check-promoted-skills.sh`
 - only expose stable and actually useful skills globally
 - keep repo-specific policy in the owning repo, not in shared skills
 

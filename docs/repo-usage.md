@@ -53,3 +53,5 @@ Useful repo helpers:
   - `scripts/check-skill-repo.sh`
 - run repo checks plus all skill smoke tests:
   - `scripts/run-smoke-tests.sh`
+- verify all durable skills are exposed through `~/.codex/skills`:
+  - `scripts/check-promoted-skills.sh`
