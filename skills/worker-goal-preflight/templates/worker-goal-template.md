@@ -14,6 +14,7 @@ Do first:
 Rules:
 - keep scope bounded
 - keep stable lanes untouched unless explicitly allowed
+- if the goal is medium or large, create and maintain a short internal task list
 - use subagents internally only when read-heavy review or parallel checks help
 - keep thread output short; store raw output in files
 

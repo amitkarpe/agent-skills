@@ -16,6 +16,8 @@ This skill is for controller-to-worker handoff quality.
 - Wait for approval before writing or sending the final worker goal.
 - Create or update the local goal file first.
 - Critically review and improve the goal before submission.
+- For medium or large goals, prefer Codex internal task tracking so progress is
+  visible as tasks/subtasks rather than only prose updates.
 - Use subagents for read-heavy review, repo-truth checks, or parallel fact gathering when that reduces main-thread context.
 - Keep the main thread focused on:
   - plan
@@ -39,6 +41,22 @@ Do not overuse subagents for:
 - obvious one-step tasks
 - heavily overlapping write work
 
+## When to use internal task tracking
+
+Prefer Codex internal plan/task tracking when one or more of these are true:
+- the worker goal will likely run longer than a few minutes
+- the goal has 3 or more distinct phases
+- you want easy monitoring of completed vs pending work
+- you expect mid-run feedback or correction from Amit
+
+For tiny goals, skip it.
+
+When used, the worker goal should explicitly ask the worker to:
+- create a short internal task list first
+- keep exactly one task in progress
+- update task status as work moves
+- surface blockers or failed tasks clearly
+
 ## Workflow
 
 1. Read only the minimum repo truth needed.
@@ -46,15 +64,17 @@ Do not overuse subagents for:
 3. Wait for approval.
 4. Create or update the local goal file first.
 5. Review the draft goal critically.
-6. Use subagents if they will reduce context or improve review quality.
-7. Tighten the goal:
+6. Decide whether the worker should use internal task tracking.
+7. Use subagents if they will reduce context or improve review quality.
+8. Tighten the goal:
    - scope
    - stop condition
    - validation
    - evidence path
    - no-go boundaries
-8. Submit the improved goal to the worker.
-9. Report only the compact outcome.
+   - internal task tracking rule when appropriate
+9. Submit the improved goal to the worker.
+10. Report only the compact outcome.
 
 ## Goal quality checklist
 
@@ -67,6 +87,7 @@ Before sending the worker goal, confirm:
 - success criteria are explicit
 - historical noise is excluded
 - the worker is told when to use subagents internally
+- the worker is told whether to use internal task tracking
 
 ## Output contract
 
