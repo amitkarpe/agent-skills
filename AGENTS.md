@@ -1,0 +1,55 @@
+# AGENTS.md - agent-skills
+
+Purpose:
+- keep reusable Codex and operator skills in one durable repo
+- separate stable reusable capability from per-run evidence
+- avoid leaking one-off lane logic into shared skills
+
+## Role
+
+- durable reusable skills live here
+- unstable drafts, raw logs, and autoresearch artifacts stay under:
+  - `~/.AGENTS-temp/agent-skills/`
+- skill discovery for Codex happens through:
+  - `~/.codex/skills/`
+- this repo is the durable source, not the direct discovery path
+
+## Working rules
+
+- prefer workflow generalization and stable interfaces over repo-specific
+  execution detail
+- create or update small and clear skills directly under:
+  - `skills/<skill>/`
+- use incubation under `~/.AGENTS-temp/agent-skills/` when the skill is rough,
+  likely to be discarded, or needs autoresearch first
+- expose only stable, proven skills globally
+- keep repo-specific policy in the owning repo, not in shared skills
+
+## Promotion path
+
+1. create or refine the skill in:
+   - `skills/<skill>/`
+2. expose it through:
+   - `~/.codex/skills/<skill>`
+3. keep one-off evidence and generated outputs out of the repo
+
+## File model
+
+- `AGENTS.md` = stable repo rules
+- `README.md` = human repo overview and promotion model
+- `PLANS.md` = active repo work when needed
+- `skills/` = durable shared skills
+- `scripts/` = repo helpers for linking, checking, and smoke validation
+
+## Compact rule
+
+- for low-context restart, prefer:
+  1. `~/.AGENTS-temp/agent-skills/COMPACT_RESUME_CURRENT.md`
+  2. `README.md`
+  3. `PLANS.md` only if directly relevant
+
+## Safety
+
+- do not put secrets in skill files
+- do not turn one-off incident notes into shared skills
+- keep stable interfaces short and reviewable
