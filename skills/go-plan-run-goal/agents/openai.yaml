@@ -1,0 +1,7 @@
+interface:
+  display_name: "Go Plan Run Goal"
+  short_description: "Start worker lanes with probe-gated goals"
+  default_prompt: "Use $go-plan-run-goal to refresh and start the worker lane with a probe-gated goal."
+
+policy:
+  allow_implicit_invocation: true

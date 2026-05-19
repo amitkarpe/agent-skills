@@ -57,6 +57,23 @@ When used, the worker goal should explicitly ask the worker to:
 - update task status as work moves
 - surface blockers or failed tasks clearly
 
+## Context threshold rule
+
+Prefer explicit stop-or-restart discipline for medium or large worker lanes:
+- around `70%` context:
+  - switch harder to file-heavy, thread-light execution
+- around `80%` context:
+  - do not start a broad new lane
+- around `85%` context:
+  - finish only the current bounded goal, write compact summary/evidence, then stop
+- around `90%` context:
+  - treat the session as at compaction risk; restart before more work
+
+When appropriate, the worker goal should explicitly say:
+- stop at `80-85%` context after the current bounded task
+- do not begin a new lane at high context
+- prefer restart over unexpected compacting
+
 ## Workflow
 
 1. Read only the minimum repo truth needed.
@@ -73,6 +90,7 @@ When used, the worker goal should explicitly ask the worker to:
    - evidence path
    - no-go boundaries
    - internal task tracking rule when appropriate
+   - context threshold stop rule when the lane may run long
 9. Submit the improved goal to the worker.
 10. Report only the compact outcome.
 
@@ -88,6 +106,7 @@ Before sending the worker goal, confirm:
 - historical noise is excluded
 - the worker is told when to use subagents internally
 - the worker is told whether to use internal task tracking
+- the worker is told when to stop for context threshold if the lane may run long
 
 ## Output contract
 
