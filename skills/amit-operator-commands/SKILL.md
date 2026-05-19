@@ -11,6 +11,9 @@ Use this skill when Amit gives a short command phrase that implies a workflow ra
 
 - Keep output short, practical, and current-state only.
 - Prefer repo truth over chat memory: `AGENTS.md`, `AGENTS.override.md`, `README.md`, `PLANS.md`, `STATUS.md`, branch/MR/PR text, and `/goal` when available.
+- For old evidence or broad context questions, read `INDEX.md` / `MANIFEST.tsv`
+  first when present, then use `qmd-agent-search` or targeted `rg` before raw
+  evidence scans.
 - Preserve local-only context. Do not stage secrets, `AGENTS.override.md`, raw evidence bundles, `.codex-local/`, or unrelated local files.
 - Save durable task evidence under `~/.AGENTS-temp/<repo>/`.
 - Before deleting or archiving context/rule files, create a backup under `~/back/`.
@@ -23,10 +26,16 @@ Use this skill when Amit gives a short command phrase that implies a workflow ra
 Goal: choose the next useful task or goal.
 
 Workflow:
-1. Read the smallest relevant repo context: guidance files, task/status files, git status, and active PR/MR/issue if present.
-2. Check `/goal` when runtime exposes it, but do not treat it as source of truth.
-3. Return a short shortlist of 1-3 next actions, with one recommended default.
-4. Do not edit files unless Amit also asks to implement.
+1. Read the smallest relevant repo context:
+   - `INDEX.md` / `MANIFEST.tsv` first when present and the question touches
+     old evidence, cleanup, or lane history
+   - `STATUS.md`, `PLANS.md`, `GOAL.md`, guidance files, git status, and active
+     PR/MR/issue if present
+2. Use `qmd-agent-search "<query>"` for old summarized evidence when available;
+   use targeted `rg` for exact IDs or strings.
+3. Check `/goal` when runtime exposes it, but do not treat it as source of truth.
+4. Return a short shortlist of 1-3 next actions, with one recommended default.
+5. Do not edit files unless Amit also asks to implement.
 
 Output:
 - `State`
@@ -40,8 +49,9 @@ Goal: refresh restart handoff files with current state only.
 Workflow:
 1. Load `/home/dev/.codex/prompts/compact-handback.md` if it exists.
 2. Follow repo-local handoff rules first.
-3. Update existing status/handoff files; create `~/.AGENTS-temp/<repo>/context/COMPACT_RESUME_CURRENT.md` only as fallback.
-4. Treat compact files as generated cache, not authoritative truth.
+3. Include `INDEX.md` / `MANIFEST.tsv` read-first pointers when they exist.
+4. Update existing status/handoff files; create `~/.AGENTS-temp/<repo>/context/COMPACT_RESUME_CURRENT.md` only as fallback.
+5. Treat compact files as generated cache, not authoritative truth.
 
 Output:
 - `Updated`
@@ -143,10 +153,15 @@ Goal: remove unwanted local task debris without losing useful history.
 
 Workflow:
 1. Read current task/plan/goal and git status.
-2. Inventory candidate generated files: temp scripts, raw JSON/log dumps, one-off reports, stale compact files, caches, and local scratch.
-3. Keep curated docs, final reports, tracked status files, and repo truth.
-4. Back up before deleting anything that might contain context.
-5. Do not delete tracked files unless Amit explicitly asked for that tracked-file cleanup.
+2. Read `INDEX.md` / `MANIFEST.tsv` first when present.
+3. Inventory candidate generated files: temp scripts, raw JSON/log dumps, one-off reports, stale compact files, caches, and local scratch.
+4. Keep curated docs, final reports, tracked status files, repo truth, closeout
+   packets, decision packets, cleanup proof, MR/Jira references, and scan summaries.
+5. Archive/compress raw evidence before deletion when retention is unclear.
+6. Back up before deleting anything that might contain context.
+7. Do not delete tracked files unless Amit explicitly asked for that tracked-file cleanup.
+8. Delete evidence only after closeout exists, no active lane references it, and
+   Amit approved deletion or a clear `delete_after` rule applies.
 
 Output:
 - `Removed`
