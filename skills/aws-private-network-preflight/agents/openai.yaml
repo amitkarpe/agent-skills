@@ -1,0 +1,7 @@
+interface:
+  display_name: "AWS Private Network Preflight"
+  short_description: "Blocks public exposure in private AWS lanes"
+  default_prompt: "Use $aws-private-network-preflight before this private AWS networking change."
+
+policy:
+  allow_implicit_invocation: true

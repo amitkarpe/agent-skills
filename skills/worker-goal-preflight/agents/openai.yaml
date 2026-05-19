@@ -1,0 +1,7 @@
+interface:
+  display_name: "Worker Goal Preflight"
+  short_description: "Prepare safe controller-to-worker goals"
+  default_prompt: "Use $worker-goal-preflight to prepare and review a safe worker goal."
+
+policy:
+  allow_implicit_invocation: true
