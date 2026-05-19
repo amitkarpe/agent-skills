@@ -33,6 +33,25 @@ Purpose:
    - `~/.codex/skills/<skill>`
 3. keep one-off evidence and generated outputs out of the repo
 
+## Git sharing model
+
+- Treat git here as backup and shared learning first.
+- Direct push to `main` is allowed for small additive skill/docs changes after
+  validation.
+- Use a branch or PR for:
+  - deleting or renaming skills
+  - changing shared scripts
+  - restructuring repo layout
+  - generated or bulk file changes
+  - broad multi-skill changes
+  - changes from an external agent that has not been reviewed yet
+- Never delete or rename existing skills or scripts without explicit Amit
+  approval.
+- Before commit or push, run:
+  - `scripts/check-skill-repo.sh`
+  - `git diff --check`
+- Do not force-push unless Amit explicitly asks.
+
 ## File model
 
 - `AGENTS.md` = stable repo rules
