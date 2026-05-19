@@ -13,6 +13,8 @@ Purpose:
 - skill discovery for Codex happens through:
   - `~/.codex/skills/`
 - this repo is the durable source, not the direct discovery path
+- external/direct installed skills that are not source-owned here are tracked in:
+  - `docs/EXTERNAL_LOCAL_SKILLS.md`
 
 ## Working rules
 
