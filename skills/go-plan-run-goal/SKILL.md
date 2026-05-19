@@ -29,11 +29,17 @@ already proves the lane shape or Amit explicitly overrides it.
 Prefer lane-local truth under the temp directory. Do not dirty an MR-ready repo
 branch just to start or refresh a worker lane.
 
+Use Goals as compact completion contracts. Every generated worker goal should
+state the outcome, verification surface, constraints, boundaries, iteration
+policy, and blocked stop condition.
+
 ## Inputs
 
 - Lane may be explicit: `tdg`, `tdm`, `td-gitlab`, `td-mongodb`, `trustdev-gitlab`, `trustdev-mongodb`.
 - If no lane is explicit, infer from cwd, tmux session/window, or nearest local `GOAL.md`.
 - If more than one active lane is plausible, ask one short clarification unless Amit clearly said all or named multiple lanes.
+- If Amit asks to improve this skill or run skill cycles, use temp-only mode
+  unless Amit explicitly approves real repo or AWS mutation.
 
 ## Lane Mapping
 
@@ -54,11 +60,23 @@ branch just to start or refresh a worker lane.
    - lane temp `STATUS.md`, `PLANS.md`, `COMPACT_RESUME_CURRENT.md` if present
    - lane temp `GOAL.md` if present; when this is the current controller goal,
      prefer it over stale older status text that points to repo `GOAL.md`
+   - lane temp files named like `<LANE>_NEXT_GOAL_CURRENT.md` if present;
+     treat them as current-goal candidates, not merely old evidence
    - legacy lane temp `CURRENT_WORKER_GOAL.md` if present; use it as input,
      but prefer creating or refreshing lane temp `GOAL.md` for the next run
    - repo `GOAL.md`, `STATUS.md`, or `PLANS.md` only when needed for current truth
    - for any Inspector/CIS/HCR/AMI compliance scan work, also read `~/.codex/AWS_INSPECTOR_CIS.md`.
-3. Create or update lane-local `<temp>/GOAL.md` before starting or restarting
+3. Resolve truth conflicts before starting execution:
+   - compare current mission, active AMI/resource ids, allowed mutation, and
+     stop boundary across temp `GOAL.md`, temp next-goal files, temp
+     `STATUS.md`/`PLANS.md`, and repo `GOAL.md` when read
+   - if they disagree on the active mission or safe next step, run only
+     `Phase 0 Probe`; write the conflict and recommended source of truth into
+     lane-local `<temp>/GOAL.md` or a dated probe note, then stop before
+     `/goal`
+   - do not let a newer temp next-goal file silently override a repo `GOAL.md`
+     unless the generated goal states that choice and why
+4. Create or update lane-local `<temp>/GOAL.md` before starting or restarting
    work. Update repo `GOAL.md` only when that repo already uses it for active
    lane truth and it is not MR-ready, or Amit explicitly asks. Include:
    - lane mission and stop boundary
@@ -66,13 +84,15 @@ branch just to start or refresh a worker lane.
    - files the worker must not edit
    - current state, blocker, and next result packet expected
    - `Phase 0 Probe`, `MVP Proof`, `Full Lane only if`, and `Closeout` sections
+   - goal contract fields: outcome, verification surface, constraints,
+     boundaries, iteration policy, and blocked stop condition
    - private-only AWS guardrail when the lane touches AWS
    - forced `~/.codex/AWS_INSPECTOR_CIS.md` read-first entry when the lane has an Inspector/CIS gate
    - plan-first startup and fallback execution prompt.
-4. Do not interrupt active risky execution. If the pane is already working on the lane, update `GOAL.md` if needed and report current status instead of sending a new prompt.
-5. Send `/plan` first for medium or large lane work. Plan mode may ask questions; allow that when useful.
-6. After the plan is accepted or Amit says go, try `/goal` once if supported. If `/goal` fails, sends nothing, or is not available, use the fallback prompt.
-7. Verify after every send:
+5. Do not interrupt active risky execution. If the pane is already working on the lane, update `GOAL.md` if needed and report current status instead of sending a new prompt.
+6. Send `/plan` first for medium or large lane work. Plan mode may ask questions; allow that when useful.
+7. After the plan is accepted or Amit says go, try `/goal` once if supported. If `/goal` fails, sends nothing, or is not available, use the fallback prompt.
+8. Verify after every send:
    - capture the pane again.
    - if the prompt is still sitting in input, send one extra `Enter`.
    - if Codex shows a plan modal, send one `Enter` and recapture.
@@ -84,24 +104,45 @@ branch just to start or refresh a worker lane.
      then recapture.
    - if the window is at shell, do not paste the worker prompt into shell; restart or resume Codex first.
 
+## Temp-Only Skill Cycle Mode
+
+Use this mode when Amit asks to improve `go-plan-run-goal`, run a few cycles,
+or test a lane workflow without approving real execution.
+
+- Allowed mutation:
+  - lane-local temp files under `<temp>`
+  - autoresearch notes under `~/.AGENTS-temp/agent-skills/autoresearch/go-plan-run-goal/`
+- Not allowed:
+  - AWS mutation
+  - repo-tracked edits in the target execution repo
+  - merge, push, Image Builder, EC2 launch, Inspector scan, DNS, LB, or rollout
+- Cycle shape:
+  1. `Probe`: inspect pane and truth files, then record conflicts and no-go
+     boundaries.
+  2. `MVP`: create a lane-local goal that would be safe to hand to a worker.
+  3. `Temp-only Full`: exercise the full prompt/goal shape but stop at a
+     lane-local closeout packet.
+- If temp-only mode finds a real execution path, report it as a next safe step;
+  do not perform it in the same cycle.
+
 ## Prompt Templates
 
 Plan:
 
 ```text
-/plan Use <temp>/GOAL.md as the source of truth. Read lane-local truth files under <temp> first, then repo truth only if needed. Produce a bounded Probe -> MVP Proof -> Full Lane -> Closeout plan for <lane> only. Ask clarifying questions only if needed. Do not mutate AWS or files during plan mode.
+/plan Use <temp>/GOAL.md as the source of truth. Read lane-local truth files under <temp> first, then repo truth only if needed. Produce a bounded Probe -> MVP Proof -> Full Lane -> Closeout plan for <lane> only. The goal contract must include outcome, verification surface, constraints, boundaries, iteration policy, and blocked stop condition. Ask clarifying questions only if needed. Do not mutate AWS or files during plan mode.
 ```
 
 Goal:
 
 ```text
-/goal <lane> long-running loop. Read <temp>/GOAL.md first. Use only lane-local truth under <temp> unless the goal names repo files. Work only from <repo>. Keep private-only guardrails. Start with Phase 0 Probe, run MVP Proof next, enter Full Lane only if the goal gates pass, then write a Closeout packet. Stop on one clean result packet or a real blocker. Update lane-local truth files as you go.
+/goal <lane> long-running loop. Read <temp>/GOAL.md first. Use only lane-local truth under <temp> unless the goal names repo files. Work only from <repo>. Keep private-only guardrails. Start with Phase 0 Probe, run MVP Proof next, enter Full Lane only if the goal gates pass, then write a Closeout packet. Preserve the goal contract: outcome, verification surface, constraints, boundaries, iteration policy, and blocked stop condition. Stop on one clean result packet or a real blocker. Update lane-local truth files as you go.
 ```
 
 Fallback:
 
 ```text
-Read <temp>/GOAL.md first, then execute the lane from that file. Use only lane-local truth under <temp> unless the goal names repo files. Work only from <repo>. Keep private-only guardrails. Start with Phase 0 Probe, run MVP Proof next, enter Full Lane only if the goal gates pass, then write a Closeout packet. Stop on one clean result packet or a real blocker. Update lane-local truth files as you go.
+Read <temp>/GOAL.md first, then execute the lane from that file. Use only lane-local truth under <temp> unless the goal names repo files. Work only from <repo>. Keep private-only guardrails. Start with Phase 0 Probe, run MVP Proof next, enter Full Lane only if the goal gates pass, then write a Closeout packet. Preserve the goal contract: outcome, verification surface, constraints, boundaries, iteration policy, and blocked stop condition. Stop on one clean result packet or a real blocker. Update lane-local truth files as you go.
 ```
 
 ## Lane-Local GOAL.md Shape
@@ -111,6 +152,14 @@ Read <temp>/GOAL.md first, then execute the lane from that file. Use only lane-l
 
 Mission:
 - <one bounded objective>
+
+Goal contract:
+- outcome: <what must be true at completion>
+- verification surface: <artifact, command, evidence, or report that proves it>
+- constraints: <things that must not regress>
+- boundaries: <repos, files, accounts, tools, hosts, and resources allowed>
+- iteration policy: <how to choose next attempt after evidence>
+- blocked stop condition: <when to stop and what to report>
 
 Read first:
 - <temp>/GOAL.md
@@ -146,6 +195,36 @@ Closeout packet:
 - evidence path
 - next safe step
 - cleanup needed
+```
+
+## Truth Conflict Probe Note Shape
+
+```text
+# <lane> Goal Probe
+
+Result:
+- blocked_before_execution | clean_to_plan | clean_to_goal
+
+Truth sources checked:
+- <temp>/GOAL.md
+- <temp>/<LANE>_NEXT_GOAL_CURRENT.md
+- <temp>/STATUS.md
+- <temp>/PLANS.md
+- <repo>/GOAL.md if read
+
+Conflict:
+- <mission/source A>
+- <mission/source B>
+
+Decision:
+- active source of truth: <path or none yet>
+- reason: <freshness/evidence/explicit Amit instruction>
+
+No-go:
+- <AWS/repo/service mutation not approved>
+
+Next safe step:
+- <write goal / ask Amit / run plan / stop>
 ```
 
 ## Output
