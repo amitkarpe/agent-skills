@@ -33,6 +33,17 @@ Use Goals as compact completion contracts. Every generated worker goal should
 state the outcome, verification surface, constraints, boundaries, iteration
 policy, and blocked stop condition.
 
+Explicit `$go-plan-run-goal <lane>` means Amit approved the normal
+plan-then-run flow for that lane. After `/plan` returns, continue into bounded
+implementation unless Amit explicitly says `plan only`, the plan contains
+unresolved questions, or the plan would cross a no-go boundary not already
+approved in the lane-local `GOAL.md`.
+
+This pre-approval does not override hard safety gates. Stop before public
+exposure, AWS mutation outside the goal, PROD mutation outside the goal,
+repo-tracked edits outside the goal, ambiguous rollback/cleanup, or any
+Inspector/CIS invalid-result condition.
+
 ## Inputs
 
 - Lane may be explicit: `tdg`, `tdm`, `td-gitlab`, `td-mongodb`, `trustdev-gitlab`, `trustdev-mongodb`.
@@ -97,14 +108,25 @@ policy, and blocked stop condition.
    - plan-first startup and fallback execution prompt.
 5. Do not interrupt active risky execution. If the pane is already working on the lane, update `GOAL.md` if needed and report current status instead of sending a new prompt.
 6. Send `/plan` first for medium or large lane work. Plan mode may ask questions; allow that when useful.
-7. After the plan is accepted or Amit says go, try `/goal` once if supported. If `/goal` fails, sends nothing, or is not available, use the fallback prompt.
+7. After the plan returns, treat explicit `$go-plan-run-goal <lane>` as Amit's
+   approval to continue into bounded execution unless he said `plan only` or
+   the plan has unresolved questions/no-go violations. Try `/goal` once if
+   supported. If `/goal` fails, sends nothing, or is not available, use the
+   fallback prompt.
 8. Verify after every send:
    - capture the pane again.
    - if the prompt is still sitting in input, send one extra `Enter`.
    - if Codex shows a plan modal, send one `Enter` and recapture.
-   - if Codex asks `Implement this plan?`, do not choose yes unless Amit
-     explicitly approved Full Lane execution; dismiss it or choose the
-     stay-in-plan/no option, then recapture.
+   - if Codex asks `Implement this plan?`, choose the implementation option
+     when the current user command is explicit `$go-plan-run-goal <lane>` and
+     the plan stays inside the lane-local `GOAL.md` no-go gates:
+     - choose `1. Yes, implement this plan` when context is below `30%`
+     - choose `2. Yes, clear context and implement` when context is `30%` or
+       higher
+     - choose `3. No, stay in Plan mode` only when Amit said `plan only`, the
+       plan asks unresolved questions, or the plan would cross an unapproved
+       no-go boundary
+     - after choosing, recapture the pane
    - if `/goal` is accepted but the pane remains `Ready` with `Pursuing goal`,
      send one short kickoff prompt such as `Continue the active goal now`,
      then recapture.
