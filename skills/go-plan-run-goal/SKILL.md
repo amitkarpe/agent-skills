@@ -57,6 +57,8 @@ policy, and blocked stop condition.
      is active; an approved Probe/MVP/Full skill-test running in that pane is
      not a blocker by itself.
 2. Read the smallest useful truth set:
+   - lane temp or repo temp `INDEX.md` and `MANIFEST.tsv` if present,
+     especially for `next`, cleanup, closeout, or old-evidence questions
    - lane temp `STATUS.md`, `PLANS.md`, `COMPACT_RESUME_CURRENT.md` if present
    - lane temp `GOAL.md` if present; when this is the current controller goal,
      prefer it over stale older status text that points to repo `GOAL.md`
@@ -66,6 +68,8 @@ policy, and blocked stop condition.
      but prefer creating or refreshing lane temp `GOAL.md` for the next run
    - repo `GOAL.md`, `STATUS.md`, or `PLANS.md` only when needed for current truth
    - for any Inspector/CIS/HCR/AMI compliance scan work, also read `~/.codex/AWS_INSPECTOR_CIS.md`.
+   - if QMD is installed and the question concerns old summarized evidence,
+     use `qmd-agent-search "<query>"` before broad-scanning raw evidence folders.
 3. Resolve truth conflicts before starting execution:
    - compare current mission, active AMI/resource ids, allowed mutation, and
      stop boundary across temp `GOAL.md`, temp next-goal files, temp
@@ -86,6 +90,8 @@ policy, and blocked stop condition.
    - `Phase 0 Probe`, `MVP Proof`, `Full Lane only if`, and `Closeout` sections
    - goal contract fields: outcome, verification surface, constraints,
      boundaries, iteration policy, and blocked stop condition
+   - evidence index behavior: which `INDEX.md` / `MANIFEST.tsv` files to read
+     or update, and what raw evidence folders must not be scanned unless needed
    - private-only AWS guardrail when the lane touches AWS
    - forced `~/.codex/AWS_INSPECTOR_CIS.md` read-first entry when the lane has an Inspector/CIS gate
    - plan-first startup and fallback execution prompt.
@@ -125,6 +131,35 @@ or test a lane workflow without approving real execution.
 - If temp-only mode finds a real execution path, report it as a next safe step;
   do not perform it in the same cycle.
 
+## Evidence Index and Cleanup Behavior
+
+Use this section when Amit asks `next`, `cleanup`, `closeout`, or asks about old
+evidence.
+
+- Read first:
+  - `<temp>/INDEX.md` if present
+  - `<temp>/MANIFEST.tsv` if present
+  - `<temp>/STATUS.md`, `<temp>/PLANS.md`, `<temp>/GOAL.md`
+  - latest `*CLOSEOUT*.md`, `*PACKET*.md`, `*DECISION*.md`, or `*SUMMARY*.md`
+    only when needed
+- Search:
+  - use `qmd-agent-search "<query>"` for old summarized evidence when available
+  - use targeted `rg` for exact IDs, paths, AMIs, instances, issues, or strings
+  - avoid broad `find`/raw folder scans unless index/search points there
+- Closeout:
+  - write a short closeout packet with result, evidence path, blocker/success,
+    next safe step, cleanup needed, and retention/delete-after hints
+  - update `INDEX.md` or `MANIFEST.tsv` when the lane created durable evidence
+    or cleanup candidates
+- Cleanup:
+  - cleanup temporary cloud resources while context is fresh
+  - preserve final closeout packets, decision packets, cleanup proof, MR/Jira
+    references, and scan summaries
+  - archive or compress raw logs, large JSON, and repeated failed-run folders
+  - delete evidence only after closeout exists, no active lane references it,
+    cleanup proof is saved when relevant, and Amit approved deletion or a clear
+    `delete_after` rule applies
+
 ## Prompt Templates
 
 Plan:
@@ -162,6 +197,8 @@ Goal contract:
 - blocked stop condition: <when to stop and what to report>
 
 Read first:
+- <temp>/INDEX.md if present
+- <temp>/MANIFEST.tsv if present
 - <temp>/GOAL.md
 - <temp>/STATUS.md if present
 - <temp>/PLANS.md if present
@@ -195,6 +232,8 @@ Closeout packet:
 - evidence path
 - next safe step
 - cleanup needed
+- retention/delete-after hints
+- INDEX.md or MANIFEST.tsv update needed
 ```
 
 ## Truth Conflict Probe Note Shape
