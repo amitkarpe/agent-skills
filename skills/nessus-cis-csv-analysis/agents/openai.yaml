@@ -1,0 +1,7 @@
+interface:
+  display_name: "Nessus CIS CSV Analysis"
+  short_description: "Summarize Nessus CIS/HCR CSV findings"
+  default_prompt: "Use $nessus-cis-csv-analysis to parse this Nessus CIS/HCR CSV and produce a compact findings summary."
+
+policy:
+  allow_implicit_invocation: true

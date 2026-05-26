@@ -1,0 +1,3 @@
+display_name: Agent Web Reporting
+short_description: Publish sanitized static HTML reports to Amit's local LAN web server.
+default_prompt: Create a concise sanitized HTML report, publish it to /opt/agent-web, and return the http://192.168.0.9 URL.

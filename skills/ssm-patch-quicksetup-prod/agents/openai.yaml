@@ -1,0 +1,7 @@
+interface:
+  display_name: "SSM Patch Quick Setup PROD"
+  short_description: "Run safe PROD Patch Manager Quick Setup workflows"
+  default_prompt: "Use $ssm-patch-quicksetup-prod for this PROD SSM Patch Manager or Quick Setup patching task."
+
+policy:
+  allow_implicit_invocation: true
