@@ -1,6 +1,6 @@
 ---
 name: amit-operator-commands
-description: Route Amit's short operator phrases into safe Codex workflows. Use for "what next", "next", "dump context", "debug tight", "fast work", "commit all", "push all", "merge", "cleanup", "TTL cleanup", and similar local repo/AWS operator command shorthands.
+description: Route Amit's short operator phrases into safe Codex workflows. Use for "what next", "next", "dump_context_fast", "save handoff", "debug tight", "fast work", "commit all", "push all", "merge", "cleanup", "TTL cleanup", and similar local repo/AWS operator command shorthands.
 ---
 
 # Amit Operator Commands
@@ -20,6 +20,67 @@ Use this skill when Amit gives a short command phrase that implies a workflow ra
 - For AWS cleanup, start read-only and load `~/.codex/AWS.md` before inventory or deletion.
 
 ## Command router
+
+### `dump_context_fast`
+
+Goal: update only the active compact handoff from current state.
+
+Use when Amit says:
+
+- `dump_context_fast`
+- `dump_context_fast: ...`
+
+Rules:
+
+- Do not create dated `CLEAN_*`, `HANDOFF_*`, or `CONTEXT_*` files.
+- Do not load compact prompts, old handoff files, GOAL files, result packets,
+  or broad history unless required to identify the active blocker.
+- Use current status commands, active tmux panes, git status, and latest result
+  filenames only.
+- Update the existing active compact file for the repo/lane.
+- Stop after updating.
+
+Output:
+- `Updated`
+- `Latest evidence`
+- `Next`
+
+### `save handoff`
+
+Goal: create or refresh a larger clean-start handoff for a session/milestone boundary.
+
+Use when Amit says:
+
+- `save handoff`
+- `clean start handoff`
+- `session handoff`
+
+Rules:
+
+- This is allowed to create dated handoff files such as
+  `CLEAN_START_HANDOFF_YYYYMMDD.md`.
+- Keep it decision-grade: current truth, active blockers, read-first order,
+  latest evidence paths, and lessons that affect future execution.
+- Do not bulk-copy old chat history.
+- Back up existing handoff/compact files before replacing them.
+- Prefer one clean handoff plus one compact pointer.
+
+Output:
+- `Updated`
+- `Read first`
+- `Next`
+
+### `save context`
+
+Goal: avoid ambiguity.
+
+Rule:
+
+- Do not create files immediately.
+- Ask Amit to choose `dump_context_fast` or `save handoff`.
+
+Output:
+- `Choose`
 
 ### `what next` / `next`
 
@@ -44,14 +105,18 @@ Output:
 
 ### `dump context`
 
-Goal: refresh restart handoff files with current state only.
+Goal: legacy alias for compact handoff refresh.
+
+Prefer:
+
+- `dump_context_fast` for lightweight active compact update.
+- `save handoff` for dated clean-start handoff.
 
 Workflow:
-1. Load `/home/dev/.codex/prompts/compact-handback.md` if it exists.
-2. Follow repo-local handoff rules first.
-3. Include `INDEX.md` / `MANIFEST.tsv` read-first pointers when they exist.
-4. Update existing status/handoff files; create `~/.AGENTS-temp/<repo>/context/COMPACT_RESUME_CURRENT.md` only as fallback.
-5. Treat compact files as generated cache, not authoritative truth.
+1. If Amit wrote `dump_context_fast`, follow that section exactly.
+2. Otherwise update existing status/handoff files only.
+3. Do not create dated clean-start files unless Amit said `save handoff`.
+4. Treat compact files as generated cache, not authoritative truth.
 
 Output:
 - `Updated`
