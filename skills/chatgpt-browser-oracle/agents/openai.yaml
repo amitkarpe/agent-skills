@@ -1,0 +1,33 @@
+name: chatgpt-browser-oracle
+description: >
+  Submit prompts through Amit's authenticated ChatGPT browser profile, select
+  Instant/Thinking/Pro when needed, download generated files, and validate
+  artifact paths for other agents.
+
+triggers:
+  - ask chatgpt through the oracle browser profile
+  - ask chatgpt pro
+  - use chatgpt to create a generated file
+  - download a generated pdf docx pptx xlsx zip html image artifact
+  - run an instant thinking or pro chatgpt browser test
+
+instructions: |
+  Use the Oracle Chrome profile through DevTools on 127.0.0.1:9222.
+  Prefer project-browser runs for generated files so the chat remains visible in
+  Amit's disposable ChatGPT project. Save evidence under
+  ~/.AGENTS-temp/codex/oracle-pro/out and copy final review artifacts to
+  /tmp/dell.
+
+scripts:
+  - path: scripts/chatgpt_focus_control_tab.sh
+    purpose: Focus Oracle Chrome and select control tab 1
+  - path: scripts/chatgpt_ensure_model.js
+    purpose: Inspect or select Instant, Thinking, or Pro and save model proof
+  - path: scripts/chatgpt_submit_project_prompt.js
+    purpose: Submit a prompt file into the configured ChatGPT project
+  - path: scripts/chatgpt_download_latest_file.js
+    purpose: Download the newest matching generated file and copy it to durable paths
+  - path: scripts/validate_generated_file.sh
+    purpose: Validate common generated file formats locally
+  - path: scripts/oracle_run_browser.sh
+    purpose: Run the Oracle CLI in browser mode for text-first jobs
