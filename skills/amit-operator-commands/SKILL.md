@@ -1,6 +1,6 @@
 ---
 name: amit-operator-commands
-description: Route Amit's short operator phrases into safe Codex workflows. Use for "what next", "next", "dump_context_fast", "save handoff", "debug tight", "fast work", "commit all", "push all", "merge", "cleanup", "TTL cleanup", and similar local repo/AWS operator command shorthands.
+description: Route Amit's short operator phrases into safe Codex workflows. Use for "what next", "next", "dump_context_fast", "save context", "save handoff", "debug tight", "fast work", "commit all", "push all", "merge", "cleanup", "TTL cleanup", and similar local repo/AWS operator command shorthands.
 ---
 
 # Amit Operator Commands
@@ -103,25 +103,6 @@ Output:
 - `State`
 - `Recommended`
 - `Options`
-
-### `dump context`
-
-Goal: legacy alias for context refresh.
-
-Prefer:
-
-- `dump_context_fast` for lightweight `CONTEXT.md` update.
-- `save handoff` for `CONTEXT.md` plus `HANDOFF.md`.
-
-Workflow:
-1. If Amit wrote `dump_context_fast`, follow that section exactly.
-2. Otherwise update `CONTEXT.md` only.
-3. Do not create `HANDOFF.md` unless Amit said `save handoff`.
-
-Output:
-- `Updated`
-- `Read first`
-- `Next`
 
 ### `debug tight`
 
