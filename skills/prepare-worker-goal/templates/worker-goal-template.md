@@ -4,12 +4,16 @@ Goal:
 - <one bounded objective>
 
 Repo truth:
-- <STATUS.md path>
-- <PLANS.md path>
+- `AGENTS.md`
+- `CONTEXT.md`
+
+Goal file:
+- `~/.AGENTS-temp/<repo>/goals/<YYYYMMDD-HHMM>-<short-goal>.md`
 
 Do first:
+- verify repo truth and live state only as needed
 - create or update local evidence under `~/.AGENTS-temp/<repo>/`
-- read only the listed repo-truth files
+- do not mutate AWS/repo files until approval and gates are clear
 
 Rules:
 - keep scope bounded
@@ -28,7 +32,8 @@ Stop if:
 - <explicit blocker 2>
 
 Evidence:
-- `~/.AGENTS-temp/<repo>/<goal-or-run-name>/`
+- `~/.AGENTS-temp/<repo>/<goal-or-run-name>/RESULT.md`
+- `~/.AGENTS-temp/work/inbox/<repo>.done`
 
 Report back:
 - result

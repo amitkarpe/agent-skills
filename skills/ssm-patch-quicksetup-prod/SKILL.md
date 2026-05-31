@@ -182,5 +182,5 @@ If those fields are missing or ambiguous, do scan-only and stop before install.
 
 - `ssm-command-evidence`
 - `aws-ssm-run-command`
-- `go-plan-run-goal`
-- `worker-goal-preflight`
+- `run-worker-goal`
+- `prepare-worker-goal`

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Run Worker Goal"
+  short_description: "Execute prepared worker goals with plan-first only when needed"
+  default_prompt: "Use $run-worker-goal to run an approved goal file from ~/.AGENTS-temp/<repo>/goals/ using the fastest safe mode."
+
+policy:
+  allow_implicit_invocation: true

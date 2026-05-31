@@ -1,0 +1,7 @@
+interface:
+  display_name: "Prepare Worker Goal"
+  short_description: "Prepare safe controller-to-worker goals"
+  default_prompt: "Use $prepare-worker-goal to think, review risk, and write a bounded worker goal before execution."
+
+policy:
+  allow_implicit_invocation: true

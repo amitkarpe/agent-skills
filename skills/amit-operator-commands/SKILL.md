@@ -10,7 +10,8 @@ Use this skill when Amit gives a short command phrase that implies a workflow ra
 ## Core rules
 
 - Keep output short, practical, and current-state only.
-- Prefer repo truth over chat memory: `AGENTS.md`, `AGENTS.override.md`, `README.md`, `PLANS.md`, `STATUS.md`, branch/MR/PR text, and `/goal` when available.
+- Prefer repo truth over chat memory: `AGENTS.md`, `CONTEXT.md`, optional
+  `HANDOFF.md`, branch/MR/PR text, and current goal files when available.
 - For old evidence or broad context questions, read `INDEX.md` / `MANIFEST.tsv`
   first when present, then use `qmd-agent-search` or targeted `rg` before raw
   evidence scans.
@@ -23,7 +24,7 @@ Use this skill when Amit gives a short command phrase that implies a workflow ra
 
 ### `dump_context_fast`
 
-Goal: update only the active compact handoff from current state.
+Goal: update only `CONTEXT.md` from current state.
 
 Use when Amit says:
 
@@ -32,12 +33,12 @@ Use when Amit says:
 
 Rules:
 
-- Do not create dated `CLEAN_*`, `HANDOFF_*`, or `CONTEXT_*` files.
+- Do not create dated `CLEAN_*`, `HANDOFF_*`, or extra `CONTEXT_*` files.
 - Do not load compact prompts, old handoff files, GOAL files, result packets,
   or broad history unless required to identify the active blocker.
 - Use current status commands, active tmux panes, git status, and latest result
   filenames only.
-- Update the existing active compact file for the repo/lane.
+- Update the repo or lane `CONTEXT.md`.
 - Stop after updating.
 
 Output:
@@ -47,7 +48,7 @@ Output:
 
 ### `save handoff`
 
-Goal: create or refresh a larger clean-start handoff for a session/milestone boundary.
+Goal: create or refresh `HANDOFF.md` for a session/milestone boundary.
 
 Use when Amit says:
 
@@ -57,13 +58,11 @@ Use when Amit says:
 
 Rules:
 
-- This is allowed to create dated handoff files such as
-  `CLEAN_START_HANDOFF_YYYYMMDD.md`.
+- This updates `CONTEXT.md` and `HANDOFF.md`.
 - Keep it decision-grade: current truth, active blockers, read-first order,
   latest evidence paths, and lessons that affect future execution.
 - Do not bulk-copy old chat history.
-- Back up existing handoff/compact files before replacing them.
-- Prefer one clean handoff plus one compact pointer.
+- Back up existing `HANDOFF.md` before major replacement.
 
 Output:
 - `Updated`
@@ -72,15 +71,17 @@ Output:
 
 ### `save context`
 
-Goal: avoid ambiguity.
+Goal: update `CONTEXT.md`.
 
 Rule:
 
-- Do not create files immediately.
-- Ask Amit to choose `dump_context_fast` or `save handoff`.
+- Update `CONTEXT.md` with current truth, blocker, next action, evidence paths,
+  and read-first order.
+- Do not create `HANDOFF.md` unless Amit says `save handoff`.
 
 Output:
-- `Choose`
+- `Updated`
+- `Next`
 
 ### `what next` / `next`
 
@@ -90,7 +91,7 @@ Workflow:
 1. Read the smallest relevant repo context:
    - `INDEX.md` / `MANIFEST.tsv` first when present and the question touches
      old evidence, cleanup, or lane history
-   - `STATUS.md`, `PLANS.md`, `GOAL.md`, guidance files, git status, and active
+   - `CONTEXT.md`, guidance files, git status, and active
      PR/MR/issue if present
 2. Use `qmd-agent-search "<query>"` for old summarized evidence when available;
    use targeted `rg` for exact IDs or strings.
@@ -105,18 +106,17 @@ Output:
 
 ### `dump context`
 
-Goal: legacy alias for compact handoff refresh.
+Goal: legacy alias for context refresh.
 
 Prefer:
 
-- `dump_context_fast` for lightweight active compact update.
-- `save handoff` for dated clean-start handoff.
+- `dump_context_fast` for lightweight `CONTEXT.md` update.
+- `save handoff` for `CONTEXT.md` plus `HANDOFF.md`.
 
 Workflow:
 1. If Amit wrote `dump_context_fast`, follow that section exactly.
-2. Otherwise update existing status/handoff files only.
-3. Do not create dated clean-start files unless Amit said `save handoff`.
-4. Treat compact files as generated cache, not authoritative truth.
+2. Otherwise update `CONTEXT.md` only.
+3. Do not create `HANDOFF.md` unless Amit said `save handoff`.
 
 Output:
 - `Updated`
@@ -149,7 +149,7 @@ Workflow:
 1. Inspect only relevant files.
 2. Implement the smallest useful change.
 3. Run small validation.
-4. Update `PLANS.md` or equivalent only if task state changed.
+4. Update `CONTEXT.md` only if task state changed.
 5. Commit only when the repo changed and the change is coherent.
 
 Output:
