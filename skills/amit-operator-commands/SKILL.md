@@ -20,6 +20,19 @@ Use this skill when Amit gives a short command phrase that implies a workflow ra
 - Before deleting or archiving context/rule files, create a backup under `~/back/`.
 - For AWS cleanup, start read-only and load `~/.codex/AWS.md` before inventory or deletion.
 
+## Shared context contract
+
+- `AGENTS.md` = stable repo rules.
+- `CONTEXT.md` = current truth and restart state.
+- `HANDOFF.md` = explicit transfer snapshot only when Amit asks for handoff.
+- Worker goal files = execution instructions, not repo truth.
+- Worker `RESULT.md` files and `.done` markers = evidence and completion
+  signals.
+- `PLANS.md` and `STATUS.md` are retired unless the repo explicitly says
+  otherwise.
+- `/compact` should preserve this same model; it must not create `HANDOFF.md`
+  or revive old plan/status files by itself.
+
 ## Command router
 
 ### `dump_context_fast`
@@ -39,6 +52,8 @@ Rules:
 - Use current status commands, active tmux panes, git status, and latest result
   filenames only.
 - Update the repo or lane `CONTEXT.md`.
+- Preserve only current truth, blocker, next action, read-first order, and
+  latest evidence paths.
 - Stop after updating.
 
 Output:
@@ -60,9 +75,12 @@ Rules:
 
 - This updates `CONTEXT.md` and `HANDOFF.md`.
 - Keep it decision-grade: current truth, active blockers, read-first order,
-  latest evidence paths, and lessons that affect future execution.
+  latest evidence paths, decisions, no-go gates, and lessons that affect future
+  execution.
 - Do not bulk-copy old chat history.
 - Back up existing `HANDOFF.md` before major replacement.
+- Do not create `PLANS.md`, `STATUS.md`, or dated handoff files unless Amit
+  explicitly asks.
 
 Output:
 - `Updated`
@@ -76,8 +94,10 @@ Goal: update `CONTEXT.md`.
 Rule:
 
 - Update `CONTEXT.md` with current truth, blocker, next action, evidence paths,
-  and read-first order.
+  read-first order, and active no-go gates.
 - Do not create `HANDOFF.md` unless Amit says `save handoff`.
+- Do not create `PLANS.md`, `STATUS.md`, dated context snapshots, or compact
+  resume files.
 
 Output:
 - `Updated`
