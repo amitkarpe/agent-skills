@@ -7,10 +7,18 @@ description: Create or publish sanitized Amit-friendly static HTML reports to th
 
 Use this skill when Amit needs a clean browser-readable report on the local web server.
 
+Read this skill's `DESIGN.md` before creating a report. Use it as the default
+visual contract so reports look consistent across lanes.
+
+For new reports, start from `templates/genesis-report.html` when practical.
+Replace content, keep the local CSS self-contained, and remove unused sections.
+
 ## Contract
 
 - Publish sanitized static HTML under `/opt/agent-web/<lane>/`.
-- Return the LAN URL, not a `/tmp/dell` path.
+- Preserve the URL contract:
+  `http://192.168.0.9/<lane>/<file>.html`
+- Return the LAN URL, not a `/tmp/dell` path or a local filesystem path only.
 - Keep durable source/evidence in the owning repo or `~/.AGENTS-temp/<repo>/`.
 - Publish only cleaned summaries, never raw evidence dumps.
 
@@ -36,21 +44,43 @@ Use a short lane folder:
 - `tdm`
 - `pat`
 - `synapxe`
+- `boss`
+- `localai`
+- `sarvam`
 - `amit`
 - another clear lowercase lane when requested
+
+Lane rules:
+
+- Use `/opt/agent-web/<lane>/index.html` as the latest dashboard/status page.
+- Use `/opt/agent-web/<lane>/<slug>.html` for a named report.
+- Use `/opt/agent-web/<lane>/archive/<name>.html` only for snapshots/backups.
+- Slugs should be lowercase and stable, for example:
+  `cookbook-pr-proposal-20260603`.
+- Do not create duplicate suffixes like `.html.html`.
+- Do not change the service port or URL base inside a report task.
 
 ## Workflow
 
 1. Gather the final result packet or summary.
 2. Write a concise HTML file in the owning evidence area first, for example:
    `~/.AGENTS-temp/<repo>/<topic>/<name>.html`.
-3. Sanitize before publishing:
+3. Reuse `templates/genesis-report.html` or apply the Genesis design from
+   `DESIGN.md`:
+   - navy header with indigo/blue metadata chips
+   - Genesis indigo accents (`#6366F1`) and stronger blue accents where useful
+   - light background
+   - white bordered sections with optional blue left accent
+   - system fonts only
+   - no external CSS, JS, image, or font dependencies
+4. Sanitize before publishing:
    - no secrets, tokens, keys, `.env`, `.ssh`, wallets, private config, or raw AWS dumps
    - no whole repos or whole temp folders
    - no long logs
    - no unreviewed raw JSON unless summarized
-4. Publish with the bundled script.
-5. Return the final URL and the durable source path.
+5. Publish with the bundled script.
+6. Validate the URL with `curl -I` unless the helper already did so.
+7. Return the final URL and the durable source path.
 
 ## Publish Helper
 
@@ -101,6 +131,16 @@ Prefer quiet, readable styling:
 - desktop Chrome first
 - no JavaScript unless needed
 - no SVG/gradient decoration
+- KISS layout: header, summary, evidence, risks, next action
+- use 4px-based spacing and stable responsive grids
+- use 12px radius for report cards/sections and 6px for buttons/chips/inputs
+- use tables for comparisons and exact command blocks for commands
+- use status pills consistently:
+  - green = done/pass
+  - amber = pending/caution
+  - red = blocked/fail
+- if the report is routine status, avoid repeatedly calling out ignored `.env`
+  files; mention `.env` only for secret-safety checks or if tracked/staged
 
 ## Output Shape
 

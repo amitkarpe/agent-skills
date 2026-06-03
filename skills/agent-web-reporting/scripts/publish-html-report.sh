@@ -6,7 +6,7 @@ URL_BASE=${AGENT_WEB_URL:-http://192.168.0.9}
 
 usage() {
   cat >&2 <<'EOF'
-usage: publish-html-report.sh --source <file.html> --lane <lane> (--slug <name>|--index) [--archive]
+usage: publish-html-report.sh --source <file.html> --lane <lane> (--slug <name>|--index) [--archive] [--no-validate]
 
 Publishes a sanitized static HTML report into /opt/agent-web/<lane>/ and prints
 the resulting LAN URL.
@@ -18,6 +18,7 @@ LANE=""
 SLUG=""
 INDEX=0
 ARCHIVE=0
+VALIDATE=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -39,6 +40,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --archive)
       ARCHIVE=1
+      shift
+      ;;
+    --no-validate)
+      VALIDATE=0
       shift
       ;;
     -h|--help)
@@ -80,6 +85,11 @@ fi
 
 if [[ -n "$SLUG" && ! "$SLUG" =~ ^[a-z0-9][a-z0-9._-]*$ ]]; then
   echo "invalid slug: $SLUG" >&2
+  exit 2
+fi
+
+if [[ -n "$SLUG" && "$SLUG" == *.html ]]; then
+  echo "slug must not include .html: $SLUG" >&2
   exit 2
 fi
 
@@ -128,3 +138,11 @@ fi
 
 printf 'published: %s\n' "$target"
 printf 'url: %s\n' "$url"
+
+if [[ "$VALIDATE" -eq 1 ]] && command -v curl >/dev/null 2>&1; then
+  if curl -fsSI --max-time 5 "$url" >/dev/null; then
+    printf 'validated: %s\n' "$url"
+  else
+    echo "warning: published but URL validation failed: $url" >&2
+  fi
+fi
