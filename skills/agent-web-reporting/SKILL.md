@@ -7,11 +7,10 @@ description: Create or publish sanitized Amit-friendly static HTML reports to th
 
 Use this skill when Amit needs a clean browser-readable report on the local web server.
 
-Read this skill's `DESIGN.md` before creating a report. Use it as the default
-visual contract so reports look consistent across lanes.
-
-For new reports, start from `templates/genesis-report.html` when practical.
+Default: use `templates/genesis-report.html`.
 Replace content, keep the local CSS self-contained, and remove unused sections.
+Read `DESIGN.md` only when changing the theme, changing the template, or
+creating a complex custom report.
 
 ## Contract
 
@@ -65,8 +64,7 @@ Lane rules:
 1. Gather the final result packet or summary.
 2. Write a concise HTML file in the owning evidence area first, for example:
    `~/.AGENTS-temp/<repo>/<topic>/<name>.html`.
-3. Reuse `templates/genesis-report.html` or apply the Genesis design from
-   `DESIGN.md`:
+3. Reuse `templates/genesis-report.html` by default:
    - navy header with indigo/blue metadata chips
    - Genesis indigo accents (`#6366F1`) and stronger blue accents where useful
    - light background
