@@ -54,6 +54,7 @@ Lane rules:
 - Use `/opt/agent-web/<lane>/index.html` as the latest dashboard/status page.
 - Use `/opt/agent-web/<lane>/<slug>.html` for a named report.
 - Use `/opt/agent-web/<lane>/archive/<name>.html` only for snapshots/backups.
+- Use `templates/genesis-dashboard.html` for lane dashboard/index pages.
 - Slugs should be lowercase and stable, for example:
   `cookbook-pr-proposal-20260603`.
 - Do not create duplicate suffixes like `.html.html`.
@@ -81,6 +82,23 @@ Lane rules:
 7. Return the final URL and the durable source path.
 
 ## Publish Helper
+
+To create a starter Genesis report source without publishing:
+
+```bash
+/home/dev/git/agent-skills/skills/agent-web-reporting/scripts/publish-html-report.sh \
+  --new \
+  --lane work \
+  --slug my-report \
+  --title "My Report" \
+  --summary "One sentence summary."
+```
+
+This writes a starter source file under:
+
+```text
+/home/dev/.AGENTS-temp/agent-web-reporting/<lane>/<slug>.html
+```
 
 Run:
 
@@ -111,6 +129,33 @@ To update a lane landing page:
   --lane td \
   --index
 ```
+
+To regenerate a simple static lane index after publishing a named report:
+
+```bash
+/home/dev/git/agent-skills/skills/agent-web-reporting/scripts/publish-html-report.sh \
+  --source /absolute/path/report.html \
+  --lane td \
+  --slug imagebuilder-decision-20260526 \
+  --update-index
+```
+
+`--update-index` is optional. It rebuilds `/opt/agent-web/<lane>/index.html`
+from the latest published HTML files in that lane. It does not use a database
+or service state.
+
+## Lightweight HTML Validation
+
+The helper checks:
+
+- source looks like HTML; fails if not
+- no obvious secret patterns; fails if found
+- has `<title>`; warns if missing
+- has `<h1>`; warns if missing
+- has `updated`, `timestamp`, or `generated` text; warns if missing
+
+Keep extra validation local and cheap. Do not add heavy dependencies. Warnings
+should improve report quality without breaking older/simple HTML reports.
 
 ## HTML Guidance
 

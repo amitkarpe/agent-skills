@@ -67,7 +67,7 @@ components:
   border:
     backgroundColor: "{colors.border}"
   link:
-    textColor: "{colors.primary}"
+    textColor: "{colors.primary-strong}"
   link-hover:
     textColor: "{colors.primary-hover}"
   status-success:
