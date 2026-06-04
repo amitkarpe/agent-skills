@@ -64,23 +64,56 @@ Results live under:
 - `localai`: repo `/home/dev/git/localai`, temp `/home/dev/.AGENTS-temp/localai-lab/repos/localai`, tmux `localai`.
 - Generic fallback: repo `/home/dev/git/<lane>`, temp `/home/dev/.AGENTS-temp/<lane>`, tmux `<lane>`.
 
-## Worker Model Gate
+## Worker Runtime Gate
 
-For office workers, prefer Spark xhigh execution:
+Choose runtime by risk, not by habit.
+
+Use Spark only for low-risk support work:
+
+- read-only repo inventory
+- summaries and first-pass reports
+- static file review
+- simple local checks
+- personal learning / side projects
+
+Use `gpt-5.5` for serious office execution:
+
+- AWS mutation
+- PROD or production-like validation
+- SSM Patch Manager / Run Command changes
+- Terraform apply or state-sensitive plans
+- IAM, VPC, networking, ASG, ECS, AMI promotion, or cleanup
+- recovery after a failed or confused worker loop
+- final judgment before Amit approval
+
+Recommended defaults:
 
 ```text
-Run /status first and confirm model is gpt-5.3-codex-spark and reasoning is xhigh.
-If not true, stop and ask controller to restart this worker with the correct model.
+controller/work: gpt-5.5 medium
+planning/risk review: gpt-5.5 high
+office mutation worker: gpt-5.5 high
+read-only helper worker: gpt-5.3-codex-spark xhigh
 ```
 
-Controller restart shape:
+If a running worker is on Spark and the goal becomes mutation-heavy, stop and
+ask the controller to restart or reassign the worker before execution.
+
+Controller restart examples:
 
 ```bash
-codex resume --last --enable hooks -m gpt-5.3-codex-spark -c 'model_reasoning_effort="xhigh"'
+# Read-only helper
+codex resume --last -m gpt-5.3-codex-spark -c 'model_reasoning_effort="xhigh"'
+
+# Serious office execution
+codex resume --last -m gpt-5.5 -c 'model_reasoning_effort="high"'
 ```
 
-Use stronger controller reasoning for planning and risk decisions; use Spark
-xhigh workers for bounded execution.
+Codex 0.137 multi-agent v2 note:
+
+- spawned subagents can keep runtime choices per thread more cleanly
+- use subagents for short parallel R&D/review
+- keep tmux workers for durable repo/AWS execution lanes
+- do not replace TD/TDG/TDM/PAT tmux lanes with subagents for long work
 
 ## Mode Selection
 
