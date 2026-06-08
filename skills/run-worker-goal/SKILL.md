@@ -22,6 +22,18 @@ Do not run `/plan` by default.
 The controller should already have done deep thinking with
 `prepare-worker-goal`. This skill is for execution.
 
+Before sending anything, run a worker status gate:
+
+- If the target worker is already `Working`, do not submit another goal. Report
+  the current expected result path and next check.
+- If the latest marker is `blocked`, run only when a newer prepared goal exists
+  and Amit's approval clearly covers it.
+- If the latest marker is `done safe_to_continue=yes`, run only when the
+  marker `next_action` maps to the selected prepared goal.
+- If the user says only `approved`, run only when exactly one prepared goal is
+  the obvious approval target. Otherwise ask for lane/path.
+- If multiple current goals are plausible, stop instead of guessing.
+
 Choose the fastest safe mode:
 
 1. `direct`: tiny bounded task or result/status packet; no `/plan`, no `/goal`.
@@ -193,11 +205,32 @@ If Codex asks `Implement this plan?`:
    - repo or lane `CONTEXT.md`
    - goal file
    - latest done marker/result only if needed
-3. Resolve truth conflicts before execution.
-4. Select mode: `direct`, `goal`, or `plan-first`.
-5. Submit only `@/absolute/path/to/goal.md` when possible.
-6. Verify prompt is accepted and worker is `Working`.
-7. Prefer hooks/done markers over live polling.
+3. Run the worker status gate from the Core Rule section.
+4. Resolve truth conflicts before execution.
+5. Select mode: `direct`, `goal`, or `plan-first`.
+6. Create a small prompt file under `~/.AGENTS-temp/work/prompts/` when the
+   goal is more than one line.
+7. Submit only `@/absolute/path/to/prompt.md` or `@/absolute/path/to/goal.md`;
+   do not paste a raw path without `@`.
+8. Verify prompt is accepted and worker is `Working`.
+9. If the raw path lands in the input line, press `Enter` once, capture again,
+   and verify. Do not keep pasting duplicates.
+10. Prefer hooks/done markers over live polling.
+
+## Short Command Routing
+
+- `go <lane>`: run the current approved prepared goal for that lane.
+- `run goal <lane>` / `give goal <lane>`: same as `go <lane>`.
+- `approved`: run only if one prepared goal is clearly awaiting this approval.
+- `continue <lane>`: if worker is `Working`, report status only; otherwise run
+  the prepared continuation goal if it is clear.
+
+If approval is missing or ambiguous, output:
+
+- `State`
+- `Recommended`
+- `Needs approval`
+- `Next command`
 
 ## Done Marker Contract
 

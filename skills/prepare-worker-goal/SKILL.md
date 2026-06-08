@@ -19,6 +19,9 @@ This is the controller thinking skill.
 - Ask Amit for approval when the next step mutates AWS, stable services, IAM,
   networking, or production-like state.
 - Do not execute the worker unless Amit explicitly asks to run it.
+- Do not prepare a child/next goal while the target worker is still `Working`,
+  unless Amit explicitly asks for sidecar preparation. If the current worker
+  result is missing, check status and wait.
 
 ## Default Truth Files
 
@@ -60,6 +63,29 @@ Before sending a worker goal, confirm:
 - worker model/session expectation when relevant
 - whether the worker should use internal subagents
 - context threshold stop rule for long lanes
+
+## Worker Status Gate
+
+Before writing or refreshing a worker goal:
+
+1. Read `CONTEXT.md`.
+2. Read the latest `~/.AGENTS-temp/work/inbox/<repo>.done` marker if present.
+3. Read the referenced `RESULT.md` only when the marker exists or the context
+   points to it.
+4. Inspect tmux only if the marker/result is stale or the worker may still be
+   running.
+
+Rules:
+
+- Worker `Working`: do not prepare a child goal. You may prepare a sidecar doc
+  or checklist only if Amit explicitly asked for work that can run while
+  waiting.
+- Marker `blocked`: prepare a follow-up goal only after the blocker is
+  understood and the needed approval/Ops ask is explicit.
+- Marker `done safe_to_continue=yes`: prepare the next goal from `next_action`
+  if it stays inside no-go gates.
+- Multiple possible goals: stop and ask for lane/path instead of guessing.
+- AWS mutation goal: include the exact approval sentence needed in the output.
 
 ## Goal File Shape
 
@@ -111,12 +137,17 @@ Closeout:
 For Amit approval, use:
 
 ```text
-Plan:
-1. ...
-2. ...
-3. ...
+State:
+- ...
 
-If approved, I will write the worker goal file, review it, then run it with run-worker-goal.
+Recommended:
+- ...
+
+Needs approval:
+- yes/no, and why
+
+Next command:
+- ...
 ```
 
 After preparing:
@@ -130,4 +161,7 @@ Worker:
 
 Needs approval:
 - <yes/no and why>
+
+Next command:
+- <for example: $run-worker-goal td>
 ```

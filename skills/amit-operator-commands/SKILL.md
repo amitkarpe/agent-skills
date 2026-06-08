@@ -35,6 +35,69 @@ Use this skill when Amit gives a short command phrase that implies a workflow ra
 
 ## Command router
 
+### Short worker commands
+
+Use this section before the broader command handlers when Amit gives a short
+worker phrase.
+
+Source order for worker decisions:
+
+1. Current repo `CONTEXT.md`
+2. Latest `~/.AGENTS-temp/work/inbox/<repo>.done`
+3. Latest worker `RESULT.md`
+4. Active tmux pane only to confirm live state or stale markers
+5. Prepared goal files under `~/.AGENTS-temp/<repo>/goals/`
+6. Branch/MR/issue state when repo work is involved
+7. `HANDOFF.md` only for restart/resume or stale `CONTEXT.md`
+
+Do not use broad chat history as the source of truth.
+
+Alias routing:
+
+- `check <lane>`, `status <lane>`, `<lane>?`, `update <lane>`:
+  status-only check; no edits, no new goals, no AWS mutation.
+- `next?`, `next`, `what next`:
+  inspect current truth and recommend one next action plus up to two options.
+- `prep <lane>`, `prepare <lane>`, `goal <lane>`,
+  `$prepare-worker-goal <lane>`:
+  use `prepare-worker-goal`; write or refresh a goal, do not run it.
+- `go <lane>`, `run <lane>`, `continue <lane>`, `give goal <lane>`,
+  `$run-worker-goal <lane>`:
+  use `run-worker-goal`; run only an approved prepared goal.
+- `approved`:
+  run only when the target prepared goal is unambiguous. If multiple current
+  goals or lanes are plausible, stop and ask for the lane/path.
+- `approve and run <lane>`:
+  run only when the approval target, no-go gates, and prepared goal are clear.
+
+Preferred output shape for these short commands:
+
+- `State`
+- `Recommended`
+- `Needs approval`
+- `Next command`
+
+Worker-state routing:
+
+- If worker is `Working`, do not prepare or submit another goal unless Amit
+  explicitly asks for side work. Report current result path and next check.
+- If latest marker is `blocked`, summarize the blocker and recommend either
+  `prepare-worker-goal` or the exact approval/Ops ask needed.
+- If latest marker is `done` and `safe_to_continue=yes`, use `next_action` to
+  recommend the next goal or wait state.
+- If marker/result is stale, inspect tmux once and say it is stale.
+- If there is no active worker and no prepared goal, recommend
+  `prepare-worker-goal`.
+
+Examples:
+
+- `check td` -> status-only TD marker/result/tmux check.
+- `next?` -> one recommended next action and up to two options.
+- `prep td` -> prepare a TD goal, do not run.
+- `go td` -> run an approved TD goal only if unambiguous.
+- `approved` -> run the latest prepared goal only if exactly one target is
+  clear.
+
 ### `dump_context_fast`
 
 Goal: update only `CONTEXT.md` from current state.
