@@ -3,7 +3,13 @@
 from __future__ import annotations
 import argparse, re
 from pathlib import Path
-EXTERNAL_RE = re.compile(r"(?i)(?:src|href)\s*=\s*['\"]\s*(https?:)?//(?!localhost|127\.0\.0\.1|192\.168\.)")
+EXTERNAL_RE = re.compile(
+    r"(?is)("
+    r"(?:src|href|action|formaction|poster|data|manifest|srcset)\s*=\s*['\"]\s*(?:https?:)?//(?!localhost|127\.0\.0\.1|192\.168\.)"
+    r"|@import\s+(?:url\()?['\"]?\s*(?:https?:)?//(?!localhost|127\.0\.0\.1|192\.168\.)"
+    r"|url\(\s*['\"]?\s*(?:https?:)?//(?!localhost|127\.0\.0\.1|192\.168\.)"
+    r")"
+)
 SECRET_RE = re.compile(r"(?i)(aws_secret_access_key|secret_access_key|session_token|password\s*=|BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16})")
 ACCOUNT_ID_RE = re.compile(r'(?<!\d)\d{12}(?!\d)')
 
@@ -15,12 +21,15 @@ def main() -> int:
     path = Path(args.html).expanduser()
     text = path.read_text(encoding='utf-8', errors='replace')
     problems = []
-    if EXTERNAL_RE.search(text): problems.append('external src/href found')
+    if not re.search(r'(?is)<!doctype html|<html[\s>]', text): problems.append('source does not look like HTML')
+    if EXTERNAL_RE.search(text): problems.append('external browser-fetching URL found')
     if SECRET_RE.search(text): problems.append('credential-like value found')
     if ACCOUNT_ID_RE.search(text) and not args.allow_account_ids: problems.append('12-digit account-like value found')
     if problems:
         for item in problems: print(f'FAIL: {item}')
         return 2
+    if not re.search(r'(?is)<title>[^<]+</title>', text): print(f'WARN: html missing <title>: {path}')
+    if not re.search(r'(?is)<h1(?:\s[^>]*)?>', text): print(f'WARN: html missing <h1>: {path}')
     print('OK: offline/local-lan validation passed')
     return 0
 if __name__ == '__main__':

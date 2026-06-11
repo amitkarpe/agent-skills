@@ -17,6 +17,7 @@ Create medium-weight visual HTML reports that explain a technical idea, workflow
 
 - Fast operational summaries. Use `web-html-page`.
 - Long-term study artifacts, multi-page learning, flashcards, or research synthesis. Use `deep-work`.
+- Plain quick reports that only need tables, bullets, and evidence. Use `web-html-page`.
 
 ## Output contract
 

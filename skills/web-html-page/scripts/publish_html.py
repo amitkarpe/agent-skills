@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """Publish a self-contained HTML file to /opt/agent-web and print the LAN URL."""
 from __future__ import annotations
-import argparse, os, re, shutil
+import argparse, os, re, shutil, subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
-EXTERNAL_RE = re.compile(r"(?i)(?:src|href)\s*=\s*['\"]\s*(https?:)?//(?!localhost|127\.0\.0\.1|192\.168\.)")
+EXTERNAL_RE = re.compile(
+    r"(?is)("
+    r"(?:src|href|action|formaction|poster|data|manifest|srcset)\s*=\s*['\"]\s*(?:https?:)?//(?!localhost|127\.0\.0\.1|192\.168\.)"
+    r"|@import\s+(?:url\()?['\"]?\s*(?:https?:)?//(?!localhost|127\.0\.0\.1|192\.168\.)"
+    r"|url\(\s*['\"]?\s*(?:https?:)?//(?!localhost|127\.0\.0\.1|192\.168\.)"
+    r")"
+)
 SECRET_RE = re.compile(r"(?i)(aws_secret_access_key|secret_access_key|session_token|password\s*=|BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16})")
 
 def slugify(value: str, default: str = 'report') -> str:
@@ -16,10 +22,16 @@ def slugify(value: str, default: str = 'report') -> str:
 
 def validate_html(path: Path) -> None:
     text = path.read_text(encoding='utf-8', errors='replace')
+    if not re.search(r'(?is)<!doctype html|<html[\s>]', text):
+        raise SystemExit(f'blocked: source does not look like HTML: {path}')
     if EXTERNAL_RE.search(text):
-        raise SystemExit('blocked: html contains external src/href. no cdn or remote assets allowed by default.')
+        raise SystemExit('blocked: html contains external browser-fetching URL. no cdn or remote assets allowed by default.')
     if SECRET_RE.search(text):
         raise SystemExit('blocked: html appears to contain credential-like data. sanitize before publishing.')
+    if not re.search(r'(?is)<title>[^<]+</title>', text):
+        print(f'warning: html missing <title>: {path}')
+    if not re.search(r'(?is)<h1(?:\s[^>]*)?>', text):
+        print(f'warning: html missing <h1>: {path}')
 
 def main() -> int:
     p = argparse.ArgumentParser()
@@ -32,6 +44,7 @@ def main() -> int:
     p.add_argument('--slug', default='')
     p.add_argument('--lan-ip', default=os.environ.get('AGENT_WEB_LAN_IP','192.168.0.9'))
     p.add_argument('--keep', action='store_true')
+    p.add_argument('--no-url-check', action='store_true')
     args = p.parse_args()
 
     src = Path(args.input_html).expanduser().resolve()
@@ -40,6 +53,8 @@ def main() -> int:
     validate_html(src)
 
     slug = slugify(args.slug or src.stem)
+    if slug.endswith('.html'):
+        raise SystemExit(f'slug must not include .html: {slug}')
     project = slugify(args.project, 'unknown-project')
     lane = slugify(args.lane, 'current')
     category = slugify(args.category, 'general')
@@ -57,6 +72,11 @@ def main() -> int:
     evidence_dir.mkdir(parents=True, exist_ok=True)
 
     out_file = out_dir / f'{slug}.html'
+    if out_file.exists():
+        archive_dir = out_dir / 'archive'
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        backup = archive_dir / f'{slug}-{datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")}.html'
+        shutil.copy2(out_file, backup)
     shutil.copy2(src, out_file)
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
     shutil.copy2(src, evidence_dir / f'{stamp}-{slug}.html')
@@ -64,6 +84,10 @@ def main() -> int:
         out_file.with_suffix(out_file.suffix + '.keep').write_text('keep\n', encoding='utf-8')
 
     url = f'http://{args.lan_ip}/{rel_dir.as_posix()}/{slug}.html'
+    if not args.no_url_check and shutil.which('curl'):
+        check = subprocess.run(['curl', '-fsSI', '--max-time', '5', url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if check.returncode != 0:
+            print(f'warning: published but URL validation failed: {url}')
     print(url)
     return 0
 
