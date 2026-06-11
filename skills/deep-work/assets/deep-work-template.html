@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" data-theme="midnight">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{TITLE}}</title>
+<style>
+:root{--bg:#0f172a;--panel:#111c33;--card:#0b1224;--ink:#f8fafc;--muted:#cbd5e1;--soft:#94a3b8;--line:#334155;--accent:#38bdf8;--accent2:#a78bfa;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444;--shadow:0 14px 38px rgba(0,0,0,.35);--radius:22px}[data-theme="contrast"]{--bg:#020617;--panel:#050816;--card:#0f172a;--ink:#ffffff;--muted:#e5e7eb;--soft:#cbd5e1;--line:#64748b;--accent:#67e8f9;--accent2:#c4b5fd;--shadow:0 16px 42px rgba(0,0,0,.55)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at 10% 0%,rgba(56,189,248,.16),transparent 28%),radial-gradient(circle at 95% 10%,rgba(167,139,250,.15),transparent 30%),linear-gradient(180deg,var(--bg),#0b1020);color:var(--ink);line-height:1.55}.top{position:sticky;top:0;z-index:50;background:rgba(15,23,42,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}.nav{display:flex;gap:8px;overflow:auto;max-width:1180px;margin:auto;padding:9px 16px}.nav a{white-space:nowrap;color:var(--ink);background:rgba(30,41,59,.7);border:1px solid var(--line);border-radius:999px;padding:8px 11px;text-decoration:none;font-weight:800;font-size:13px}.utility{display:flex;gap:8px;align-items:center;justify-content:flex-end;max-width:1180px;margin:auto;padding:0 16px 9px}.search{background:var(--card);border:1px solid var(--line);border-radius:999px;color:var(--ink);padding:8px 12px;max-width:280px}.toggle{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 10px;cursor:pointer}.wrap{max-width:1180px;margin:auto;padding:26px}.box,.card{background:linear-gradient(180deg,rgba(17,28,51,.95),rgba(11,18,36,.95));border:1px solid rgba(148,163,184,.22);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin:18px 0}.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.step{background:rgba(30,41,59,.62);border:1px solid var(--line);border-radius:18px;padding:14px}.lane{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.chip{display:inline-block;background:#1e293b;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:#e2e8f0}.cmd{background:#020617;border:1px solid var(--line);border-radius:18px;overflow:hidden}.cmdbar{display:flex;justify-content:space-between;gap:10px;background:#111827;padding:10px 12px}.cmd pre{margin:0;padding:14px;overflow:auto}.copy{border:1px solid var(--line);background:#1e293b;color:#fff;border-radius:10px;padding:6px 9px;cursor:pointer}details{background:rgba(30,41,59,.55);border:1px solid var(--line);border-radius:18px;margin:12px 0;padding:14px}summary{cursor:pointer;font-weight:850}.hit{outline:2px solid var(--accent);outline-offset:4px}@media(max-width:850px){.hero{grid-template-columns:1fr}.utility{justify-content:flex-start}.search{width:100%;max-width:none}}</style>
+</head>
+<body>
+<header class="top"><nav class="nav"><a href="#scan">🎯 Scan</a><a href="#map">🧠 Map</a><a href="#architecture">🏗️ Architecture</a><a href="#timeline">🗓️ Timeline</a><a href="#commands">⌨️ Commands</a><a href="#quiz">⚡ Quiz</a></nav><div class="utility"><input id="search" class="search" placeholder="🔍 Search page"><button id="themeToggle" class="toggle" title="Toggle Midnight and Contrast">🌙</button></div></header>
+<main class="wrap">
+<section class="hero"><div class="box"><h1>{{TITLE}}</h1><p>{{THESIS}}</p>{{CHIPS}}</div><aside class="box"><h2>30-second view</h2>{{QUICK_VIEW}}</aside></section>
+<section id="scan" class="box"><h2>🎯 Snapshot</h2><div class="grid">{{SNAPSHOT_CARDS}}</div></section>
+<section id="map" class="box"><h2>🧠 Concept map</h2>{{CONCEPT_MAP}}</section>
+<section id="architecture" class="box"><h2>🏗️ Architecture Lens</h2>{{ARCHITECTURE}}</section>
+<section id="timeline" class="box"><h2>🗓️ Lifecycle timeline</h2>{{TIMELINE}}</section>
+<section id="commands" class="box"><h2>⌨️ Command cookbook</h2>{{COMMANDS}}</section>
+<section class="box"><h2>🔽 Deep dives</h2>{{DEEP_DIVES}}</section>
+<section id="quiz" class="box"><h2>⚡ Quiz</h2>{{QUIZ}}</section>
+</main>
+<script>
+const root=document.documentElement;document.getElementById('themeToggle').onclick=()=>{const c=root.dataset.theme==='contrast';root.dataset.theme=c?'midnight':'contrast';document.getElementById('themeToggle').textContent=c?'🌙':'☀️'};
+document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(b.dataset.copy));
+document.getElementById('search').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();document.querySelectorAll('.hit').forEach(x=>x.classList.remove('hit'));if(!q)return;document.querySelectorAll('section,.card,.step,details').forEach(el=>{if(el.innerText.toLowerCase().includes(q)){el.classList.add('hit');if(el.tagName.toLowerCase()==='details')el.open=true;}});});
+</script>
+</body></html>

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<style>
+:root{--bg:#0f172a;--panel:#111827;--card:#1f2937;--ink:#f8fafc;--muted:#cbd5e1;--line:#334155;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444;--info:#38bdf8}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}.wrap{max-width:980px;margin:auto;padding:24px}.hero,.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.badge{display:inline-block;border-radius:999px;padding:4px 10px;background:#1e3a8a;color:#dbeafe;font-weight:700}.muted{color:var(--muted)}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid var(--line);padding:8px;text-align:left}code{background:#020617;border:1px solid var(--line);border-radius:6px;padding:2px 5px}</style>
+</head>
+<body><main class="wrap">
+<section class="hero"><span class="badge">{{STATUS}}</span><h1>{{TITLE}}</h1><p class="muted">{{REPO}} · {{LANE}} · {{TIMESTAMP}}</p></section>
+<section class="card"><h2>🎯 TL;DR</h2>{{TLDR}}</section>
+<section class="grid">{{CARDS}}</section>
+<section class="card"><h2>🧪 Evidence</h2>{{EVIDENCE}}</section>
+<section class="card"><h2>🧭 Next action</h2>{{NEXT_ACTION}}</section>
+</main></body></html>

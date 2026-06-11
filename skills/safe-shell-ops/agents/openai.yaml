@@ -1,0 +1,7 @@
+interface:
+  display_name: "Safe Shell Ops"
+  short_description: "Prevents shell quoting and generated-file mistakes"
+  default_prompt: "Use $safe-shell-ops before shell-sensitive file generation or command execution."
+
+policy:
+  allow_implicit_invocation: true

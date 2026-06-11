@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{{TITLE}} - Learning Dashboard</title>
+<style>
+:root{
+  --bg:#0f172a;--panel:#111c33;--ink:#f8fafc;--muted:#cbd5e1;--soft:#94a3b8;
+  --accent:#38bdf8;--accent2:#a78bfa;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444;
+  --line:#334155;--card:#0b1224;--chip:#1e293b;--shadow:0 14px 38px rgba(0,0,0,.35);--radius:22px;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at 10% 0%,rgba(56,189,248,.16),transparent 28%),radial-gradient(circle at 95% 10%,rgba(167,139,250,.15),transparent 30%),linear-gradient(180deg,#0f172a 0%,#111827 58%,#0b1020 100%);color:var(--ink);line-height:1.55}
+a{color:#7dd3fc;text-decoration:none} a:hover{text-decoration:underline}
+.wrap{max-width:1180px;margin:0 auto;padding:26px}.box{background:linear-gradient(180deg,rgba(17,28,51,.95),rgba(11,18,36,.95));border:1px solid rgba(148,163,184,.22);border-radius:var(--radius);box-shadow:var(--shadow)}
+.sticky-nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rgba(15,23,42,.78);border-bottom:1px solid rgba(148,163,184,.2)}
+.nav-inner{max-width:1180px;margin:0 auto;padding:10px 26px;display:flex;gap:9px;overflow:auto}.nav-inner a{white-space:nowrap;color:#e2e8f0;background:rgba(30,41,59,.7);border:1px solid rgba(148,163,184,.18);border-radius:999px;padding:9px 12px;font-size:13px;font-weight:700;text-decoration:none}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:stretch;margin-bottom:20px}.hero-main{padding:30px}.hero-side{padding:24px;display:flex;flex-direction:column;gap:14px}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border-radius:999px;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.25);color:#bae6fd;font-weight:700;font-size:13px;letter-spacing:.02em}
+h1{font-size:clamp(34px,5vw,58px);line-height:1.02;margin:18px 0 12px;letter-spacing:-.04em} h2{font-size:clamp(25px,3vw,36px);line-height:1.1;margin:0 0 16px;letter-spacing:-.025em} h3{font-size:20px;margin:0 0 8px} p{margin:0 0 12px;color:var(--muted)} .lead{font-size:20px;color:#e2e8f0;max-width:750px}.tiny{font-size:13px;color:var(--soft)}
+.pillrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.pill{padding:10px 13px;background:var(--chip);border:1px solid rgba(148,163,184,.2);border-radius:999px;color:#e5e7eb;font-weight:650;font-size:14px}
+.focusbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:18px}.button{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:#0369a1;color:#fff;font-weight:850;border:0;cursor:pointer;text-decoration:none}.button.secondary{background:rgba(30,41,59,.9);border:1px solid rgba(148,163,184,.2)}
+.scorecard{display:grid;grid-template-columns:1fr 1fr;gap:12px}.metric{padding:16px;border-radius:18px;background:rgba(30,41,59,.62);border:1px solid rgba(148,163,184,.2)}.metric b{display:block;font-size:26px;line-height:1;color:#fff}.metric span{display:block;color:var(--soft);font-size:13px;margin-top:6px}
+section{margin:22px 0;padding:26px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.card{padding:18px;border-radius:20px;background:rgba(15,23,42,.75);border:1px solid rgba(148,163,184,.18)}.card .icon{font-size:34px;margin-bottom:8px}.bigline{font-size:30px;font-weight:850;letter-spacing:-.03em;margin:6px 0;color:#fff}
+.tabs{display:flex;gap:9px;overflow:auto;margin:14px 0 18px}.tab-button{white-space:nowrap;padding:10px 13px;border-radius:999px;border:1px solid rgba(148,163,184,.22);background:rgba(30,41,59,.7);color:#e2e8f0;font-weight:800;cursor:pointer}.tab-button.active{background:linear-gradient(90deg,rgba(56,189,248,.3),rgba(167,139,250,.25));border-color:rgba(125,211,252,.38)}.tab-panel{display:none}.tab-panel.active{display:block}
+.visual-map{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;margin-top:18px}.model-card{min-height:220px;padding:20px;border-radius:22px;border:1px solid rgba(148,163,184,.22);background:linear-gradient(180deg,rgba(30,41,59,.9),rgba(15,23,42,.92))}.model-card h3{font-size:28px;letter-spacing:-.03em}.model-card ul{padding-left:20px;margin:12px 0 0;color:var(--muted)}.model-card li{margin:8px 0}.arrow{font-size:34px;color:var(--accent);font-weight:900;text-align:center}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:18px}.step{position:relative;padding:16px;border-radius:18px;background:rgba(30,41,59,.65);border:1px solid rgba(148,163,184,.18);min-height:142px}.step .num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#0284c7;color:#fff;font-weight:900;margin-bottom:10px}.step p{font-size:14px}
+.compare{width:100%;border-collapse:separate;border-spacing:0 10px}.compare th{text-align:left;color:#bfdbfe;font-size:13px;padding:0 12px 4px;text-transform:uppercase;letter-spacing:.06em}.compare td{padding:14px 12px;background:rgba(30,41,59,.72);border-top:1px solid rgba(148,163,184,.16);border-bottom:1px solid rgba(148,163,184,.16);vertical-align:top;color:#e2e8f0}.compare td:first-child{border-left:1px solid rgba(148,163,184,.16);border-radius:14px 0 0 14px;font-weight:800;color:#fff}.compare td:last-child{border-right:1px solid rgba(148,163,184,.16);border-radius:0 14px 14px 0}
+.traffic{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}.light{padding:18px;border-radius:20px;border:1px solid rgba(148,163,184,.2);background:rgba(15,23,42,.78)}.dot{width:18px;height:18px;border-radius:50%;display:inline-block;margin-right:8px;vertical-align:-3px}.green{background:var(--green)}.yellow{background:var(--yellow)}.red{background:var(--red)}
+.timeline{position:relative;margin-top:18px;padding-left:20px;border-left:3px solid rgba(56,189,248,.4)}.titem{position:relative;margin:0 0 18px;padding:0 0 0 18px}.titem::before{content:"";position:absolute;left:-30px;top:5px;width:15px;height:15px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(56,189,248,.16)}.tdate{font-weight:900;color:#bfdbfe}.titem p{margin-top:4px}
+details{background:rgba(30,41,59,.55);border:1px solid rgba(148,163,184,.18);border-radius:18px;margin:12px 0;padding:14px}summary{cursor:pointer;font-weight:850;color:#fff}details p,details li{color:var(--muted)}
+.quiz{display:grid;gap:12px;margin-top:14px}.q{padding:16px;border-radius:18px;background:rgba(30,41,59,.58);border:1px solid rgba(148,163,184,.16)}.q button{margin:7px 6px 0 0;padding:9px 11px;border-radius:999px;border:1px solid rgba(148,163,184,.28);background:#0f172a;color:#e2e8f0;font-weight:750;cursor:pointer}.q .answer{display:none;margin-top:10px;padding:10px;border-radius:14px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#bbf7d0}.q.open .answer{display:block}
+.callout{padding:18px;border-radius:20px;background:linear-gradient(90deg,rgba(56,189,248,.16),rgba(167,139,250,.13));border:1px solid rgba(125,211,252,.22)}.footer{padding:24px;text-align:center;color:var(--soft)}
+@media (max-width:900px){.hero,.grid3,.grid2,.visual-map,.flow,.traffic{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}.scorecard{grid-template-columns:1fr 1fr}.wrap{padding:16px}section{padding:18px}.nav-inner{padding:9px 16px}}
+@media print{.sticky-nav,.focusbar,.q button{display:none!important}body{background:#fff;color:#111}.box,.card,.model-card,.step,.light,details,.q{box-shadow:none;background:#fff;color:#111;border-color:#bbb}p,.tiny,.compare td{color:#222}.compare td{background:#fff}.wrap{max-width:100%;padding:0}}
+</style>
+</head>
+<body>
+<div class="sticky-nav"><div class="nav-inner">
+<a href="#snapshot">&#x1F3AF; Snapshot</a><a href="#map">&#x1F9E0; Map</a><a href="#workflow">&#x1F501; Workflow</a><a href="#compare">&#x2696; Compare</a><a href="#decision">&#x1F6A6; Decision</a><a href="#deep">&#x1F50D; Deep</a><a href="#quiz">&#x26A1; Quiz</a>
+</div></div>
+<main class="wrap">
+<div class="hero"><div class="hero-main box"><span class="eyebrow">Learning Dashboard</span><h1>{{TITLE}}</h1><p class="lead">{{THESIS}}</p><div class="pillrow">{{CHIPS}}</div><div class="focusbar"><a class="button" href="#decision">Start with decision</a><a class="button secondary" href="#map">See model map</a></div></div><aside class="hero-side box"><h2>30-second view</h2><div class="scorecard">{{SCORECARDS}}</div><div class="callout"><b>What to remember:</b><p>{{REMEMBER}}</p></div></aside></div>
+<section id="snapshot" class="box"><h2>&#x1F3AF; Snapshot</h2><div class="grid3">{{SNAPSHOT_CARDS}}</div></section>
+<section id="map" class="box"><h2>&#x1F9E0; Concept map</h2><p>{{MAP_INTRO}}</p><div class="visual-map">{{CONCEPT_MAP}}</div></section>
+<section id="workflow" class="box"><h2>&#x1F501; Workflow / process</h2><div class="flow">{{FLOW_STEPS}}</div></section>
+<section id="compare" class="box"><h2>&#x2696; Compare / tradeoffs</h2>{{COMPARE_BLOCK}}</section>
+<section id="decision" class="box"><h2>&#x1F6A6; Decision guide</h2><div class="traffic">{{DECISION_GUIDE}}</div></section>
+<section id="tabs" class="box"><h2>&#x1F5C2; Learning lanes</h2><div class="tabs"><button class="tab-button active" data-tab="overview">Overview</button><button class="tab-button" data-tab="engineer">Engineer view</button><button class="tab-button" data-tab="memory">Memory</button></div><div id="overview" class="tab-panel active">{{TAB_OVERVIEW}}</div><div id="engineer" class="tab-panel">{{TAB_ENGINEER}}</div><div id="memory" class="tab-panel">{{TAB_MEMORY}}</div></section>
+<section id="deep" class="box"><h2>&#x1F50D; Collapsible deep dives</h2>{{DEEP_DIVES}}</section>
+<section id="quiz" class="box"><h2>&#x26A1; Recap quiz</h2><div class="quiz">{{QUIZ}}</div></section>
+<section id="sources" class="box"><h2>&#x1F517; Sources / assumptions</h2>{{SOURCES}}</section>
+<div class="footer">Built for fast scanning: map, workflow, decision, details, quiz.</div>
+</main>
+<script>
+document.querySelectorAll('.tab-button').forEach(btn=>btn.addEventListener('click',()=>{const id=btn.dataset.tab;document.querySelectorAll('.tab-button').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById(id).classList.add('active');}));
+</script>
+</body>
+</html>

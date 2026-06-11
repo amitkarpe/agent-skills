@@ -1,0 +1,5 @@
+interface:
+  display_name: "Deep Work"
+  short_description: "Codex local HTML skill for deep work."
+  icon: "🌌"
+  primary_color: "#0f172a"

@@ -3,15 +3,16 @@ set -euo pipefail
 
 ROOT=${AGENT_WEB_ROOT:-/opt/agent-web}
 URL_BASE=${AGENT_WEB_URL:-http://192.168.0.9}
+VALIDATE_URL=${AGENT_WEB_VALIDATE_URL:-1}
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE_DIR="${SKILL_DIR}/templates"
-EVIDENCE_ROOT=${AGENT_WEB_EVIDENCE_ROOT:-/home/dev/.AGENTS-temp/agent-web-reporting}
+EVIDENCE_ROOT=${AGENT_WEB_EVIDENCE_ROOT:-${HOME}/.AGENTS-temp/agent-web-reporting}
 
 usage() {
   cat >&2 <<'EOF'
 usage:
   publish-html-report.sh --source <file.html> --lane <lane> (--slug <name>|--index) [--archive] [--update-index] [--no-validate]
-  publish-html-report.sh --new --lane <lane> --slug <name> --title <title> [--summary <text>] [--output-dir <dir>]
+  publish-html-report.sh --new --lane <lane> --slug <name> --title <title> [--summary <text>] [--status <text>] [--risk <text>] [--next <text>] [--current-status <text>] [--output-dir <dir>]
 
 Publishes a sanitized static HTML report into /opt/agent-web/<lane>/ and prints
 the resulting LAN URL. The --new mode creates a Genesis starter report source
@@ -26,6 +27,27 @@ html_escape() {
   value=${value//>/&gt;}
   value=${value//\"/&quot;}
   printf '%s' "$value"
+}
+
+needs_sudo_for_root() {
+  local root=$1
+  local parent
+
+  if [[ ${EUID} -eq 0 ]]; then
+    return 1
+  fi
+
+  if [[ -e "$root" ]]; then
+    [[ ! -w "$root" ]]
+    return
+  fi
+
+  parent="$(dirname "$root")"
+  while [[ ! -e "$parent" && "$parent" != "/" ]]; do
+    parent="$(dirname "$parent")"
+  done
+
+  [[ ! -w "$parent" ]]
 }
 
 validate_lane_slug() {
@@ -199,6 +221,10 @@ VALIDATE=1
 NEW=0
 TITLE=""
 SUMMARY="Starter Genesis report."
+STATUS_TEXT="Ready"
+RISK_TEXT="Low"
+NEXT_TEXT="Review"
+CURRENT_STATUS_TEXT="Put the most important status or decision here."
 OUTPUT_DIR=""
 UPDATE_INDEX=0
 
@@ -244,6 +270,22 @@ while [[ $# -gt 0 ]]; do
       SUMMARY=${2:-}
       shift 2
       ;;
+    --status)
+      STATUS_TEXT=${2:-}
+      shift 2
+      ;;
+    --risk)
+      RISK_TEXT=${2:-}
+      shift 2
+      ;;
+    --next)
+      NEXT_TEXT=${2:-}
+      shift 2
+      ;;
+    --current-status)
+      CURRENT_STATUS_TEXT=${2:-}
+      shift 2
+      ;;
     --output-dir)
       OUTPUT_DIR=${2:-}
       shift 2
@@ -285,7 +327,16 @@ if [[ "$NEW" -eq 1 ]]; then
 
   mkdir -p "$OUTPUT_DIR"
   SOURCE="${OUTPUT_DIR}/${SLUG}.html"
-  render_template "$TEMPLATE_DIR/genesis-report.html" "$SOURCE" "$TITLE" "$SUMMARY" "$(date '+%Y-%m-%d %H:%M %Z')"
+  render_template \
+    "$TEMPLATE_DIR/genesis-report.html" \
+    "$SOURCE" \
+    "$TITLE" \
+    "$SUMMARY" \
+    "$(date '+%Y-%m-%d %H:%M %Z')" \
+    "$STATUS_TEXT" \
+    "$RISK_TEXT" \
+    "$NEXT_TEXT" \
+    "$CURRENT_STATUS_TEXT"
   if [[ "$VALIDATE" -eq 1 ]]; then
     validate_html_source "$SOURCE"
   fi
@@ -321,7 +372,7 @@ fi
 target="${target_dir}/${target_name}"
 
 sudo_cmd=()
-if [[ ${EUID} -ne 0 && ! -w "$ROOT" ]]; then
+if needs_sudo_for_root "$ROOT"; then
   sudo_cmd=(sudo)
 fi
 
@@ -348,7 +399,7 @@ fi
 printf 'published: %s\n' "$target"
 printf 'url: %s\n' "$url"
 
-if [[ "$VALIDATE" -eq 1 ]] && command -v curl >/dev/null 2>&1; then
+if [[ "$VALIDATE" -eq 1 && "$VALIDATE_URL" -eq 1 ]] && command -v curl >/dev/null 2>&1; then
   if curl -fsSI --max-time 5 "$url" >/dev/null; then
     printf 'validated: %s\n' "$url"
   else

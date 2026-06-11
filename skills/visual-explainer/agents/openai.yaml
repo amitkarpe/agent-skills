@@ -1,0 +1,5 @@
+interface:
+  display_name: "Visual Explainer"
+  short_description: "Codex local HTML skill for visual explainer."
+  icon: "🎨"
+  primary_color: "#0f172a"

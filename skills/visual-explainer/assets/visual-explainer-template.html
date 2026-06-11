@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{TITLE}}</title>
+<style>
+:root{--bg:#0b1020;--panel:#111c33;--card:#16213a;--ink:#f8fafc;--muted:#cbd5e1;--line:#334155;--accent:#38bdf8;--accent2:#a78bfa;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444;--radius:20px;--shadow:0 14px 36px rgba(0,0,0,.28)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at top left,rgba(56,189,248,.16),transparent 30rem),linear-gradient(180deg,#0f172a,#0b1020);color:var(--ink);line-height:1.55}.nav{position:sticky;top:0;background:rgba(15,23,42,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:20}.nav div{max-width:1120px;margin:auto;display:flex;gap:8px;overflow:auto;padding:10px 18px}.nav a{color:#e2e8f0;background:#1e293b;border:1px solid var(--line);border-radius:999px;padding:8px 11px;text-decoration:none;font-weight:700;font-size:13px}.wrap{max-width:1120px;margin:auto;padding:24px}.box,.card{background:linear-gradient(180deg,rgba(17,28,51,.95),rgba(11,18,36,.95));border:1px solid rgba(148,163,184,.22);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin:18px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.map{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center}.arrow{font-size:34px;color:var(--accent);font-weight:900}.svgbox{background:#0f172a;border:1px solid var(--line);border-radius:18px;padding:12px;overflow:auto}details{background:#111827;border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}summary{cursor:pointer;font-weight:800}@media(max-width:780px){.map{grid-template-columns:1fr}.arrow{transform:rotate(90deg);text-align:center}}</style>
+</head>
+<body><nav class="nav"><div><a href="#snapshot">🎯 Snapshot</a><a href="#diagram">🧠 Diagram</a><a href="#flow">🔁 Flow</a><a href="#risks">⚠️ Risks</a><a href="#recap">⚡ Recap</a></div></nav><main class="wrap">
+<section class="box"><h1>{{TITLE}}</h1><p>{{SUBTITLE}}</p></section>
+<section id="snapshot" class="grid">{{SNAPSHOT_CARDS}}</section>
+<section id="diagram" class="box"><h2>🧠 Visual map</h2><div class="svgbox">{{INLINE_SVG}}</div></section>
+<section id="flow" class="box"><h2>🔁 Workflow</h2>{{FLOW}}</section>
+<section id="risks" class="box"><h2>⚠️ Risks and unknowns</h2>{{RISKS}}</section>
+<section id="recap" class="box"><h2>⚡ Recap</h2>{{RECAP}}</section>
+</main></body></html>

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Learning Dashboard"
+  short_description: "Generate ADHD-friendly Midnight Learning Dashboard HTML pages for dense technical learning."
+  brand_color: "#38BDF8"
+  default_prompt: "Use the learning-dashboard skill to create a self-contained Midnight Learning Dashboard HTML file for this content."
+policy:
+  allow_implicit_invocation: true

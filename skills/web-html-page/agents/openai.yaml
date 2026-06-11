@@ -1,0 +1,5 @@
+interface:
+  display_name: "Web Html Page"
+  short_description: "Codex local HTML skill for web html page."
+  icon: "📄"
+  primary_color: "#0f172a"

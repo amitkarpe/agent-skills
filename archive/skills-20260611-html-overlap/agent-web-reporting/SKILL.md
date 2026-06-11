@@ -12,6 +12,10 @@ Replace content, keep the local CSS self-contained, and remove unused sections.
 Read `DESIGN.md` only when changing the theme, changing the template, or
 creating a complex custom report.
 
+For complex workflow, architecture, code-structure, or direction-change
+reports, include a small visual explanation. Prefer inline SVG diagrams inside
+the static HTML. Keep routine status reports text/table-only.
+
 ## Contract
 
 - Publish sanitized static HTML under `/opt/agent-web/<lane>/`.
@@ -81,12 +85,77 @@ Lane rules:
 6. Validate the URL with `curl -I` unless the helper already did so.
 7. Return the final URL and the durable source path.
 
+## Visual Explanation Rule
+
+Use a diagram when the report explains any of these:
+
+- a new direction, architecture, or repo structure
+- an AMI/Image Builder lineage or cross-account sharing flow
+- a complex AWS workflow, promotion path, or validation sequence
+- controller/worker loops, handoffs, approvals, or stop gates
+- a before/after change where Amit needs to understand what changed
+
+Skip diagrams for small status reports, one-command results, simple blockers,
+or reports where a short table is clearer.
+
+Balanced report shape for complex topics:
+
+1. Decision or current state in plain English.
+2. One workflow/lineage/component diagram.
+3. Before vs now or source vs target table.
+4. Guardrails, risks, and stop gates.
+5. Next action and approval needed.
+
+Preferred diagram methods:
+
+- Default: inline SVG embedded in the HTML.
+- Simple flows: pure HTML/CSS boxes are acceptable.
+- Graphviz: use for generated workflow DAGs, lineage graphs, and dependency
+  maps when there are many arrows.
+- Mermaid: use only if locally vendored and the report benefits from editable
+  graph syntax. Do not load Mermaid from a CDN for office reports.
+- Python `diagrams`: use for AWS architecture views when AWS service icons make
+  the design easier to understand.
+- PNG: fallback only for a final static snapshot.
+
+Local tool preference:
+
+1. Handwritten inline SVG for polished KISS reports.
+2. `scripts/render-diagram.sh --type graphviz` for local `.dot` to SVG.
+3. `scripts/render-diagram.sh --type mermaid` for local `.mmd` to SVG.
+4. Python `diagrams` for AWS architecture, then embed or link the generated SVG.
+
+Render generated diagrams to SVG and embed the SVG in the report when practical.
+Do not make the browser fetch Mermaid, Graphviz, or external assets at view time.
+
+Inline SVG rules:
+
+- Use it for functional explanation, not decoration.
+- Keep labels short and readable on desktop Chrome.
+- Include `<title>` and `<desc>` for accessibility.
+- Use Genesis colors and system fonts.
+- Keep the SVG self-contained in the HTML; no external image files.
+- For AMI reports, show source/parent image, components, build, validation,
+  share/copy/promotion, target account, encryption/KMS state, and SSM pointer
+  decision when relevant.
+- For agent-loop reports, show controller, worker, result marker, guardrail,
+  approval, next-goal, and stop paths.
+
+Generated diagram rules:
+
+- Keep the source file next to the report source under `~/.AGENTS-temp/<repo>/`.
+- Keep the rendered SVG next to the report source.
+- Mention the source path only when useful for future edits.
+- Use generated diagrams for clarity, not to avoid explaining the decision.
+- If generated output is visually noisy, simplify the source or draw a small
+  inline SVG instead.
+
 ## Publish Helper
 
 To create a starter Genesis report source without publishing:
 
 ```bash
-/home/dev/git/agent-skills/skills/agent-web-reporting/scripts/publish-html-report.sh \
+scripts/publish-html-report.sh \
   --new \
   --lane work \
   --slug my-report \
@@ -97,13 +166,13 @@ To create a starter Genesis report source without publishing:
 This writes a starter source file under:
 
 ```text
-/home/dev/.AGENTS-temp/agent-web-reporting/<lane>/<slug>.html
+${HOME}/.AGENTS-temp/agent-web-reporting/<lane>/<slug>.html
 ```
 
 Run:
 
 ```bash
-/home/dev/git/agent-skills/skills/agent-web-reporting/scripts/publish-html-report.sh \
+scripts/publish-html-report.sh \
   --source /absolute/path/report.html \
   --lane td \
   --slug imagebuilder-decision-20260526
@@ -124,7 +193,7 @@ url: http://192.168.0.9/td/imagebuilder-decision-20260526.html
 To update a lane landing page:
 
 ```bash
-/home/dev/git/agent-skills/skills/agent-web-reporting/scripts/publish-html-report.sh \
+scripts/publish-html-report.sh \
   --source /absolute/path/index.html \
   --lane td \
   --index
@@ -133,7 +202,7 @@ To update a lane landing page:
 To regenerate a simple static lane index after publishing a named report:
 
 ```bash
-/home/dev/git/agent-skills/skills/agent-web-reporting/scripts/publish-html-report.sh \
+scripts/publish-html-report.sh \
   --source /absolute/path/report.html \
   --lane td \
   --slug imagebuilder-decision-20260526 \
@@ -173,7 +242,8 @@ Prefer quiet, readable styling:
 - normal HTML/CSS, no external CDN dependency
 - desktop Chrome first
 - no JavaScript unless needed
-- no SVG/gradient decoration
+- no SVG/gradient decoration; functional inline SVG diagrams are allowed when
+  they explain workflow, architecture, lineage, or decision flow
 - KISS layout: header, summary, evidence, risks, next action
 - use 4px-based spacing and stable responsive grids
 - use 12px radius for report cards/sections and 6px for buttons/chips/inputs

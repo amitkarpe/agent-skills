@@ -120,6 +120,42 @@ spacing grid for padding, margins, and gaps.
 - Sections: white panels with concise headings and optional blue left accent.
 - Status pills: green for done/pass, amber for pending/caution, red for blocked.
 - Commands and paths: monospace, wrapped in code blocks when multi-line.
+- Diagrams: functional inline SVG or HTML/CSS flow boxes for workflow,
+  architecture, AMI lineage, component maps, approval gates, and before/after
+  direction changes.
+
+## Diagrams
+
+Use diagrams to reduce Amit's cognitive load when a report explains a complex
+workflow or changed direction. The diagram should answer "what exactly is
+happening?" before the detailed tables.
+
+Preferred diagram types:
+
+- Workflow: controller, worker, validation, result, next action, stop gates.
+- Lineage: source image, parent image, components, build output, share/promotion.
+- Component map: what is inside an AMI or service and where each component
+  comes from.
+- Before/after: old flow versus new flow.
+- Decision tree: approval, blocked, retry, or done.
+
+Recommended tools:
+
+- Inline SVG: default for polished single-file reports.
+- Graphviz: best for generated dependency graphs, lineage, and many-arrow flows.
+- Mermaid CLI: useful for quick sequence, state, and flow diagrams when rendered
+  locally to SVG.
+- Python `diagrams`: useful for AWS architecture views with service icons.
+
+Keep diagrams practical:
+
+- Use short labels.
+- Use arrows only where flow direction matters.
+- Use amber/red only for real caution or stop paths.
+- Avoid decorative illustrations, gradients, shadows, and external assets.
+- Render diagrams locally to SVG. Do not fetch Mermaid or other diagram
+  libraries from a CDN at browser view time.
+- Prefer one clear diagram per complex report over many small diagrams.
 
 ## Do's and Don'ts
 
@@ -138,6 +174,7 @@ Don't:
   wallets, or private config.
 - Use external assets, JavaScript, decorative gradients, or marketing hero
   layouts.
+- Use diagrams as decoration when a table would explain the point faster.
 - Use pure black for large UI surfaces or make the page one-note dark blue.
 - Add shadows to static sections; borders are enough for normal reports.
 - Mention ignored local `.env` files in routine status unless the report is a
