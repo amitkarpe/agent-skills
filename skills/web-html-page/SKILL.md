@@ -7,6 +7,9 @@ description: fast low-token static html reports for codex tasks. use when the us
 
 Create small, fast, local HTML reports for operational review after Codex work.
 
+Before creating HTML, follow `DESIGN.md` exactly. The required design is
+Midnight Compact: dark-only, compact, operational, and never a white/day theme.
+
 ## Use this skill for
 
 - Quick task summaries, worker results, lane status, diffs, reviews, and run evidence.
@@ -23,7 +26,8 @@ Create small, fast, local HTML reports for operational review after Codex work.
 
 - Publish HTML to `/opt/agent-web/<project-or-repo>/<current-lane>/<slug>.html`.
 - Store source/evidence in `~/.AGENTS-temp/<project-or-repo>/<current-lane>/web-html-page/`.
-- Print a LAN URL like `http://192.168.0.9/<project-or-repo>/<current-lane>/<slug>.html`.
+- Default always: print the LAN URL form `http://192.168.0.9/<project-or-repo>/<current-lane>/<slug>.html`.
+- Use the Tailscale URL form `http://100.72.42.94/<project-or-repo>/<current-lane>/<slug>.html` only when Amit explicitly says office or Tailscale.
 - Default lifecycle: archive or delete after 7 days unless marked `keep`.
 - `agent-web` remains the web service name; only the old `agent-web-reporting` skill name is retired.
 - Old lane-only URLs such as `/td/report.html` are compatibility mode, not the new default.

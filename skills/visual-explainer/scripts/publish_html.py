@@ -13,6 +13,25 @@ EXTERNAL_RE = re.compile(
     r")"
 )
 SECRET_RE = re.compile(r"(?i)(aws_secret_access_key|secret_access_key|session_token|password\s*=|BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16})")
+PRINT_MEDIA_RE = re.compile(r'(?is)@media\s+print\s*\{.*?\}\s*')
+SCREEN_WHITE_BG_RE = re.compile(r'(?is)(?:body\s*\{[^}]*background\s*:\s*(?:white|#fff(?:fff)?|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))|background(?:-color)?\s*:\s*(?:white|#fff(?:fff)?|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\)))')
+
+def strip_print_css(text: str) -> str:
+    output = []
+    pos = 0
+    for match in re.finditer(r'(?is)@media\s+print\s*\{', text):
+        output.append(text[pos:match.start()])
+        depth = 1
+        index = match.end()
+        while index < len(text) and depth:
+            if text[index] == '{':
+                depth += 1
+            elif text[index] == '}':
+                depth -= 1
+            index += 1
+        pos = index
+    output.append(text[pos:])
+    return ''.join(output)
 
 def slugify(value: str, default: str = 'report') -> str:
     value = (value or '').strip().lower()
@@ -28,6 +47,9 @@ def validate_html(path: Path) -> None:
         raise SystemExit('blocked: html contains external browser-fetching URL. no cdn or remote assets allowed by default.')
     if SECRET_RE.search(text):
         raise SystemExit('blocked: html appears to contain credential-like data. sanitize before publishing.')
+    screen_text = strip_print_css(text)
+    if SCREEN_WHITE_BG_RE.search(screen_text):
+        raise SystemExit('blocked: white/day background found outside print CSS. use the skill dark design.')
     if not re.search(r'(?is)<title>[^<]+</title>', text):
         print(f'warning: html missing <title>: {path}')
     if not re.search(r'(?is)<h1(?:\s[^>]*)?>', text):

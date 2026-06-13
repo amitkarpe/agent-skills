@@ -1,26 +1,180 @@
 <!doctype html>
 <html lang="en" data-theme="midnight">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{TITLE}}</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generated" content="{{DATE}}">
+<meta name="topic" content="{{TOPIC}}">
+<title>{{TITLE}}</title>
 <style>
-:root{--bg:#0f172a;--panel:#111c33;--card:#0b1224;--ink:#f8fafc;--muted:#cbd5e1;--soft:#94a3b8;--line:#334155;--accent:#38bdf8;--accent2:#a78bfa;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444;--shadow:0 14px 38px rgba(0,0,0,.35);--radius:22px}[data-theme="contrast"]{--bg:#020617;--panel:#050816;--card:#0f172a;--ink:#ffffff;--muted:#e5e7eb;--soft:#cbd5e1;--line:#64748b;--accent:#67e8f9;--accent2:#c4b5fd;--shadow:0 16px 42px rgba(0,0,0,.55)}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at 10% 0%,rgba(56,189,248,.16),transparent 28%),radial-gradient(circle at 95% 10%,rgba(167,139,250,.15),transparent 30%),linear-gradient(180deg,var(--bg),#0b1020);color:var(--ink);line-height:1.55}.top{position:sticky;top:0;z-index:50;background:rgba(15,23,42,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}.nav{display:flex;gap:8px;overflow:auto;max-width:1180px;margin:auto;padding:9px 16px}.nav a{white-space:nowrap;color:var(--ink);background:rgba(30,41,59,.7);border:1px solid var(--line);border-radius:999px;padding:8px 11px;text-decoration:none;font-weight:800;font-size:13px}.utility{display:flex;gap:8px;align-items:center;justify-content:flex-end;max-width:1180px;margin:auto;padding:0 16px 9px}.search{background:var(--card);border:1px solid var(--line);border-radius:999px;color:var(--ink);padding:8px 12px;max-width:280px}.toggle{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 10px;cursor:pointer}.wrap{max-width:1180px;margin:auto;padding:26px}.box,.card{background:linear-gradient(180deg,rgba(17,28,51,.95),rgba(11,18,36,.95));border:1px solid rgba(148,163,184,.22);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin:18px 0}.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.step{background:rgba(30,41,59,.62);border:1px solid var(--line);border-radius:18px;padding:14px}.lane{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.chip{display:inline-block;background:#1e293b;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:#e2e8f0}.cmd{background:#020617;border:1px solid var(--line);border-radius:18px;overflow:hidden}.cmdbar{display:flex;justify-content:space-between;gap:10px;background:#111827;padding:10px 12px}.cmd pre{margin:0;padding:14px;overflow:auto}.copy{border:1px solid var(--line);background:#1e293b;color:#fff;border-radius:10px;padding:6px 9px;cursor:pointer}details{background:rgba(30,41,59,.55);border:1px solid var(--line);border-radius:18px;margin:12px 0;padding:14px}summary{cursor:pointer;font-weight:850}.hit{outline:2px solid var(--accent);outline-offset:4px}@media(max-width:850px){.hero{grid-template-columns:1fr}.utility{justify-content:flex-start}.search{width:100%;max-width:none}}</style>
+:root{--bg:#0f172a;--panel:#111c33;--card:#0b1224;--ink:#f8fafc;--muted:#cbd5e1;--soft:#94a3b8;--line:#334155;--accent:#38bdf8;--accent2:#a78bfa;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444;--shadow:0 14px 38px rgba(0,0,0,.35);--radius:22px}
+[data-theme="contrast"]{--bg:#020617;--panel:#050816;--card:#0f172a;--ink:#ffffff;--muted:#e5e7eb;--soft:#cbd5e1;--line:#64748b;--accent:#67e8f9;--accent2:#c4b5fd;--shadow:0 16px 42px rgba(0,0,0,.55)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at 10% 0%,rgba(56,189,248,.16),transparent 28%),radial-gradient(circle at 95% 10%,rgba(167,139,250,.15),transparent 30%),linear-gradient(180deg,var(--bg),#0b1020);color:var(--ink);line-height:1.55}
+.top{position:sticky;top:0;z-index:50;background:rgba(15,23,42,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav{display:flex;gap:8px;overflow:auto;max-width:1180px;margin:auto;padding:9px 16px}
+.nav a{white-space:nowrap;color:var(--ink);background:rgba(30,41,59,.7);border:1px solid var(--line);border-radius:999px;padding:6px 11px;text-decoration:none;font-weight:700;font-size:12px}
+.nav a:hover,.nav a.active{background:var(--accent);color:#000;border-color:var(--accent)}
+.utility{display:flex;gap:8px;align-items:center;justify-content:flex-end;max-width:1180px;margin:auto;padding:0 16px 9px}
+.search{background:var(--card);border:1px solid var(--line);border-radius:999px;color:var(--ink);padding:6px 12px;max-width:220px;font-size:12px}
+.toggle{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 10px;cursor:pointer;font-size:12px}
+.wrap{max-width:1180px;margin:auto;padding:24px 16px}
+.box,.card{background:linear-gradient(180deg,rgba(17,28,51,.95),rgba(11,18,36,.95));border:1px solid rgba(148,163,184,.22);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin:16px 0}
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.step{background:rgba(30,41,59,.62);border:1px solid var(--line);border-radius:18px;padding:14px}
+.lane{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.chip{display:inline-block;background:#1e293b;border:1px solid var(--line);border-radius:999px;padding:4px 9px;margin:3px;font-size:.75rem;color:#e2e8f0}
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.72rem;font-weight:700}
+.ok{background:#14532d;color:#4ade80}.warn{background:#431407;color:#fb923c}.bad{background:#450a0a;color:#f87171}.info{background:#1e3a5f;color:#93c5fd}
+/* CommandBlock */
+.cmd{background:#020617;border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:8px 0}
+.cmdbar{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#111827;padding:8px 12px}
+.cmdbar span{font-size:.72rem;color:var(--soft)}
+.copy{border:1px solid var(--line);background:#1e293b;color:#fff;border-radius:10px;padding:4px 8px;cursor:pointer;font-size:.7rem}
+.cmd pre{margin:0;padding:12px;font-size:.75rem;color:#93c5fd;overflow-x:auto}
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:.76rem}
+th{background:rgba(30,41,59,.8);color:var(--soft);text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);font-weight:700}
+td{padding:6px 9px;border-bottom:1px solid rgba(51,65,85,.5);color:var(--muted)}
+tr:hover td{background:rgba(30,41,59,.4)}
+/* Deep dives */
+details{background:rgba(30,41,59,.55);border:1px solid var(--line);border-radius:14px;margin:10px 0;padding:12px 14px}
+summary{cursor:pointer;font-weight:750;font-size:.85rem}
+/* Flashcards */
+.flashcard{background:rgba(30,41,59,.6);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer}
+.flashcard .q{font-weight:700;font-size:.82rem;margin-bottom:6px}
+.flashcard .a{font-size:.78rem;color:var(--muted);display:none}
+.flashcard.open .a{display:block}
+/* Search highlight */
+.hit{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
+/* Nav cards (for index.html) */
+.nav-card{background:rgba(11,18,36,.9);border:1px solid var(--line);border-radius:12px;padding:16px;text-decoration:none;display:block;transition:.15s}
+.nav-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.nav-card .icon{font-size:22px;margin-bottom:8px}
+.nav-card .title{font-weight:700;color:var(--ink);margin-bottom:4px;font-size:.9rem}
+.nav-card .desc{font-size:.75rem;color:var(--soft)}
+/* Portal footer */
+.portal-footer{border-top:1px solid var(--line);padding:14px 24px;text-align:center;color:var(--soft);font-size:.72rem;margin-top:32px}
+.portal-footer a{color:var(--accent)}
+@media(max-width:860px){.hero,.grid3{grid-template-columns:1fr}.utility{justify-content:flex-start}.search{width:100%;max-width:none}}
+@media print{.top{position:static}.nav,.utility,.toggle,.copy{display:none}details{display:block}details summary{list-style:none}details>*{display:block!important}body{background:#fff;color:#000}.box,.card{border:1px solid #ccc;box-shadow:none;background:#fff}.portal-footer{color:#666}}
+</style>
 </head>
 <body>
-<header class="top"><nav class="nav"><a href="#scan">🎯 Scan</a><a href="#map">🧠 Map</a><a href="#architecture">🏗️ Architecture</a><a href="#timeline">🗓️ Timeline</a><a href="#commands">⌨️ Commands</a><a href="#quiz">⚡ Quiz</a></nav><div class="utility"><input id="search" class="search" placeholder="🔍 Search page"><button id="themeToggle" class="toggle" title="Toggle Midnight and Contrast">🌙</button></div></header>
+<header class="top">
+  <nav class="nav">
+    <!-- Single-page mode: internal section anchors -->
+    <a href="#scan">🎯 Scan</a>
+    <a href="#map">🧠 Map</a>
+    <a href="#architecture">🏗️ Architecture</a>
+    <a href="#timeline">🗓️ Timeline</a>
+    <a href="#commands">⌨️ Commands</a>
+    <a href="#quiz">⚡ Quiz</a>
+    <!-- Portal mode: replace above with cross-page links, add class="active" on current page -->
+    <!-- <a href="index.html">Home</a> -->
+    <!-- <a href="architecture.html" class="active">Architecture</a> -->
+    <!-- <a href="all-in-one.html">📄 Export</a> -->
+  </nav>
+  <div class="utility">
+    <input id="search" class="search" placeholder="🔍 Search…">
+    <button id="themeToggle" class="toggle" title="Toggle theme">🌙</button>
+  </div>
+</header>
+
 <main class="wrap">
-<section class="hero"><div class="box"><h1>{{TITLE}}</h1><p>{{THESIS}}</p>{{CHIPS}}</div><aside class="box"><h2>30-second view</h2>{{QUICK_VIEW}}</aside></section>
-<section id="scan" class="box"><h2>🎯 Snapshot</h2><div class="grid">{{SNAPSHOT_CARDS}}</div></section>
-<section id="map" class="box"><h2>🧠 Concept map</h2>{{CONCEPT_MAP}}</section>
-<section id="architecture" class="box"><h2>🏗️ Architecture Lens</h2>{{ARCHITECTURE}}</section>
-<section id="timeline" class="box"><h2>🗓️ Lifecycle timeline</h2>{{TIMELINE}}</section>
-<section id="commands" class="box"><h2>⌨️ Command cookbook</h2>{{COMMANDS}}</section>
-<section class="box"><h2>🔽 Deep dives</h2>{{DEEP_DIVES}}</section>
-<section id="quiz" class="box"><h2>⚡ Quiz</h2>{{QUIZ}}</section>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="box">
+    <h1>{{TITLE}}</h1>
+    <p style="color:var(--accent);font-weight:700;font-size:.9rem">{{THESIS}}</p>
+    {{CHIPS}}
+  </div>
+  <aside class="box">
+    <h2>30-second view</h2>
+    {{QUICK_VIEW}}
+  </aside>
+</section>
+
+<!-- SNAPSHOT CARDS -->
+<section id="scan" class="box">
+  <h2>🎯 Snapshot</h2>
+  <div class="grid">{{SNAPSHOT_CARDS}}</div>
+</section>
+
+<!-- CONCEPT MAP -->
+<section id="map" class="box">
+  <h2>🧠 Concept map</h2>
+  {{CONCEPT_MAP}}
+</section>
+
+<!-- ARCHITECTURE LENS — always include at least one diagram here -->
+<section id="architecture" class="box">
+  <h2>🏗️ Architecture Lens</h2>
+  <!-- Minimum: one inline SVG diagram (account boundary or lineage). -->
+  <!-- Better: embed Python diagrams PNG as <img src="data:image/png;base64,..."> -->
+  {{ARCHITECTURE}}
+</section>
+
+<!-- LIFECYCLE / TIMELINE -->
+<section id="timeline" class="box">
+  <h2>🗓️ Lifecycle timeline</h2>
+  {{TIMELINE}}
+</section>
+
+<!-- COMMANDS COOKBOOK -->
+<section id="commands" class="box">
+  <h2>⌨️ Command cookbook</h2>
+  <!-- Use .cmd / .cmdbar / .copy pattern. Copy buttons required. -->
+  {{COMMANDS}}
+</section>
+
+<!-- DEEP DIVES — use <details> here; NOT in all-in-one.html -->
+<section class="box">
+  <h2>🔽 Deep dives</h2>
+  {{DEEP_DIVES}}
+</section>
+
+<!-- QUIZ / FLASHCARDS -->
+<section id="quiz" class="box">
+  <h2>⚡ Quiz</h2>
+  <div class="grid">{{QUIZ}}</div>
+</section>
+
 </main>
+
+<!-- VERSION WATERMARK — required on every page, including portal pages -->
+<footer class="portal-footer">
+  {{PORTAL_NAME}} · v{{DATE}} · {{ENV_CHIP}} · evidence current as of {{EVIDENCE_DATE}}
+  <!-- Portal mode: add cross-page links here too -->
+</footer>
+
 <script>
-const root=document.documentElement;document.getElementById('themeToggle').onclick=()=>{const c=root.dataset.theme==='contrast';root.dataset.theme=c?'midnight':'contrast';document.getElementById('themeToggle').textContent=c?'🌙':'☀️'};
+// Theme toggle
+const root=document.documentElement;
+document.getElementById('themeToggle').onclick=()=>{
+  const c=root.dataset.theme==='contrast';
+  root.dataset.theme=c?'midnight':'contrast';
+  document.getElementById('themeToggle').textContent=c?'🌙':'☀️';
+};
+// Copy buttons — works for both data-copy attribute and .copy buttons inside .cmd
 document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(b.dataset.copy));
-document.getElementById('search').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();document.querySelectorAll('.hit').forEach(x=>x.classList.remove('hit'));if(!q)return;document.querySelectorAll('section,.card,.step,details').forEach(el=>{if(el.innerText.toLowerCase().includes(q)){el.classList.add('hit');if(el.tagName.toLowerCase()==='details')el.open=true;}});});
+// Flashcards
+document.querySelectorAll('.flashcard').forEach(c=>c.onclick=()=>c.classList.toggle('open'));
+// Search — highlights, never hides (safe for print)
+document.getElementById('search').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase();
+  document.querySelectorAll('.hit').forEach(x=>x.classList.remove('hit'));
+  if(!q)return;
+  document.querySelectorAll('section,.card,.step,details,tr,li').forEach(el=>{
+    if(el.innerText&&el.innerText.toLowerCase().includes(q)){
+      el.classList.add('hit');
+      if(el.tagName.toLowerCase()==='details')el.open=true;
+    }
+  });
+});
 </script>
-</body></html>
+</body>
+</html>

@@ -1,0 +1,58 @@
+interface:
+  display_name: "Deep Work"
+  short_description: "Claude deep work: premium durable dashboards, portals, and export-ready Ops KB pages."
+  icon: "🌌"
+  primary_color: "#0f172a"
+
+behaviour:
+  # Claude reasons about intent — outcomes-first, not slot-filling
+  approach: outcomes-first
+  # Claude is good at self-checking; always run self-review gate before result packet
+  self_review: required
+  # Use more tokens for better diagrams, richer content, and thorough cross-linking
+  token_budget: high
+
+output:
+  # portal mode is the default when more than one page is implied
+  default_mode: portal-if-multi-page
+  # always inject version watermark; never leave it as a placeholder
+  version_watermark: required
+  # always produce all-in-one.html for portal mode
+  export_page: required-for-portal
+
+diagrams:
+  # check for diagrams library first; fall back to inline SVG
+  preferred: python-diagrams-if-available
+  fallback: inline-svg-from-pattern-library
+  # never produce a page with zero visual diagrams on the architecture page
+  architecture_page_minimum: 1-diagram
+
+parallel:
+  # Claude can read all evidence files in one message — do it
+  read_evidence: parallel
+  # Build all portal pages in sequence (nav must be consistent), not parallel
+  build_pages: sequential
+
+export:
+  # Pandoc docx is the target; write export-safe HTML from the start
+  target_format: docx-via-pandoc
+  # Never use <details>/<summary> in all-in-one.html
+  forbidden_in_all_in_one:
+    - details
+    - summary
+    - display:none
+    - position:sticky
+  # Cover page is mandatory
+  cover_page: required
+
+quality_gates:
+  # These checks run before writing the result packet
+  pre_result:
+    - all_nav_links_resolve: true
+    - version_watermark_on_every_page: true
+    - no_invented_aws_ids: true
+    - cli_blocks_have_copy_buttons: true
+    - architecture_page_has_diagram: true
+    - no_external_urls: true
+    - all_in_one_exists_if_portal: true
+    - index_html_is_entry_point: true

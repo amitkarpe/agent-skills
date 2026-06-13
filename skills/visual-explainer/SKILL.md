@@ -7,6 +7,9 @@ description: medium visual html explanation reports for architecture, workflows,
 
 Create medium-weight visual HTML reports that explain a technical idea, workflow, architecture, plan, or before/after change.
 
+Before creating HTML, follow `DESIGN.md` exactly. The required design is
+Midnight Visual: dark-only, diagram-friendly, and never a white/day theme.
+
 ## Use this skill for
 
 - Prompts containing: `explain visually`, `visual explainer`, `architecture diagram`, `workflow diagram`, `AMI box`, `plan proposal`, `compare options`, `show sequence`, `before/after`.
@@ -23,7 +26,8 @@ Create medium-weight visual HTML reports that explain a technical idea, workflow
 
 - Publish HTML to `/opt/agent-web/<project-or-repo>/<current-lane>/<slug>.html`.
 - Store source/evidence in `~/.AGENTS-temp/<project-or-repo>/<current-lane>/visual-explainer/`.
-- Print a LAN URL like `http://192.168.0.9/<project-or-repo>/<current-lane>/<slug>.html`.
+- Default always: print the LAN URL form `http://192.168.0.9/<project-or-repo>/<current-lane>/<slug>.html`.
+- Use the Tailscale URL form `http://100.72.42.94/<project-or-repo>/<current-lane>/<slug>.html` only when Amit explicitly says office or Tailscale.
 - Default lifecycle: archive after 30 days unless marked `keep`.
 
 ## Visual report shape
