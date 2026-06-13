@@ -1,0 +1,18 @@
+# AWS and CloudOps skills. Enable for AWS-heavy repos or lanes.
+aws-private-network-preflight
+aws-ssm-run-command
+ssm-command-evidence
+ami-validation-ssm
+imagebuilder-component-publish
+imagebuilder-bake-validate
+s3-artifact-stage-verify
+cis-inspector-scan
+cis-ssm-apply-validate
+ssm-patch-quicksetup-prod
+ec2-quick-create
+ec2-ttl-alert
+ecs-cluster-health-review
+ecs-mixed-ami-canary
+ecs-monitoring
+ecs-recovery
+awslogs-investigation

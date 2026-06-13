@@ -1,0 +1,4 @@
+# Browser-readable local reports and durable learning dashboards.
+web-html-page
+visual-explainer
+deep-work

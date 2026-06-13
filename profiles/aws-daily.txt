@@ -1,0 +1,10 @@
+# Normal AWS/CloudOps skills for daily work.
+# Combine with global-core for a smaller AWS-capable startup set.
+aws-private-network-preflight
+aws-ssm-run-command
+ssm-command-evidence
+ec2-quick-create
+ecs-monitoring
+ecs-recovery
+cis-inspector-scan
+imagebuilder-bake-validate

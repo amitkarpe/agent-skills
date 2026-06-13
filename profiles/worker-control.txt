@@ -1,0 +1,6 @@
+# Controller and worker-loop skills.
+amit-operator-commands
+prepare-worker-goal
+run-worker-goal
+repo-summary-and-relation-mapping
+safe-shell-ops
