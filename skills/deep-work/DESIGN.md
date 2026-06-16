@@ -25,6 +25,21 @@
 - Use emoji as small visual anchors, not decoration overload.
 - Keep long content behind collapsible sections except in export-safe pages.
 
+## Readability Gate
+
+- Do not use text-shadow, text stroke, glow, blur, embossed text, or low-contrast decorative text.
+- Body text must be at least 16px.
+- Diagram, card, table, command, badge, and timeline labels must be at least 15px unless the text is non-critical metadata.
+- Critical text must use high contrast against its panel.
+- Warning, error, and success boxes must not use dark gray text on dark colored panels.
+- Normal reports must not create a horizontal scrollbar at 1366px width.
+- Prefer wrapping or stacking cards over ultra-wide diagrams, timelines, or comparison matrices.
+
+## Conditional Screenshot QA
+
+- Screenshot/browser QA is required for dashboards or portals Amit will review visually.
+- If screenshot/browser QA is run, check readable labels, high contrast, and no horizontal scroll.
+
 ## Forbidden
 
 - No default white body background.

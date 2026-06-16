@@ -20,6 +20,21 @@
 - Keep headings compact and work-focused.
 - Inline SVG is allowed only when it improves scan speed.
 
+## Readability Gate
+
+- Do not use text-shadow, text stroke, glow, blur, embossed text, or low-contrast decorative text.
+- Body text must be at least 16px.
+- Card, badge, table, and diagram labels must be at least 15px unless the text is non-critical metadata.
+- Critical text must use high contrast against its panel.
+- Warning, error, and success boxes must not use dark gray text on dark colored panels.
+- Normal reports must not create a horizontal scrollbar at 1366px width.
+- Prefer wrapping or stacking cards over ultra-wide tables or diagrams.
+
+## Conditional Screenshot QA
+
+- Screenshot/browser QA is optional for quick reports.
+- If screenshot/browser QA is run, check that text is readable on a laptop screenshot and that there is no horizontal scroll.
+
 ## Forbidden
 
 - No default white body background.

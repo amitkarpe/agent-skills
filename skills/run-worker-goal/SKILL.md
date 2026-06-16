@@ -213,9 +213,13 @@ If Codex asks `Implement this plan?`:
 7. Submit only `@/absolute/path/to/prompt.md` or `@/absolute/path/to/goal.md`;
    do not paste a raw path without `@`.
 8. Verify prompt is accepted and worker is `Working`.
-9. If the raw path lands in the input line, press `Enter` once, capture again,
+9. For Claude Code tmux workers, `/goal ... @file` is the start command. After
+   submitting it, wait about 5 seconds and capture the pane before deciding
+   whether anything else is needed. Do not send `go` or another follow-up prompt
+   just because the first capture says "Goal set".
+10. If the raw path lands in the input line, press `Enter` once, capture again,
    and verify. Do not keep pasting duplicates.
-10. Prefer hooks/done markers over live polling.
+11. Prefer hooks/done markers over live polling.
 
 ## Short Command Routing
 
