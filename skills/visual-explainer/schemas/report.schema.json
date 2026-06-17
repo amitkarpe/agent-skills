@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Static json-render-style HTML report spec",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "skill",
+    "title",
+    "root",
+    "elements"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "skill": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string"
+    },
+    "meta": {
+      "type": "object"
+    },
+    "root": {
+      "type": "string"
+    },
+    "elements": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "type",
+          "props",
+          "children"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "props": {
+            "type": "object"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

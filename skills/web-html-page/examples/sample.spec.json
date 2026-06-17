@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0",
+  "skill": "web-html-page",
+  "title": "Codex Worker Result",
+  "root": "page",
+  "meta": {
+    "status": "warning",
+    "watermark": "sample \u00b7 web-html-page \u00b7 deterministic JSON renderer"
+  },
+  "elements": {
+    "page": {
+      "type": "Page",
+      "props": {
+        "repo": "agent-skills",
+        "lane": "current",
+        "status": "warning"
+      },
+      "children": [
+        "hero",
+        "tldr",
+        "cards",
+        "evidence",
+        "risks",
+        "next"
+      ]
+    },
+    "hero": {
+      "type": "Hero",
+      "props": {
+        "title": "Codex Worker Result",
+        "subtitle": "Quick operational status after a worker run.",
+        "status": "warning",
+        "chips": [
+          "offline html",
+          "low token",
+          "json spec"
+        ]
+      },
+      "children": []
+    },
+    "tldr": {
+      "type": "TLDR",
+      "props": {
+        "items": [
+          "Renderer retrofit planned",
+          "No production change made",
+          "One follow-up validation remains"
+        ]
+      },
+      "children": []
+    },
+    "cards": {
+      "type": "StatusCards",
+      "props": {
+        "title": "Snapshot",
+        "cards": [
+          {
+            "label": "Changed",
+            "value": "3 files",
+            "status": "info",
+            "icon": "\ud83d\udcc4"
+          },
+          {
+            "label": "Tests",
+            "value": "2 passed",
+            "status": "success",
+            "icon": "\ud83e\uddea"
+          },
+          {
+            "label": "Risk",
+            "value": "low",
+            "status": "warning",
+            "icon": "\u26a0\ufe0f"
+          }
+        ]
+      },
+      "children": []
+    },
+    "evidence": {
+      "type": "EvidenceTable",
+      "props": {
+        "title": "Evidence",
+        "headers": [
+          "Check",
+          "Status",
+          "Notes"
+        ],
+        "rows": [
+          [
+            "spec validation",
+            "pass",
+            "catalog matched"
+          ],
+          [
+            "html validation",
+            "pass",
+            "offline safe"
+          ]
+        ]
+      },
+      "children": []
+    },
+    "risks": {
+      "type": "RiskBox",
+      "props": {
+        "title": "Risks",
+        "items": [
+          {
+            "level": "warning",
+            "text": "Do not hand-write full HTML unless catalog cannot express the report."
+          }
+        ]
+      },
+      "children": []
+    },
+    "next": {
+      "type": "NextAction",
+      "props": {
+        "items": [
+          "Review output in browser",
+          "Publish only if evidence is clean"
+        ]
+      },
+      "children": []
+    }
+  }
+}

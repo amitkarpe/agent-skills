@@ -1,0 +1,172 @@
+{
+  "schema_version": "1.0",
+  "skill": "visual-explainer",
+  "title": "AMI Promotion Flow",
+  "root": "page",
+  "meta": {
+    "watermark": "sample \u00b7 visual-explainer \u00b7 deterministic JSON renderer"
+  },
+  "elements": {
+    "page": {
+      "type": "Page",
+      "props": {
+        "topic": "ami-promotion",
+        "status": "info"
+      },
+      "children": [
+        "hero",
+        "concepts",
+        "flow",
+        "risks",
+        "decision",
+        "checklist"
+      ]
+    },
+    "hero": {
+      "type": "Hero",
+      "props": {
+        "title": "AMI Promotion Flow",
+        "subtitle": "Promotion should happen only after runtime proof exists.",
+        "status": "info",
+        "chips": [
+          "workflow",
+          "runtime proof",
+          "ssm pointer"
+        ]
+      },
+      "children": []
+    },
+    "concepts": {
+      "type": "ConceptCards",
+      "props": {
+        "title": "Mental Model",
+        "cards": [
+          {
+            "title": "Spec",
+            "description": "Defines intent",
+            "status": "info",
+            "icon": "\ud83d\udcd8"
+          },
+          {
+            "title": "Runtime proof",
+            "description": "Validates actual AMI",
+            "status": "success",
+            "icon": "\ud83e\uddea"
+          },
+          {
+            "title": "Pointer",
+            "description": "Promotes only after proof",
+            "status": "warning",
+            "icon": "\ud83d\udd01"
+          }
+        ]
+      },
+      "children": []
+    },
+    "flow": {
+      "type": "FlowDiagram",
+      "props": {
+        "title": "Workflow",
+        "lanes": [
+          "DEV",
+          "Control",
+          "PROD"
+        ],
+        "nodes": [
+          {
+            "id": "build",
+            "label": "Build AMI",
+            "lane": "DEV"
+          },
+          {
+            "id": "validate",
+            "label": "Runtime Proof",
+            "lane": "DEV"
+          },
+          {
+            "id": "approve",
+            "label": "Gate",
+            "lane": "Control"
+          },
+          {
+            "id": "promote",
+            "label": "Update SSM",
+            "lane": "PROD"
+          }
+        ],
+        "edges": [
+          [
+            "build",
+            "validate"
+          ],
+          [
+            "validate",
+            "approve"
+          ],
+          [
+            "approve",
+            "promote"
+          ]
+        ]
+      },
+      "children": []
+    },
+    "risks": {
+      "type": "RiskRadar",
+      "props": {
+        "title": "Watch-outs",
+        "risks": [
+          {
+            "level": "high",
+            "text": "SSM pointer updated without runtime proof"
+          },
+          {
+            "level": "warning",
+            "text": "Validation uses the wrong workload contract"
+          }
+        ]
+      },
+      "children": []
+    },
+    "decision": {
+      "type": "DecisionGuide",
+      "props": {
+        "title": "Decision Guide",
+        "options": [
+          {
+            "label": "Use JSON spec renderer",
+            "decision": "recommended",
+            "reason": "Keeps layout deterministic and token-light."
+          },
+          {
+            "label": "Handwrite HTML",
+            "decision": "avoid",
+            "reason": "Use only when catalog cannot express the page."
+          }
+        ]
+      },
+      "children": []
+    },
+    "checklist": {
+      "type": "Checklist",
+      "props": {
+        "title": "Safe Next Actions",
+        "items": [
+          {
+            "label": "Validate spec",
+            "done": true
+          },
+          {
+            "label": "Render HTML",
+            "done": true
+          },
+          {
+            "label": "Run offline HTML check",
+            "done": false
+          }
+        ]
+      },
+      "children": []
+    }
+  }
+}

@@ -54,6 +54,27 @@ Keep it small. Prefer summary boxes, simple tables, short timelines, and status 
 - No CDN, external JS, remote fonts, or external images.
 - HTML must be self-contained and safe for local LAN viewing.
 
+## JSON-spec render path
+
+Prefer deterministic JSON-spec rendering before writing direct HTML.
+
+Use this flow for repeatable reports:
+
+1. Create `report.spec.json` using `references/json-spec-contract.md`.
+2. Use only components in `references/component-catalog.json`.
+3. Run `scripts/validate_spec.py report.spec.json`.
+4. Run `scripts/render_html_from_spec.py report.spec.json output.html`.
+5. Run `scripts/validate_html.py output.html`.
+6. Publish with `scripts/publish_html.py` only when LAN publishing is requested.
+
+The AI chooses report content, component types, props, and child order. The
+renderer owns HTML, CSS, layout, spacing, cards, badges, print CSS, and
+escaping.
+
+Direct handwritten HTML is fallback only when the catalog cannot express the
+requested page. Fallback HTML must still follow `DESIGN.md` and pass
+`validate_html.py`.
+
 ## Helper scripts
 
 - Use `scripts/publish_html.py` to copy output into `/opt/agent-web`, write evidence, reject remote assets, back up overwritten output, and print the LAN URL.

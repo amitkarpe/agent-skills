@@ -63,4 +63,25 @@ Useful patterns:
 - Label examples clearly as `example`, `placeholder`, or `unknown`.
 - Keep the report self-contained, offline, and local LAN safe.
 
+## JSON-spec render path
+
+Prefer deterministic JSON-spec rendering before writing direct HTML.
+
+Use this flow for repeatable reports:
+
+1. Create `report.spec.json` using `references/json-spec-contract.md`.
+2. Use only components in `references/component-catalog.json`.
+3. Run `scripts/validate_spec.py report.spec.json`.
+4. Run `scripts/render_html_from_spec.py report.spec.json output.html`.
+5. Run `scripts/validate_html.py output.html`.
+6. Publish with `scripts/publish_html.py` only when LAN publishing is requested.
+
+The AI chooses report content, component types, props, and child order. The
+renderer owns HTML, CSS, layout, spacing, cards, badges, print CSS, and
+escaping.
+
+Direct handwritten HTML is fallback only when the catalog cannot express the
+requested page. Fallback HTML must still follow `DESIGN.md` and pass
+`validate_html.py`.
+
 See `references/visual-patterns.md`, `references/aws-resource-safety.md`, and `assets/visual-explainer-template.html` only when needed.

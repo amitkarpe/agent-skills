@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "skill": "web-html-page",
+  "description": "Static json-render-style catalog for compact operational reports.",
+  "max_elements": 40,
+  "components": {
+    "Page": {
+      "description": "Root page shell.",
+      "required_props": [],
+      "optional_props": [
+        "status",
+        "repo",
+        "lane",
+        "timestamp",
+        "owner",
+        "summary"
+      ]
+    },
+    "Hero": {
+      "description": "Compact title and status header.",
+      "required_props": [
+        "title"
+      ],
+      "optional_props": [
+        "subtitle",
+        "status",
+        "chips"
+      ]
+    },
+    "TLDR": {
+      "description": "3-6 short summary bullets.",
+      "required_props": [
+        "items"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "StatusCards": {
+      "description": "Small metric/status cards.",
+      "required_props": [
+        "cards"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "EvidenceTable": {
+      "description": "Compact evidence/checks table.",
+      "required_props": [
+        "headers",
+        "rows"
+      ],
+      "optional_props": [
+        "title",
+        "caption"
+      ]
+    },
+    "RiskBox": {
+      "description": "Risks/blockers grouped by severity.",
+      "required_props": [
+        "items"
+      ],
+      "optional_props": [
+        "title",
+        "level"
+      ]
+    },
+    "NextAction": {
+      "description": "Single next action or short action list.",
+      "required_props": [
+        "items"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "Timeline": {
+      "description": "Short ordered timeline.",
+      "required_props": [
+        "events"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "Checklist": {
+      "description": "Simple checklist.",
+      "required_props": [
+        "items"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "Section": {
+      "description": "Generic titled section container.",
+      "required_props": [
+        "title"
+      ],
+      "optional_props": [
+        "summary",
+        "icon"
+      ]
+    }
+  }
+}

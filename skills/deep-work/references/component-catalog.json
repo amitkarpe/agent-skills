@@ -1,0 +1,153 @@
+{
+  "schema_version": "1.0",
+  "skill": "deep-work",
+  "description": "Static json-render-style catalog for durable DD dashboards and portals.",
+  "max_elements": 160,
+  "components": {
+    "Page": {
+      "description": "Root dashboard page shell.",
+      "required_props": [],
+      "optional_props": [
+        "status",
+        "category",
+        "topic",
+        "environment",
+        "timestamp",
+        "version",
+        "ttl",
+        "mode"
+      ]
+    },
+    "Hero": {
+      "description": "Thesis and 30-second view.",
+      "required_props": [
+        "title"
+      ],
+      "optional_props": [
+        "subtitle",
+        "thesis",
+        "chips"
+      ]
+    },
+    "NavCards": {
+      "description": "Portal/index navigation cards.",
+      "required_props": [
+        "cards"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "SnapshotCards": {
+      "description": "Key facts at a glance.",
+      "required_props": [
+        "cards"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "ConceptMap": {
+      "description": "Concept-to-concept map.",
+      "required_props": [
+        "nodes",
+        "edges"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "ArchitectureMap": {
+      "description": "Architecture/resource boundary map.",
+      "required_props": [
+        "groups"
+      ],
+      "optional_props": [
+        "title",
+        "edges"
+      ]
+    },
+    "Timeline": {
+      "description": "Lifecycle/timeline.",
+      "required_props": [
+        "events"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "DecisionGuide": {
+      "description": "Decision matrix blocks.",
+      "required_props": [
+        "options"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "Glossary": {
+      "description": "Term definitions.",
+      "required_props": [
+        "terms"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "Quiz": {
+      "description": "Recall quiz.",
+      "required_props": [
+        "questions"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "Flashcards": {
+      "description": "Study flashcards.",
+      "required_props": [
+        "cards"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "CommandBlocks": {
+      "description": "Copy-safe command cookbook.",
+      "required_props": [
+        "commands"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "RiskRadar": {
+      "description": "Failure modes/risk radar.",
+      "required_props": [
+        "risks"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "Checklist": {
+      "description": "Action/checklist block.",
+      "required_props": [
+        "items"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "Section": {
+      "description": "Generic titled deep section.",
+      "required_props": [
+        "title"
+      ],
+      "optional_props": [
+        "summary",
+        "icon"
+      ]
+    }
+  }
+}

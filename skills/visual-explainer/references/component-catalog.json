@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0",
+  "skill": "visual-explainer",
+  "description": "Static json-render-style catalog for medium visual explanation reports.",
+  "max_elements": 80,
+  "components": {
+    "Page": {
+      "description": "Root visual report page.",
+      "required_props": [],
+      "optional_props": [
+        "status",
+        "topic",
+        "environment",
+        "timestamp",
+        "summary"
+      ]
+    },
+    "Hero": {
+      "description": "Problem, mental model, and key chips.",
+      "required_props": [
+        "title"
+      ],
+      "optional_props": [
+        "subtitle",
+        "status",
+        "chips"
+      ]
+    },
+    "ConceptCards": {
+      "description": "Key idea cards.",
+      "required_props": [
+        "cards"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "FlowDiagram": {
+      "description": "Lanes/nodes/edges workflow diagram rendered as CSS/SVG.",
+      "required_props": [
+        "nodes",
+        "edges"
+      ],
+      "optional_props": [
+        "title",
+        "lanes"
+      ]
+    },
+    "ArchitectureMap": {
+      "description": "Boundary/resource relationship map.",
+      "required_props": [
+        "groups"
+      ],
+      "optional_props": [
+        "title",
+        "edges"
+      ]
+    },
+    "DecisionGuide": {
+      "description": "Recommended/maybe/avoid decision blocks.",
+      "required_props": [
+        "options"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "Comparison": {
+      "description": "Compact option comparison.",
+      "required_props": [
+        "headers",
+        "rows"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "RiskRadar": {
+      "description": "Risks grouped by severity.",
+      "required_props": [
+        "risks"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "EvidenceTable": {
+      "description": "Evidence/checks table.",
+      "required_props": [
+        "headers",
+        "rows"
+      ],
+      "optional_props": [
+        "title",
+        "caption"
+      ]
+    },
+    "Checklist": {
+      "description": "Action checklist.",
+      "required_props": [
+        "items"
+      ],
+      "optional_props": [
+        "title"
+      ]
+    },
+    "Section": {
+      "description": "Generic titled section container.",
+      "required_props": [
+        "title"
+      ],
+      "optional_props": [
+        "summary",
+        "icon"
+      ]
+    }
+  }
+}
