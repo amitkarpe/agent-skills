@@ -1,11 +1,24 @@
 ---
 name: amit-operator-commands
-description: Route Amit's short operator phrases into safe Codex workflows. Use for "what next", "next", "dump_context_fast", "save context", "save handoff", "debug tight", "fast work", "commit all", "push all", "merge", "cleanup", "TTL cleanup", and similar local repo/AWS operator command shorthands.
+description: Route Amit's heavier operator phrases into safe Codex workflows. Use for worker/status control such as "check td", "check cc", "check workers", "go td", "approved", "ss status", "did ss call?", "clear context", "debug tight", "fast work", "commit all", "push all", "merge", "cleanup", "TTL cleanup", and similar repo/AWS operator command shorthands. Do not trigger this skill only for simple global shortcuts like "next", "save context", or "save handoff" unless the repo lacks those global rules.
 ---
 
 # Amit Operator Commands
 
-Use this skill when Amit gives a short command phrase that implies a workflow rather than a single shell command.
+Use this skill when Amit gives a short command phrase that implies a heavier
+workflow rather than a single shell command.
+
+Do not load this skill only to handle these global shortcuts when the active
+instructions already define them:
+
+- `next`
+- `save context`
+- `save handoff`
+- `ask me`
+
+Those should usually be handled from current repo truth with minimal context.
+Use this skill when the shortcut expands into worker orchestration, cleanup,
+git mutation, supervisor status, or a clean restart packet.
 
 ## Core rules
 
@@ -35,6 +48,30 @@ Use this skill when Amit gives a short command phrase that implies a workflow ra
 
 ## Command router
 
+### Hot global shortcuts
+
+These commands should stay cheap. If global `AGENTS.md` already defines them,
+follow the global rule and avoid loading more old evidence than needed.
+
+- `ask me`:
+  - stop before implementation.
+  - restate the request.
+  - propose the smallest safe plan.
+  - name files/systems to touch.
+  - list no-go gates and validation.
+  - ask one exact approval question.
+  - wait for Amit's `go`.
+- `next`, `next?`, `what next`:
+  - inspect current repo truth and latest worker markers.
+  - return one recommended next action plus up to two options.
+  - do not run skills only to invent more work.
+- `save context`:
+  - update only `CONTEXT.md`.
+  - do not create `HANDOFF.md` or dated snapshots.
+- `save handoff`:
+  - update `CONTEXT.md` and `HANDOFF.md`.
+  - keep it compact and decision-grade.
+
 ### Short worker commands
 
 Use this section before the broader command handlers when Amit gives a short
@@ -56,6 +93,14 @@ Alias routing:
 
 - `check <lane>`, `status <lane>`, `<lane>?`, `update <lane>`:
   status-only check; no edits, no new goals, no AWS mutation.
+- `check cc`, `check aa`, `check td`, `check tdm`, `check pat`,
+  `check workers`, `are all workers active?`:
+  status-only check; inspect markers/results first, then tmux only to confirm
+  stale or live state.
+- `ss status`, `did ss call?`, `is ss working?`:
+  inspect supervisor last-run files and latest summary before assuming a wake
+  failure. Report timestamp, decision, target state, and whether a wake was
+  expected.
 - `next?`, `next`, `what next`:
   inspect current truth and recommend one next action plus up to two options.
 - `prep <lane>`, `prepare <lane>`, `goal <lane>`,
@@ -67,6 +112,10 @@ Alias routing:
 - `approved`:
   run only when the target prepared goal is unambiguous. If multiple current
   goals or lanes are plausible, stop and ask for the lane/path.
+- `approved for all`, `take any approval from me`, `approved - upgrade SPEC`:
+  treat as approval only inside already-known specs/goals. Do not invent new
+  mutation scope. If multiple prepared goals are plausible, ask for the target
+  lane or goal path.
 - `approve and run <lane>`:
   run only when the approval target, no-go gates, and prepared goal are clear.
 
@@ -97,6 +146,42 @@ Examples:
 - `go td` -> run an approved TD goal only if unambiguous.
 - `approved` -> run the latest prepared goal only if exactly one target is
   clear.
+
+### `clear context`
+
+Goal: prepare a genuinely clean restart packet so the next session can reload a
+small file set instead of inheriting a large compacted chat.
+
+Use when Amit says:
+
+- `clear context`
+- `clean start`
+- `reset context`
+- `start team context`
+
+Rules:
+
+- Refresh `CONTEXT.md` and `HANDOFF.md` when those files exist in the repo.
+- Write one compact reset packet under `~/.AGENTS-temp/<repo>/`.
+- Include only:
+  - read-first order
+  - current truth
+  - active workers and marker paths
+  - blockers and approvals already granted
+  - next safe command
+  - what not to reload
+- Do not create many dated snapshots.
+- Do not bulk-copy chat history.
+- Stop after writing the packet and tell Amit to start the clean session from
+  that packet.
+- Be explicit that the current session context cannot be reduced in-place; the
+  packet is for a fresh session.
+
+Output:
+- `Updated`
+- `Reset packet`
+- `Read first`
+- `Next`
 
 ### `dump_context_fast`
 

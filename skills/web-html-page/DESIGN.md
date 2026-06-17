@@ -32,7 +32,12 @@
 
 ## Conditional Screenshot QA
 
-- Screenshot/browser QA is optional for quick reports.
+- For internal ops summaries, skip screenshot/browser QA by default.
+- Use cheap static checks instead: HTML parses, no external assets, no forbidden
+  light CSS, and file published.
+- Run screenshot/browser QA only when Amit explicitly asks, visual complexity is
+  high, the report will be shared externally, or the deliverable is frontend/UI
+  quality itself.
 - If screenshot/browser QA is run, check that text is readable on a laptop screenshot and that there is no horizontal scroll.
 
 ## Forbidden
