@@ -65,11 +65,21 @@ For edited or generated shell scripts:
 - Avoid complex one-liners; make a temp script when logic grows past a few
   simple commands.
 
+For infra mutation helpers, prefer invoking repo-owned Terraform/Terragrunt
+commands or the owning repo cleanup runner over ad-hoc generated AWS CLI scripts.
+
 ## Validation
 
-Before reporting success, run the smallest relevant check:
+Save time and tokens. Do not run validation/check commands for low-risk local
+Markdown, context, notes, or response-file edits unless the user asks or the
+change is about to be committed/pushed.
 
-- `git diff --check` for repo edits
-- `bash -n` for bash scripts
-- `zsh -n` for zsh files
-- read back generated text files that contain shell-sensitive characters
+Run the smallest relevant check when risk is higher:
+
+- `git diff --check` before commit/push/PR-ready handoff, or after suspicious
+  patches and large multi-file edits
+- `bash -n` for edited bash scripts
+- `zsh -n` for edited zsh files
+- targeted syntax/parsing checks for YAML, Terraform, code, or generated files
+- read back generated text files only when they contain shell-sensitive
+  characters or the write path was fragile

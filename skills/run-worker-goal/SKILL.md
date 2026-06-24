@@ -80,23 +80,39 @@ Results live under:
 
 Choose runtime by risk, not by habit.
 
-Use Spark only for low-risk support work:
+Use Spark xhigh for support work and approved operator-mode execution:
 
 - read-only repo inventory
 - summaries and first-pass reports
 - static file review
 - simple local checks
 - personal learning / side projects
+- bounded local docs/skill edits
+- proven DEV/QA repo-owned commands when Q or the SPEC already decided the
+  action and the exact command/account/env/resource is named
+- previously validated DEV/QA Terraform/Terragrunt stack commands when the
+  plan/action is already approved and evidence output is defined
+- repo-owned AMI Factory cleanup commands with exact allowlist gates
+- approved DEV validation SSM/Patch commands with clear stop conditions
 
-Use `gpt-5.5` for serious office execution:
+Use `gpt-5.5` for decision-mode and serious office execution:
 
-- AWS mutation
+- deciding whether AWS mutation is safe
 - PROD or production-like validation
-- SSM Patch Manager / Run Command changes
-- Terraform apply or state-sensitive plans
-- IAM, VPC, networking, ASG, ECS, AMI promotion, or cleanup
+- first-time SSM Patch Manager / Run Command changes
+- first-time Terraform apply/destroy, unclear plans, or state-sensitive plans
+- Terraform import/state surgery
+- IAM, VPC, networking, ASG, ECS, AMI promotion, or cleanup when the decision,
+  plan, rollback, or ownership boundary is unclear
 - recovery after a failed or confused worker loop
 - final judgment before Amit approval
+
+Spark operator-mode rule:
+
+- Spark may execute proven code, but it must not decide risky changes.
+- Spark stops and escalates to Q/5.5 when output differs from the expected
+  plan, a command asks for unapproved IAM/network/state changes, PROD appears,
+  cleanup fails halfway, or stale/current truth conflicts.
 
 Recommended defaults:
 
@@ -104,11 +120,13 @@ Recommended defaults:
 controller/work: gpt-5.5 medium
 planning/risk review: gpt-5.5 high
 office mutation worker: gpt-5.5 high
+proven DEV/QA operator worker: gpt-5.3-codex-spark xhigh
 read-only helper worker: gpt-5.3-codex-spark xhigh
 ```
 
-If a running worker is on Spark and the goal becomes mutation-heavy, stop and
-ask the controller to restart or reassign the worker before execution.
+If a running worker is on Spark and the goal changes from approved
+operator-mode into decision-mode, stop and ask the controller to restart or
+reassign the worker before continuing.
 
 Controller restart examples:
 

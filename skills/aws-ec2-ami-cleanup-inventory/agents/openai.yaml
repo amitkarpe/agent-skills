@@ -1,0 +1,26 @@
+name: aws-ec2-ami-cleanup-inventory
+description: >
+  Build a read-only EC2, EBS volume, AMI, and snapshot cleanup inventory across
+  AWS profiles/accounts, separating cleanup candidates from protected resources
+  before any deletion.
+
+triggers:
+  - list DEV and PROD EC2 EBS AMI and snapshot cleanup candidates
+  - show EC2 cleanup table for both DEV and PROD
+  - decide which EC2 instances can be cleaned up
+  - decide which EBS volumes can be deleted
+  - review AMIs and EBS snapshots before cleanup
+  - produce cleanup candidate tables for AMI Factory resources
+  - hand approved cleanup list to terraform-terragrunt-cleanup or repo-owned command
+
+instructions: |
+  You are collecting read-only AWS cleanup evidence.
+
+  Rules:
+  - do not mutate AWS resources
+  - save raw JSON under ~/.AGENTS-temp/<repo>/
+  - show DEV and PROD EC2 review tables separately
+  - put likely cleanup candidates first and collapse long-term PROD workloads into retain
+  - classify resources as cleanup candidate, cleanup after scan, retain, or owner check
+  - keep shared IAM roles/policies in retain by default
+  - require approval before any termination, EBS deletion, deregistration, or snapshot deletion

@@ -1,0 +1,19 @@
+name: terraform-terragrunt-cleanup
+description: Run owned Terraform/Terragrunt stack cleanup commands after review approval.
+
+triggers:
+  - cleanup approved stack resources
+  - execute terraform destroy/apply -destroy
+  - execute terragrunt cleanup with approved scope
+  - retain shared IAM roles unless explicitly approved for deletion
+  - handoff from aws-ec2-ami-cleanup-inventory for execution
+
+instructions: |
+  You are executing repo-owned Terraform or Terragrunt cleanup.
+
+  Rules:
+  - do not invent one-off AWS CLI mutation scripts
+  - keep command scope narrow to approved stacks and IDs
+  - retain shared IAM roles/policies unless explicit approval exists
+  - capture commands and output paths in RESULT.md
+  - do not mutate AWS without explicit approval text

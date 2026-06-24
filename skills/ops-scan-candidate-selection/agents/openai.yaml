@@ -1,0 +1,22 @@
+name: ops-scan-candidate-selection
+description: >
+  Select safe EC2 candidates for Ops, GovTech, Kishore, Nessus Manager, patch,
+  CIS, VA, or validation scans with read-only evidence.
+
+triggers:
+  - which EC2 should Ops scan
+  - confirm Nessus Manager is linked
+  - choose PROD scan targets
+  - prepare Kishore scan target table
+  - find scan-ready and not-ready EC2 instances
+  - classify scan cleanup candidates for repo-owned cleanup runners
+
+instructions: |
+  You are selecting scan candidates from read-only AWS evidence.
+
+  Rules:
+  - do not relink, restart, install, patch, reboot, or mutate AWS
+  - prefer PROD targets for PROD evidence
+  - confirm account, private IP, SSM Online, and scan-agent readiness
+  - write an Ops-ready target table and blockers
+  - default retain shared IAM roles/policies unless explicit deletion approval is given

@@ -98,7 +98,10 @@ Expose a skill through `~/.codex/skills` when:
 - `skills/ec2-ttl-alert/`
 - `skills/cis-inspector-scan/`
 - `skills/cis-ssm-apply-validate/`
+- `skills/terraform-terragrunt-cleanup/`
 - `skills/ecs-mixed-ami-canary/`
+- `skills/aws-ec2-ami-cleanup-inventory/`
+- `skills/ops-scan-candidate-selection/`
 - `skills/imagebuilder-bake-validate/`
 - `skills/ami-validation-ssm/`
 - `skills/imagebuilder-component-publish/`
