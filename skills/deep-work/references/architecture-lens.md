@@ -2,6 +2,10 @@
 
 Use this reference when DD needs architecture or AWS/system design depth.
 
+For the short cross-skill operating guide on custom HTML, Python `diagrams`,
+Graphviz/DOT, Kiro/QW scratch use, and the five-block presentation rule, read:
+`docs/ARCH_DESIGN_DIAGRAM_GUIDE.md`.
+
 ## Architecture modes
 
 Choose based on availability and user intent:

@@ -48,6 +48,10 @@ For AWS examples, separate concept from real resources. If a real ID, ARN, IP, A
 
 Prefer inline SVG or CSS diagrams. Use Mermaid only if vendored locally or explicitly requested. Do not use remote CDN assets.
 
+For architecture-design method choice, Kiro/Python `diagrams`, Graphviz/DOT,
+and five-block presentation rules, read:
+`docs/ARCH_DESIGN_DIAGRAM_GUIDE.md`.
+
 Useful patterns:
 
 - Workflow: trigger → build → test → promote → deploy → cleanup.
