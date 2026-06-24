@@ -99,6 +99,61 @@ When using Kiro:
 - render and inspect the result yourself
 - Codex decides final quality
 
+### Kiro tmux vs non-interactive
+
+Use non-interactive Kiro when:
+
+- the task is one-shot and well bounded
+- you want a critique, checklist, or first draft
+- output can be captured to files
+- the prompt can explicitly say `do not write files` or `write only RESULT.md`
+- automation/repeatability matters more than live steering
+
+Example:
+
+```bash
+mkdir -p /tmp/kiro-diagram-spike
+cd /tmp/kiro-diagram-spike
+kiro-cli chat --no-interactive --trust-tools= --wrap never \
+  "Give a 5-lane architecture diagram plan. Do not write files."
+```
+
+Use trusted non-interactive only in scratch directories:
+
+```bash
+kiro-cli chat --no-interactive --trust-all-tools --wrap never \
+  "Write only RESULT.md in the current directory."
+```
+
+Use tmux/interactive Kiro when:
+
+- the work needs multiple corrections
+- visual output needs iterative review
+- Kiro may ask clarifying questions
+- you want to watch tool calls before deciding whether to stop it
+
+Long-term default for Q:
+
+1. Use non-interactive Kiro for bounded critique or first draft.
+2. Use tmux Kiro only for iterative visual refinement.
+3. Always run Kiro from a scratch directory, not a real repo.
+4. Codex validates, repairs, simplifies, and decides the final output.
+
+### What Codex must do after Kiro
+
+Kiro is allowed to draft. Codex owns quality.
+
+Codex cleanup steps:
+
+1. Inspect generated files and confirm no repo path was touched.
+2. Run syntax checks, for example `python3 -m py_compile`.
+3. Render the diagram and visually inspect it.
+4. Fix wrong imports, missing packages, bad edge syntax, and clipped labels.
+5. Replace generic nodes with real icons where useful.
+6. Reduce cross-edges and group noisy details into bundle nodes.
+7. Produce at least three passes when visual quality matters.
+8. Save comparison notes and select the best version for the audience.
+
 ## Graphviz/DOT Rules
 
 Use Graphviz/DOT when:
