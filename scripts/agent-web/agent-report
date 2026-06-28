@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 0002
+
+ROOT="${AGENT_WEB_WWW:-/opt/agent-web/www}"
+TYPE="general"
+TITLE=""
+SLUG=""
+BODY_FILE=""
+HTML_FILE=""
+MD_FILE=""
+EVIDENCE=""
+OWNER="${USER:-unknown}"
+UPDATE_INDEX="no"
+FORCE="no"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  agent-report --title TITLE --slug SLUG [options]
+
+Options:
+  --type TYPE             report type, default general
+  --body-file FILE        plain text or markdown body to wrap as HTML
+  --html-file FILE        existing HTML to publish
+  --md-file FILE          markdown file to store and render as preformatted text
+  --evidence PATH         evidence path recorded in manifest
+  --owner NAME            owner recorded in manifest
+  --update-index yes|no   rebuild /opt/agent-web/www/index.html, default no
+  --force yes|no          overwrite existing target, default no
+EOF
+}
+
+die() {
+  printf 'agent-report: %s\n' "$*" >&2
+  exit 2
+}
+
+html_escape_file() {
+  python3 - "$1" <<'PY'
+import html
+import sys
+from pathlib import Path
+print(html.escape(Path(sys.argv[1]).read_text(errors="ignore")))
+PY
+}
+
+slug_ok() {
+  [[ "$1" =~ ^[a-z0-9][a-z0-9._-]{1,80}$ ]]
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --type) TYPE="${2:-}"; shift 2 ;;
+    --title) TITLE="${2:-}"; shift 2 ;;
+    --slug) SLUG="${2:-}"; shift 2 ;;
+    --body-file) BODY_FILE="${2:-}"; shift 2 ;;
+    --html-file) HTML_FILE="${2:-}"; shift 2 ;;
+    --md-file) MD_FILE="${2:-}"; shift 2 ;;
+    --evidence) EVIDENCE="${2:-}"; shift 2 ;;
+    --owner) OWNER="${2:-}"; shift 2 ;;
+    --update-index) UPDATE_INDEX="${2:-}"; shift 2 ;;
+    --force) FORCE="${2:-}"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) die "unknown argument: $1" ;;
+  esac
+done
+
+[[ -n "$TITLE" ]] || die "--title required"
+[[ -n "$SLUG" ]] || die "--slug required"
+slug_ok "$SLUG" || die "--slug must be lowercase safe text"
+slug_ok "$TYPE" || die "--type must be lowercase safe text"
+[[ "$UPDATE_INDEX" == "yes" || "$UPDATE_INDEX" == "no" ]] || die "--update-index yes|no"
+[[ "$FORCE" == "yes" || "$FORCE" == "no" ]] || die "--force yes|no"
+
+input_count=0
+[[ -n "$BODY_FILE" ]] && input_count=$((input_count + 1))
+[[ -n "$HTML_FILE" ]] && input_count=$((input_count + 1))
+[[ -n "$MD_FILE" ]] && input_count=$((input_count + 1))
+[[ "$input_count" -eq 1 ]] || die "provide exactly one of --body-file, --html-file, --md-file"
+
+DATE_Y="$(date +%Y)"
+DATE_MD="$(date +%m-%d)"
+CREATED="$(date -Iseconds)"
+TARGET="$ROOT/reports/$TYPE/$DATE_Y/$DATE_MD/$SLUG"
+
+if [[ -e "$TARGET" && "$FORCE" != "yes" ]]; then
+  die "target exists: $TARGET; use --force yes or a new slug"
+fi
+
+mkdir -p "$TARGET"
+
+if [[ -n "$HTML_FILE" ]]; then
+  [[ -r "$HTML_FILE" ]] || die "cannot read --html-file: $HTML_FILE"
+  cp "$HTML_FILE" "$TARGET/index.html"
+elif [[ -n "$BODY_FILE" || -n "$MD_FILE" ]]; then
+  SRC="${BODY_FILE:-$MD_FILE}"
+  [[ -r "$SRC" ]] || die "cannot read input file: $SRC"
+  ESCAPED="$(html_escape_file "$SRC")"
+  cat > "$TARGET/index.html" <<EOF
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${TITLE}</title>
+<style>
+body{margin:0;background:#090b10;color:#e8edf7;font:14px/1.55 system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+main{max-width:1120px;margin:0 auto;padding:24px}
+.panel{border:1px solid #263245;background:#10151f;border-radius:14px;padding:18px;box-shadow:0 16px 50px rgba(0,0,0,.28)}
+h1{margin:0 0 8px;font-size:28px}.meta{color:#91a0b8;margin-bottom:16px}
+pre{white-space:pre-wrap;background:#0c111a;border:1px solid #263245;border-radius:12px;padding:14px;overflow:auto}
+a{color:#6aa6ff}
+</style>
+</head>
+<body><main>
+<section class="panel">
+<h1>${TITLE}</h1>
+<div class="meta">type=${TYPE} · owner=${OWNER} · created=${CREATED}</div>
+<pre>${ESCAPED}</pre>
+</section>
+</main></body></html>
+EOF
+  cp "$SRC" "$TARGET/source.txt"
+fi
+
+python3 - "$TARGET/manifest.json" "$TITLE" "$SLUG" "$TYPE" "$OWNER" "$CREATED" "$EVIDENCE" "$TARGET" <<'PY'
+import json
+import sys
+from pathlib import Path
+manifest, title, slug, typ, owner, created, evidence, target = sys.argv[1:]
+Path(manifest).write_text(json.dumps({
+  "title": title,
+  "slug": slug,
+  "type": typ,
+  "owner": owner,
+  "created": created,
+  "evidence": evidence,
+  "target": target,
+  "url": "/www/" + str(Path(target).relative_to("/opt/agent-web/www")) + "/index.html",
+}, indent=2) + "\n")
+PY
+
+chmod -R g+rwX "$TARGET"
+find "$TARGET" -type d -exec chmod g+s {} +
+
+if [[ "$UPDATE_INDEX" == "yes" ]]; then
+  if command -v agent-web-www >/dev/null 2>&1; then
+    AGENT_WEB_WWW="$ROOT" agent-web-www rebuild-index
+  elif [[ -x /opt/agent-web/bin/agent-web-www ]]; then
+    AGENT_WEB_WWW="$ROOT" /opt/agent-web/bin/agent-web-www rebuild-index
+  else
+    printf 'agent-report: --update-index requested but agent-web-www is unavailable\n' >&2
+    exit 3
+  fi
+fi
+
+printf 'published=%s\n' "$TARGET/index.html"
+printf 'url=http://192.168.0.9/www/%s/index.html\n' "$(realpath --relative-to="$ROOT" "$TARGET")"
+if [[ "$UPDATE_INDEX" == "yes" ]]; then
+  printf 'index=http://192.168.0.9/www/\n'
+fi

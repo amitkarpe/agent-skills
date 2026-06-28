@@ -24,11 +24,29 @@ Midnight Visual: dark-only, diagram-friendly, and never a white/day theme.
 
 ## Output contract
 
-- Publish HTML to `/opt/agent-web/<project-or-repo>/<current-lane>/<slug>.html`.
+- Preferred new publishing root is `/opt/agent-web/www/`.
+- Prefer publishing through `/opt/agent-web/bin/agent-report` when available.
+- Preferred URL shape is `http://192.168.0.9/www/reports/visual-explainer/<YYYY>/<MM-DD>/<slug>/index.html`.
+- Legacy publish paths such as `/opt/agent-web/<project-or-repo>/<current-lane>/<slug>.html` remain compatibility mode. Do not remove or migrate old reports unless Amit explicitly asks.
 - Store source/evidence in `~/.AGENTS-temp/<project-or-repo>/<current-lane>/visual-explainer/`.
-- Default always: print the LAN URL form `http://192.168.0.9/<project-or-repo>/<current-lane>/<slug>.html`.
+- Default always: print the LAN URL form from `agent-report` when used, otherwise print the compatibility URL.
 - Use the Tailscale URL form `http://100.72.42.94/<project-or-repo>/<current-lane>/<slug>.html` only when Amit explicitly says office or Tailscale.
 - Default lifecycle: archive after 30 days unless marked `keep`.
+
+Recommended publish command after rendering `output.html`:
+
+```bash
+/opt/agent-web/bin/agent-report \
+  --type visual-explainer \
+  --title "Visual Report Title" \
+  --slug report-slug \
+  --html-file output.html \
+  --evidence "$EVIDENCE_DIR" \
+  --owner "${USER:-agent}" \
+  --update-index yes
+```
+
+Run `/opt/agent-web/bin/agent-web-www validate` for decision packets, shareable visuals, and reports linked from `/amit/tasks/`.
 
 ## Visual report shape
 

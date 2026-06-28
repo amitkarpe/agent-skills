@@ -1,0 +1,6 @@
+interface:
+  display_name: "Change Explainer"
+  short_description: "Explain code/infra changes as TXT evidence or HTML cockpit"
+  default_prompt: "Use $change-explainer to show why this change matters, what changed, evidence, validation, risks, and next step."
+  icon: "🧭"
+  primary_color: "#0f172a"

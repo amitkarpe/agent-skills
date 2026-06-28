@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="${AGENT_WEB_WWW:-/opt/agent-web/www}"
+PUBLISHER="${AGENT_REPORT_BIN:-/opt/agent-web/bin/agent-report}"
+HELPER="${AGENT_WEB_WWW_BIN:-/opt/agent-web/bin/agent-web-www}"
+RUN_DIR="${1:-/home/dev/.AGENTS-temp/work/agent-report-smoke-manual}"
+
+mkdir -p "$RUN_DIR"
+
+BODY="$RUN_DIR/smoke-body.md"
+OUT="$RUN_DIR/smoke.out"
+SLUG="agent-report-smoke-$(date +%Y%m%d-%H%M%S)"
+
+cat > "$BODY" <<EOF
+# Agent Report Smoke
+
+This smoke validates the deterministic /www publish flow.
+
+- publisher: $PUBLISHER
+- helper: $HELPER
+- root: $ROOT
+- created: $(date -Iseconds)
+EOF
+
+"$PUBLISHER" \
+  --type smoke \
+  --title "Agent Report Smoke" \
+  --slug "$SLUG" \
+  --md-file "$BODY" \
+  --evidence "$RUN_DIR" \
+  --owner "${USER:-agent}" \
+  --update-index yes > "$OUT"
+
+"$HELPER" validate >> "$OUT"
+
+URL="$(awk -F= '/^url=/{print $2}' "$OUT" | tail -1)"
+[[ -n "$URL" ]] || {
+  printf 'agent-report-smoke: missing url in output\n' >&2
+  exit 3
+}
+
+REL="${URL#http://192.168.0.9/www/}"
+HTML="$ROOT/$REL"
+[[ -s "$HTML" ]] || {
+  printf 'agent-report-smoke: published html missing: %s\n' "$HTML" >&2
+  exit 4
+}
+
+MANIFEST="$(dirname "$HTML")/manifest.json"
+[[ -s "$MANIFEST" ]] || {
+  printf 'agent-report-smoke: manifest missing: %s\n' "$MANIFEST" >&2
+  exit 5
+}
+
+python3 -m json.tool "$MANIFEST" > "$RUN_DIR/manifest.pretty.json"
+
+printf 'smoke_status=ok\n' | tee "$RUN_DIR/RESULT.txt"
+printf 'url=%s\n' "$URL" | tee -a "$RUN_DIR/RESULT.txt"
+printf 'html=%s\n' "$HTML" | tee -a "$RUN_DIR/RESULT.txt"
+printf 'manifest=%s\n' "$MANIFEST" | tee -a "$RUN_DIR/RESULT.txt"
