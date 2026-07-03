@@ -1,0 +1,4 @@
+interface:
+  display_name: "PROD Readiness Pre-Mortem"
+  short_description: "Negative PROD change risk review"
+  default_prompt: "Use $prod-readiness-premortem to stress-test this DEV proof and PROD rollout plan before approval."
