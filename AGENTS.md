@@ -34,6 +34,9 @@ Purpose:
 2. expose it through:
    - `~/.codex/skills/<skill>`
 3. keep one-off evidence and generated outputs out of the repo
+4. for a new machine such as office WSL:
+   - run `scripts/bootstrap-local-skills.sh`
+   - read `docs/OFFICE_MIGRATION.md`
 
 ## Git sharing model
 

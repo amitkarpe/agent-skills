@@ -49,6 +49,8 @@ Important:
   - `scripts/link-skill.sh <skill-name>`
 - bulk install helper:
   - `scripts/link-all-skills.sh`
+- local machine bootstrap helper:
+  - `scripts/bootstrap-local-skills.sh`
 - repo sanity check:
   - `scripts/check-skill-repo.sh`
 - full smoke check:
@@ -57,6 +59,8 @@ Important:
   - `scripts/check-promoted-skills.sh`
 - only expose stable and actually useful skills globally
 - keep repo-specific policy in the owning repo, not in shared skills
+
+For office WSL migration and re-linking, see `docs/OFFICE_MIGRATION.md`.
 
 ## When To Promote
 
