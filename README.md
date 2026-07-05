@@ -61,6 +61,8 @@ Important:
 - keep repo-specific policy in the owning repo, not in shared skills
 
 For office WSL migration and re-linking, see `docs/OFFICE_MIGRATION.md`.
+For A's ownership of shared skills, `/opt/agent-share`, and `/opt/agent-web`,
+see `docs/A_OWNERSHIP_AND_OFFICE_SKILL_SYSTEM.md`.
 
 ## When To Promote
 

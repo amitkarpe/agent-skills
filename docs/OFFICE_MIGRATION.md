@@ -21,6 +21,9 @@ On office WSL:
 
 Do not copy secrets into this repo. Do not copy per-run evidence into this repo.
 
+For A's long-term ownership of skills, `/opt/agent-share`, and
+`/opt/agent-web`, read `docs/A_OWNERSHIP_AND_OFFICE_SKILL_SYSTEM.md`.
+
 ## Office Bootstrap
 
 Run on office:
@@ -36,6 +39,8 @@ Expected result:
 - repo skill check passes
 - all stable skills are linked into `~/.codex/skills`
 - promoted-skill check passes
+- if `/opt/agent-share` exists and is writable, `/opt/agent-share/skills`
+  points to this machine's local `agent-skills/skills` directory
 
 ## If The Repo Is Missing On Office
 
