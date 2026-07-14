@@ -1,0 +1,18 @@
+{
+  "artefacts": {
+    "drawio": "ami-factory-v2-1.drawio",
+    "png": "ami-factory-v2-1.png",
+    "review_json": "ami-factory-v2-1.review.json",
+    "review_markdown": "ami-factory-v2-1.review-summary.md",
+    "spec": "ami-factory-v2-1.spec.json",
+    "svg": "ami-factory-v2-1.svg"
+  },
+  "changes": "Verified exact Desktop rendering, embedded icons, semantic legend placement, transparent labels, and corrupt-render rejection.",
+  "finalized_from_pass": 2,
+  "name": "ami-factory-v2-1",
+  "quality_gate": "PASS",
+  "renderer": "drawio-cli",
+  "renderer_confidence": "exact",
+  "schema_version": 1,
+  "status": "WARN"
+}

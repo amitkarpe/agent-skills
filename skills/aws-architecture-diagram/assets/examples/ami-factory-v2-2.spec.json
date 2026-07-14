@@ -1,0 +1,522 @@
+{
+  "id": "ami-factory-dev-icon-v4",
+  "name": "AMI Factory DEV Icon v4",
+  "title": "AMI Factory in DEV ENV",
+  "subtitle": "DEV build, security validation, and evidence flow",
+  "alt_text": "AWS DEV AMI Factory flow from parent AMI and source components through Image Builder, encrypted AMI publication, validation, security scans, and retained evidence.",
+  "long_description": "The diagram shows a DEV AWS boundary containing the AMI build and validation pipeline. CodeBuild starts Image Builder with source components and KMS encryption, publishes the built AMI and SSM pointer, launches a validation instance, runs GuardDuty, Inspector, and dependency checks, and writes evidence before an approved promotion to PROD.",
+  "page": {
+    "width": 1700,
+    "height": 1050,
+    "background": "#FFFFFF"
+  },
+  "boundary": {
+    "id": "aws-cloud",
+    "label": "AWS Cloud \u00b7 DEV",
+    "geometry": [
+      40,
+      100,
+      1620,
+      880
+    ],
+    "fill": "#F5F9FF",
+    "stroke": "#94A3B8"
+  },
+  "groups": [
+    {
+      "id": "security",
+      "label": "Security and compliance",
+      "geometry": [
+        40,
+        690,
+        1540,
+        230
+      ],
+      "fill": "#FAF8FF",
+      "stroke": "#8B5CF6",
+      "dashed": true
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gcc-ami",
+      "label": "GovTech/GCC\nGolden AMI",
+      "icon": "aws-ec2-ami.png",
+      "geometry": [
+        90,
+        180,
+        250,
+        96
+      ],
+      "fill": "#E8F1FF",
+      "stroke": "#2563EB",
+      "provider": "aws",
+      "icon_key": "amazon-ec2-ami"
+    },
+    {
+      "id": "image-builder",
+      "label": "EC2\nImage Builder",
+      "icon": "aws-ec2-image-builder.png",
+      "geometry": [
+        390,
+        180,
+        250,
+        96
+      ],
+      "fill": "#E6FFFB",
+      "stroke": "#0F9D8A",
+      "provider": "aws",
+      "icon_key": "ec2-image-builder"
+    },
+    {
+      "id": "built-ami",
+      "label": "Built and encrypted\nAMI artifact",
+      "icon": "aws-ec2-ami.png",
+      "geometry": [
+        690,
+        180,
+        250,
+        96
+      ],
+      "fill": "#FFF7E6",
+      "stroke": "#F59E0B",
+      "provider": "aws",
+      "icon_key": "amazon-ec2-ami"
+    },
+    {
+      "id": "ssm",
+      "label": "Systems Manager\nAMI pointer",
+      "icon": "aws-systems-manager-parameter-store.png",
+      "geometry": [
+        990,
+        180,
+        250,
+        96
+      ],
+      "fill": "#FFF1E6",
+      "stroke": "#EA580C",
+      "provider": "aws",
+      "icon_key": "aws-systems-manager-parameter-store"
+    },
+    {
+      "id": "ec2",
+      "label": "Validation EC2\ninstance",
+      "icon": "aws-ec2.png",
+      "geometry": [
+        1290,
+        180,
+        250,
+        96
+      ],
+      "fill": "#E8F6FF",
+      "stroke": "#0284C7",
+      "provider": "aws",
+      "icon_key": "amazon-ec2"
+    },
+    {
+      "id": "codebuild",
+      "label": "CodeBuild\norchestration",
+      "icon": "aws-codebuild.png",
+      "geometry": [
+        90,
+        420,
+        250,
+        96
+      ],
+      "fill": "#FFF7ED",
+      "stroke": "#EA580C",
+      "provider": "aws",
+      "icon_key": "aws-codebuild"
+    },
+    {
+      "id": "s3-evidence",
+      "label": "Amazon S3\nbuild evidence",
+      "icon": "aws-s3.png",
+      "geometry": [
+        90,
+        560,
+        250,
+        96
+      ],
+      "fill": "#F0FDF4",
+      "stroke": "#16A34A",
+      "provider": "aws",
+      "icon_key": "amazon-simple-storage-service"
+    },
+    {
+      "id": "s3-source",
+      "label": "Amazon S3\nsource archive",
+      "icon": "aws-s3.png",
+      "geometry": [
+        390,
+        420,
+        250,
+        96
+      ],
+      "fill": "#F0FDF4",
+      "stroke": "#16A34A",
+      "provider": "aws",
+      "icon_key": "amazon-simple-storage-service"
+    },
+    {
+      "id": "kms",
+      "label": "AWS KMS",
+      "icon": "aws-kms.png",
+      "geometry": [
+        690,
+        420,
+        250,
+        96
+      ],
+      "fill": "#FFFBE6",
+      "stroke": "#D97706",
+      "provider": "aws",
+      "icon_key": "aws-key-management-service"
+    },
+    {
+      "id": "nexus-iq",
+      "label": "Sonatype\nNexus IQ",
+      "icon": "sonatype-nexus-iq.png",
+      "geometry": [
+        90,
+        770,
+        300,
+        96
+      ],
+      "fill": "#EEF2FF",
+      "stroke": "#4F46E5",
+      "provider": "vendor"
+    },
+    {
+      "id": "guardduty",
+      "label": "GuardDuty\nS3 malware protection",
+      "icon": "aws-guardduty.png",
+      "geometry": [
+        570,
+        770,
+        300,
+        96
+      ],
+      "fill": "#FFF1F2",
+      "stroke": "#E11D48",
+      "provider": "aws",
+      "icon_key": "amazon-guardduty"
+    },
+    {
+      "id": "inspector",
+      "label": "Inspector\nCIS/HCR scan",
+      "icon": "aws-inspector.png",
+      "geometry": [
+        1050,
+        770,
+        300,
+        96
+      ],
+      "fill": "#F3E8FF",
+      "stroke": "#7C3AED",
+      "provider": "aws",
+      "icon_key": "amazon-inspector"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "prod-promotion",
+      "text": "Promote AMI to PROD account",
+      "geometry": [
+        1280,
+        286,
+        270,
+        30
+      ],
+      "font_size": 14,
+      "font_style": 1,
+      "color": "#0369A1"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-parent",
+      "source": "gcc-ami",
+      "target": "image-builder",
+      "caption": "1 \u00b7 Parent",
+      "caption_geometry": [
+        330,
+        282,
+        120,
+        24
+      ],
+      "color": "#2563EB",
+      "caption_color": "#1D4ED8",
+      "kind": "request"
+    },
+    {
+      "id": "e-build",
+      "source": "image-builder",
+      "target": "built-ami",
+      "caption": "4 \u00b7 Build",
+      "caption_geometry": [
+        635,
+        282,
+        110,
+        24
+      ],
+      "color": "#0F9D8A",
+      "caption_color": "#0F766E",
+      "kind": "request"
+    },
+    {
+      "id": "e-pointer",
+      "source": "built-ami",
+      "target": "ssm",
+      "caption": "5 \u00b7 Publish",
+      "caption_geometry": [
+        930,
+        282,
+        120,
+        24
+      ],
+      "color": "#EA580C",
+      "caption_color": "#C2410C",
+      "kind": "control"
+    },
+    {
+      "id": "e-launch",
+      "source": "built-ami",
+      "target": "ec2",
+      "caption": "6 \u00b7 Validate",
+      "caption_geometry": [
+        1180,
+        112,
+        260,
+        26
+      ],
+      "color": "#0284C7",
+      "caption_color": "#0369A1",
+      "exitX": 0.5,
+      "exitY": 0,
+      "entryX": 0.5,
+      "entryY": 0,
+      "points": [
+        [
+          815,
+          130
+        ],
+        [
+          1415,
+          130
+        ]
+      ],
+      "kind": "request"
+    },
+    {
+      "id": "e-trigger",
+      "source": "codebuild",
+      "target": "image-builder",
+      "caption": "2 \u00b7 Start pipeline",
+      "caption_geometry": [
+        245,
+        350,
+        180,
+        26
+      ],
+      "color": "#7C3AED",
+      "caption_color": "#6D28D9",
+      "exitX": 0.5,
+      "exitY": 0,
+      "entryX": 0.25,
+      "entryY": 1,
+      "kind": "control"
+    },
+    {
+      "id": "e-source",
+      "source": "s3-source",
+      "target": "image-builder",
+      "caption": "3 \u00b7 Components",
+      "caption_geometry": [
+        530,
+        350,
+        140,
+        26
+      ],
+      "color": "#16A34A",
+      "caption_color": "#15803D",
+      "exitX": 0.5,
+      "exitY": 0,
+      "entryX": 0.5,
+      "entryY": 1,
+      "kind": "data"
+    },
+    {
+      "id": "e-kms",
+      "source": "kms",
+      "target": "built-ami",
+      "caption": "KMS encryption",
+      "caption_geometry": [
+        835,
+        350,
+        180,
+        26
+      ],
+      "color": "#D97706",
+      "caption_color": "#92400E",
+      "exitX": 0.5,
+      "exitY": 0,
+      "entryX": 0.5,
+      "entryY": 1,
+      "kind": "request"
+    },
+    {
+      "id": "e-evidence",
+      "source": "codebuild",
+      "target": "s3-evidence",
+      "caption": "7 \u00b7 Write evidence",
+      "caption_geometry": [
+        90,
+        522,
+        250,
+        26
+      ],
+      "color": "#16A34A",
+      "caption_color": "#15803D",
+      "exitX": 0.5,
+      "exitY": 1,
+      "entryX": 0.5,
+      "entryY": 0,
+      "kind": "data"
+    },
+    {
+      "id": "e-nexus",
+      "source": "codebuild",
+      "target": "nexus-iq",
+      "caption": "10 \u00b7 Dependency analysis",
+      "caption_geometry": [
+        350,
+        610,
+        230,
+        26
+      ],
+      "color": "#4F46E5",
+      "caption_color": "#4338CA",
+      "exitX": 1,
+      "exitY": 0.5,
+      "entryX": 1,
+      "entryY": 0.5,
+      "points": [
+        [
+          370,
+          468
+        ],
+        [
+          370,
+          818
+        ]
+      ],
+      "kind": "security"
+    },
+    {
+      "id": "e-scan-source",
+      "source": "guardduty",
+      "target": "s3-source",
+      "caption": "8a \u00b7 Scan source",
+      "caption_geometry": [
+        580,
+        640,
+        190,
+        26
+      ],
+      "color": "#E11D48",
+      "caption_color": "#9F1239",
+      "dashed": true,
+      "exitX": 0.35,
+      "exitY": 0,
+      "entryX": 0.5,
+      "entryY": 1,
+      "kind": "security"
+    },
+    {
+      "id": "e-scan-evidence",
+      "source": "guardduty",
+      "target": "s3-evidence",
+      "caption": "8b \u00b7 Scan evidence",
+      "caption_geometry": [
+        340,
+        650,
+        210,
+        26
+      ],
+      "color": "#E11D48",
+      "caption_color": "#9F1239",
+      "dashed": true,
+      "exitX": 0,
+      "exitY": 0.5,
+      "entryX": 1,
+      "entryY": 0.5,
+      "points": [
+        [
+          500,
+          818
+        ],
+        [
+          500,
+          608
+        ]
+      ],
+      "kind": "security"
+    },
+    {
+      "id": "e-cis",
+      "source": "inspector",
+      "target": "ec2",
+      "caption": "9 \u00b7 CIS/HCR validation",
+      "caption_geometry": [
+        1360,
+        650,
+        260,
+        26
+      ],
+      "color": "#7C3AED",
+      "caption_color": "#5B21B6",
+      "exitX": 1,
+      "exitY": 0.5,
+      "entryX": 0.5,
+      "entryY": 1,
+      "points": [
+        [
+          1400,
+          818
+        ],
+        [
+          1415,
+          818
+        ],
+        [
+          1415,
+          300
+        ]
+      ],
+      "kind": "security"
+    }
+  ],
+  "architecture_type": "devops",
+  "audience": "Cloud platform engineers, security reviewers, and operations teams",
+  "status": "example",
+  "source_evidence": [
+    "User-supplied AMI factory requirements and relationships"
+  ],
+  "legend": "auto",
+  "legend_x": 1040,
+  "legend_y": 430,
+  "footer": {
+    "status": "Example",
+    "owner": "Cloud Platform",
+    "note": "Validate all relationships against current implementation"
+  },
+  "layout": {
+    "origin_x": 90,
+    "origin_y": 180,
+    "card_width": 250,
+    "card_height": 96,
+    "column_gap": 50,
+    "row_gap": 80
+  }
+}

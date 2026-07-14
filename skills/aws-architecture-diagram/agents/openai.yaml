@@ -1,0 +1,13 @@
+interface:
+  display_name: AWS Architecture Diagram v2.3
+  short_description: Build beautiful, reviewed AWS draw.io diagrams
+  default_prompt: Use $aws-architecture-diagram to create a polished, evidence-backed AWS architecture diagram as editable draw.io XML. Prefer current official AWS Architecture Icons, use transparent labels and source-coloured connectors, render to SVG/PNG, perform one critical improvement pass, and return the finalized draw.io file with its review summary. Use the optional local draw.io MCP only for shape discovery, preview, routing, or page inspection; keep the JSON specification canonical.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
