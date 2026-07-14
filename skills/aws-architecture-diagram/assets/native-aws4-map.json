@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "source": "draw.io bundled AWS4 library",
+  "note": "These names were validated through draw.io shape discovery and exact Desktop rendering. Use official embedded icons when a current AWS icon package is available.",
+  "lookup": {
+    "users": "users",
+    "amazon-route-53": "route_53",
+    "amazon-cloudfront": "cloudfront",
+    "internet-gateway": "internet_gateway",
+    "elastic-load-balancing-application-load-balancer": "application_load_balancer",
+    "nat-gateway": "nat_gateway",
+    "amazon-ec2": "ec2",
+    "amazon-ec2-ami": "ami",
+    "ec2-image-builder": "ec2_image_builder",
+    "amazon-ec2-auto-scaling": "auto_scaling",
+    "aws-codebuild": "codebuild",
+    "aws-key-management-service": "key_management_service",
+    "amazon-guardduty": "guardduty",
+    "amazon-inspector": "inspector",
+    "amazon-rds": "rds",
+    "amazon-simple-storage-service": "s3",
+    "amazon-cloudwatch": "cloudwatch",
+    "aws-codepipeline": "codepipeline",
+    "aws-step-functions": "step_functions"
+  },
+  "direct_shapes": {
+    "aws-systems-manager-parameter-store": "parameter_store"
+  },
+  "fill_colors": {
+    "users": "#232F3E",
+    "route_53": "#8C4FFF",
+    "cloudfront": "#8C4FFF",
+    "internet_gateway": "#8C4FFF",
+    "application_load_balancer": "#8C4FFF",
+    "nat_gateway": "#8C4FFF",
+    "ec2": "#ED7100",
+    "ami": "#ED7100",
+    "ec2_image_builder": "#ED7100",
+    "auto_scaling": "#ED7100",
+    "codebuild": "#C925D1",
+    "key_management_service": "#DD344C",
+    "guardduty": "#DD344C",
+    "inspector": "#DD344C",
+    "parameter_store": "#E7157B",
+    "rds": "#3B48CC",
+    "s3": "#3F8624",
+    "cloudwatch": "#E7157B",
+    "codepipeline": "#C925D1",
+    "step_functions": "#E7157B"
+  },
+  "verification": {
+    "aws-codepipeline": {
+      "shape": "codepipeline",
+      "catalog_version": "2026.03",
+      "drawio_desktop_version": "24.7.17",
+      "verified_date": "2026-07-14",
+      "result": "accepted-exact-render"
+    },
+    "aws-step-functions": {
+      "shape": "step_functions",
+      "catalog_version": "2026.03",
+      "drawio_desktop_version": "24.7.17",
+      "verified_date": "2026-07-14",
+      "result": "accepted-exact-render"
+    }
+  }
+}

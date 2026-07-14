@@ -1,0 +1,865 @@
+{
+  "id": "aws-3-tier-demo-v2",
+  "name": "AWS 3-Tier Demo",
+  "title": "Demo AWS 3-Tier Application Architecture",
+  "subtitle": "Highly available web application across two Availability Zones",
+  "alt_text": "Highly available AWS three-tier application with Route 53 and CloudFront ingress, load-balanced EC2 application tiers in two Availability Zones, and a Multi-AZ RDS database tier.",
+  "long_description": "Users reach Route 53 and CloudFront before traffic enters an Application Load Balancer. Two private application subnets host EC2 instances across separate Availability Zones, while private database subnets contain the RDS primary and standby. NAT gateways provide controlled egress, S3 supplies static content, and CloudWatch receives operational telemetry.",
+  "architecture_type": "application",
+  "audience": "Application teams, cloud engineers, and architecture reviewers",
+  "status": "reference-demo",
+  "source_evidence": [
+    "User-requested demonstration of a classic highly available AWS three-tier web application",
+    "AWS Architecture Icons and AWS architecture diagramming guidance"
+  ],
+  "page": {
+    "width": 1920,
+    "height": 1080,
+    "background": "#FFFFFF"
+  },
+  "theme": "aws-clean-2026",
+  "icon_mode": "native",
+  "edge_color_mode": "source",
+  "title_geometry": [
+    250,
+    20,
+    1420,
+    48
+  ],
+  "subtitle_geometry": [
+    300,
+    76,
+    1320,
+    30
+  ],
+  "boundary": {
+    "id": "vpc",
+    "label": "VPC 10.0.0.0/16",
+    "kind": "vpc",
+    "geometry": [
+      40,
+      270,
+      1510,
+      750
+    ],
+    "label_geometry": [
+      70,
+      294,
+      260,
+      34
+    ],
+    "fill": "#FBFDFB",
+    "stroke": "#2E7D32",
+    "stroke_width": 2.4,
+    "label_align": "left"
+  },
+  "groups": [
+    {
+      "id": "tier-web",
+      "label": "WEB TIER\nPublic subnets",
+      "kind": "tier-panel",
+      "geometry": [
+        65,
+        350,
+        190,
+        180
+      ],
+      "label_geometry": [
+        82,
+        382,
+        156,
+        116
+      ],
+      "fill": "#F0F8F1",
+      "stroke": "#2E7D32",
+      "font_color": "#1B5E20",
+      "font_size": 18
+    },
+    {
+      "id": "tier-app",
+      "label": "APPLICATION TIER\nPrivate app subnets",
+      "kind": "tier-panel",
+      "geometry": [
+        65,
+        570,
+        190,
+        180
+      ],
+      "label_geometry": [
+        80,
+        598,
+        160,
+        124
+      ],
+      "fill": "#EFF6FF",
+      "stroke": "#2563EB",
+      "font_color": "#1E40AF",
+      "font_size": 18
+    },
+    {
+      "id": "tier-db",
+      "label": "DATABASE TIER\nPrivate DB subnets",
+      "kind": "tier-panel",
+      "geometry": [
+        65,
+        790,
+        190,
+        180
+      ],
+      "label_geometry": [
+        82,
+        820,
+        156,
+        120
+      ],
+      "fill": "#F5F3FF",
+      "stroke": "#6D28D9",
+      "font_color": "#4C1D95",
+      "font_size": 18
+    },
+    {
+      "id": "az-a",
+      "label": "Availability Zone A",
+      "kind": "availability-zone",
+      "geometry": [
+        280,
+        325,
+        600,
+        660
+      ],
+      "label_geometry": [
+        300,
+        336,
+        560,
+        30
+      ],
+      "fill": "none",
+      "stroke": "#2563EB",
+      "stroke_width": 2,
+      "dashed": true,
+      "font_size": 19
+    },
+    {
+      "id": "az-b",
+      "label": "Availability Zone B",
+      "kind": "availability-zone",
+      "geometry": [
+        900,
+        325,
+        600,
+        660
+      ],
+      "label_geometry": [
+        920,
+        336,
+        560,
+        30
+      ],
+      "fill": "none",
+      "stroke": "#2563EB",
+      "stroke_width": 2,
+      "dashed": true,
+      "font_size": 19
+    },
+    {
+      "id": "public-a",
+      "label": "Public Subnet A  \u00b7  10.0.1.0/24",
+      "kind": "public-subnet",
+      "geometry": [
+        305,
+        375,
+        550,
+        165
+      ],
+      "label_geometry": [
+        325,
+        383,
+        510,
+        28
+      ],
+      "fill": "#F0F8F1",
+      "stroke": "#2E7D32"
+    },
+    {
+      "id": "public-b",
+      "label": "Public Subnet B  \u00b7  10.0.2.0/24",
+      "kind": "public-subnet",
+      "geometry": [
+        925,
+        375,
+        550,
+        165
+      ],
+      "label_geometry": [
+        945,
+        383,
+        510,
+        28
+      ],
+      "fill": "#F0F8F1",
+      "stroke": "#2E7D32"
+    },
+    {
+      "id": "app-a",
+      "label": "Private App A  \u00b7  10.0.3.0/24",
+      "kind": "private-app-subnet",
+      "geometry": [
+        305,
+        570,
+        550,
+        180
+      ],
+      "label_geometry": [
+        600,
+        578,
+        220,
+        28
+      ],
+      "fill": "#EFF6FF",
+      "stroke": "#2563EB"
+    },
+    {
+      "id": "app-b",
+      "label": "Private App B  \u00b7  10.0.4.0/24",
+      "kind": "private-app-subnet",
+      "geometry": [
+        925,
+        570,
+        550,
+        180
+      ],
+      "label_geometry": [
+        945,
+        578,
+        220,
+        28
+      ],
+      "fill": "#EFF6FF",
+      "stroke": "#2563EB"
+    },
+    {
+      "id": "db-a",
+      "label": "Private DB A  \u00b7  10.0.5.0/24",
+      "kind": "private-db-subnet",
+      "geometry": [
+        305,
+        790,
+        550,
+        165
+      ],
+      "label_geometry": [
+        325,
+        798,
+        220,
+        28
+      ],
+      "fill": "#F5F3FF",
+      "stroke": "#6D28D9"
+    },
+    {
+      "id": "db-b",
+      "label": "Private DB B  \u00b7  10.0.6.0/24",
+      "kind": "private-db-subnet",
+      "geometry": [
+        925,
+        790,
+        550,
+        165
+      ],
+      "label_geometry": [
+        945,
+        798,
+        220,
+        28
+      ],
+      "fill": "#F5F3FF",
+      "stroke": "#6D28D9"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "users",
+      "provider": "aws",
+      "label": "Users",
+      "icon_key": "users",
+      "variant": "icon-above",
+      "geometry": [
+        80,
+        120,
+        170,
+        120
+      ],
+      "fill": "none",
+      "stroke": "none",
+      "accent": "#334155",
+      "icon_size": 64,
+      "font_size": 16
+    },
+    {
+      "id": "route53",
+      "provider": "aws",
+      "label": "Amazon Route 53",
+      "icon_key": "amazon-route-53",
+      "variant": "icon-above",
+      "geometry": [
+        360,
+        120,
+        200,
+        120
+      ],
+      "fill": "none",
+      "stroke": "none",
+      "accent": "#6D28D9",
+      "icon_size": 64,
+      "font_size": 16
+    },
+    {
+      "id": "cloudfront",
+      "provider": "aws",
+      "label": "Amazon CloudFront",
+      "icon_key": "amazon-cloudfront",
+      "variant": "icon-above",
+      "geometry": [
+        700,
+        120,
+        210,
+        120
+      ],
+      "fill": "none",
+      "stroke": "none",
+      "accent": "#6D28D9",
+      "icon_size": 64,
+      "font_size": 16
+    },
+    {
+      "id": "igw",
+      "provider": "aws",
+      "label": "Internet Gateway",
+      "icon_key": "internet-gateway",
+      "variant": "icon-above",
+      "geometry": [
+        1040,
+        120,
+        190,
+        120
+      ],
+      "fill": "none",
+      "stroke": "none",
+      "accent": "#6D28D9",
+      "icon_size": 64,
+      "font_size": 16
+    },
+    {
+      "id": "alb",
+      "provider": "aws",
+      "label": "Application Load Balancer\nSpans both public subnets",
+      "icon_key": "elastic-load-balancing-application-load-balancer",
+      "variant": "icon-left",
+      "geometry": [
+        700,
+        420,
+        360,
+        100
+      ],
+      "fill": "#FFFFFF",
+      "stroke": "#2E7D32",
+      "accent": "#2E7D32",
+      "icon_size": 60,
+      "font_size": 16,
+      "shadow": true
+    },
+    {
+      "id": "nat-a",
+      "provider": "aws",
+      "label": "NAT Gateway A",
+      "icon_key": "nat-gateway",
+      "variant": "icon-above",
+      "geometry": [
+        410,
+        420,
+        170,
+        105
+      ],
+      "fill": "none",
+      "stroke": "none",
+      "accent": "#2E7D32",
+      "icon_size": 54,
+      "font_size": 15
+    },
+    {
+      "id": "nat-b",
+      "provider": "aws",
+      "label": "NAT Gateway B",
+      "icon_key": "nat-gateway",
+      "variant": "icon-above",
+      "geometry": [
+        1200,
+        420,
+        170,
+        105
+      ],
+      "fill": "none",
+      "stroke": "none",
+      "accent": "#2E7D32",
+      "icon_size": 54,
+      "font_size": 15
+    },
+    {
+      "id": "app-ec2-a",
+      "provider": "aws",
+      "label": "EC2 Web / App Tier\nAuto Scaling group",
+      "icon_key": "amazon-ec2-auto-scaling",
+      "variant": "icon-left",
+      "geometry": [
+        410,
+        620,
+        330,
+        100
+      ],
+      "fill": "#FFFFFF",
+      "stroke": "#2563EB",
+      "accent": "#2563EB",
+      "icon_size": 58,
+      "font_size": 16
+    },
+    {
+      "id": "app-ec2-b",
+      "provider": "aws",
+      "label": "EC2 Web / App Tier\nAuto Scaling group",
+      "icon_key": "amazon-ec2-auto-scaling",
+      "variant": "icon-left",
+      "geometry": [
+        1030,
+        620,
+        330,
+        100
+      ],
+      "fill": "#FFFFFF",
+      "stroke": "#2563EB",
+      "accent": "#2563EB",
+      "icon_size": 58,
+      "font_size": 16
+    },
+    {
+      "id": "rds-primary",
+      "provider": "aws",
+      "label": "Amazon RDS\nPrimary",
+      "icon_key": "amazon-rds",
+      "variant": "icon-left",
+      "geometry": [
+        450,
+        835,
+        260,
+        95
+      ],
+      "fill": "#FFFFFF",
+      "stroke": "#6D28D9",
+      "accent": "#6D28D9",
+      "icon_size": 56,
+      "font_size": 16
+    },
+    {
+      "id": "rds-standby",
+      "provider": "aws",
+      "label": "Amazon RDS\nMulti-AZ standby",
+      "icon_key": "amazon-rds",
+      "variant": "icon-left",
+      "geometry": [
+        1070,
+        835,
+        280,
+        95
+      ],
+      "fill": "#FFFFFF",
+      "stroke": "#6D28D9",
+      "accent": "#6D28D9",
+      "icon_size": 56,
+      "font_size": 16
+    },
+    {
+      "id": "s3",
+      "provider": "aws",
+      "label": "Amazon S3\nStatic assets / backups",
+      "icon_key": "amazon-simple-storage-service",
+      "variant": "icon-left",
+      "geometry": [
+        1605,
+        405,
+        270,
+        105
+      ],
+      "fill": "#FFFFFF",
+      "stroke": "#4C8C2B",
+      "accent": "#4C8C2B",
+      "icon_size": 58,
+      "font_size": 16
+    },
+    {
+      "id": "cloudwatch",
+      "provider": "aws",
+      "label": "Amazon CloudWatch\nMetrics and logs",
+      "icon_key": "amazon-cloudwatch",
+      "variant": "icon-left",
+      "geometry": [
+        1605,
+        575,
+        270,
+        105
+      ],
+      "fill": "#FFFFFF",
+      "stroke": "#C2185B",
+      "accent": "#C2185B",
+      "icon_size": 58,
+      "font_size": 16
+    }
+  ],
+  "edges": [
+    {
+      "id": "users-route53",
+      "source": "users",
+      "target": "route53",
+      "caption": "DNS lookup",
+      "caption_geometry": [
+        255,
+        138,
+        100,
+        28
+      ],
+      "kind": "request",
+      "exitX": 1,
+      "exitY": 0.45,
+      "entryX": 0,
+      "entryY": 0.45
+    },
+    {
+      "id": "route53-cloudfront",
+      "source": "route53",
+      "target": "cloudfront",
+      "caption": "Content delivery",
+      "caption_geometry": [
+        570,
+        138,
+        120,
+        28
+      ],
+      "kind": "request",
+      "exitX": 1,
+      "exitY": 0.45,
+      "entryX": 0,
+      "entryY": 0.45
+    },
+    {
+      "id": "cloudfront-igw",
+      "source": "cloudfront",
+      "target": "igw",
+      "caption": "HTTPS traffic",
+      "caption_geometry": [
+        920,
+        138,
+        110,
+        28
+      ],
+      "kind": "request",
+      "exitX": 1,
+      "exitY": 0.45,
+      "entryX": 0,
+      "entryY": 0.45
+    },
+    {
+      "id": "igw-alb",
+      "source": "igw",
+      "target": "alb",
+      "caption": "Internet-facing entry",
+      "caption_geometry": [
+        995,
+        278,
+        170,
+        28
+      ],
+      "kind": "request",
+      "exitX": 0.5,
+      "exitY": 1,
+      "entryX": 0.5,
+      "entryY": 0,
+      "points": [
+        [
+          1135,
+          255
+        ],
+        [
+          880,
+          255
+        ]
+      ]
+    },
+    {
+      "id": "alb-app-a",
+      "source": "alb",
+      "target": "app-ec2-a",
+      "caption": "Forward request",
+      "caption_geometry": [
+        650,
+        522,
+        130,
+        20
+      ],
+      "kind": "request",
+      "exitX": 0.25,
+      "exitY": 1,
+      "entryX": 0.5,
+      "entryY": 0,
+      "points": [
+        [
+          790,
+          550
+        ],
+        [
+          575,
+          550
+        ]
+      ]
+    },
+    {
+      "id": "alb-app-b",
+      "source": "alb",
+      "target": "app-ec2-b",
+      "caption": "Forward request",
+      "caption_geometry": [
+        1010,
+        522,
+        130,
+        20
+      ],
+      "kind": "request",
+      "exitX": 0.75,
+      "exitY": 1,
+      "entryX": 0.5,
+      "entryY": 0,
+      "points": [
+        [
+          970,
+          550
+        ],
+        [
+          1195,
+          550
+        ]
+      ]
+    },
+    {
+      "id": "app-a-rds",
+      "source": "app-ec2-a",
+      "target": "rds-primary",
+      "caption": "SQL connection",
+      "caption_geometry": [
+        400,
+        755,
+        150,
+        28
+      ],
+      "kind": "data",
+      "exitX": 0.5,
+      "exitY": 1,
+      "entryX": 0.5,
+      "entryY": 0
+    },
+    {
+      "id": "app-b-rds",
+      "source": "app-ec2-b",
+      "target": "rds-standby",
+      "caption": "Database endpoint",
+      "caption_geometry": [
+        1225,
+        755,
+        150,
+        28
+      ],
+      "kind": "data",
+      "exitX": 0.5,
+      "exitY": 1,
+      "entryX": 0.5,
+      "entryY": 0
+    },
+    {
+      "id": "rds-replication",
+      "source": "rds-primary",
+      "target": "rds-standby",
+      "caption": "Multi-AZ synchronous replication",
+      "caption_geometry": [
+        750,
+        842,
+        300,
+        24
+      ],
+      "kind": "replication",
+      "color_mode": "semantic",
+      "dashed": true,
+      "exitX": 1,
+      "exitY": 0.5,
+      "entryX": 0,
+      "entryY": 0.5
+    },
+    {
+      "id": "app-a-nat",
+      "source": "app-ec2-a",
+      "target": "nat-a",
+      "caption": "Outbound updates",
+      "caption_geometry": [
+        325,
+        538,
+        150,
+        28
+      ],
+      "kind": "control",
+      "dashed": true,
+      "exitX": 0.25,
+      "exitY": 0,
+      "entryX": 0.5,
+      "entryY": 1,
+      "points": [
+        [
+          492,
+          550
+        ]
+      ]
+    },
+    {
+      "id": "app-b-nat",
+      "source": "app-ec2-b",
+      "target": "nat-b",
+      "caption": "Outbound updates",
+      "caption_geometry": [
+        1302,
+        538,
+        150,
+        28
+      ],
+      "kind": "control",
+      "dashed": true,
+      "exitX": 0.75,
+      "exitY": 0,
+      "entryX": 0.5,
+      "entryY": 1,
+      "points": [
+        [
+          1285,
+          550
+        ]
+      ]
+    },
+    {
+      "id": "cloudfront-s3",
+      "source": "cloudfront",
+      "target": "s3",
+      "caption": "Static content origin",
+      "caption_geometry": [
+        1290,
+        240,
+        210,
+        24
+      ],
+      "kind": "data",
+      "dashed": true,
+      "exitX": 0.5,
+      "exitY": 0,
+      "entryX": 0,
+      "entryY": 0.5,
+      "points": [
+        [
+          805,
+          114
+        ],
+        [
+          1570,
+          114
+        ],
+        [
+          1570,
+          458
+        ]
+      ]
+    },
+    {
+      "id": "app-cloudwatch",
+      "source": "app-ec2-b",
+      "target": "cloudwatch",
+      "caption": "Metrics and logs",
+      "caption_geometry": [
+        1455,
+        592,
+        140,
+        28
+      ],
+      "kind": "observability",
+      "dashed": true,
+      "exitX": 1,
+      "exitY": 0.5,
+      "entryX": 0,
+      "entryY": 0.5,
+      "points": [
+        [
+          1515,
+          670
+        ],
+        [
+          1515,
+          628
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "show": true,
+    "title": "Legend",
+    "geometry": [
+      1590,
+      700,
+      300,
+      300
+    ],
+    "items": [
+      {
+        "type": "box",
+        "label": "Public subnet",
+        "stroke": "#2E7D32",
+        "fill": "#F0F8F1"
+      },
+      {
+        "type": "box",
+        "label": "Private application subnet",
+        "stroke": "#2563EB",
+        "fill": "#EFF6FF"
+      },
+      {
+        "type": "box",
+        "label": "Private database subnet",
+        "stroke": "#6D28D9",
+        "fill": "#F5F3FF"
+      },
+      {
+        "type": "line",
+        "label": "Load-balanced request flow",
+        "color": "#2E7D32",
+        "dashed": false
+      },
+      {
+        "type": "line",
+        "label": "Application / data flow",
+        "color": "#2563EB",
+        "dashed": false
+      },
+      {
+        "type": "line",
+        "label": "Supporting / replication flow",
+        "color": "#6D28D9",
+        "dashed": true
+      }
+    ]
+  },
+  "annotations": [],
+  "footer": {
+    "status": "Reference demo",
+    "owner": "Architecture",
+    "note": "Validate CIDRs, security controls, and service configuration before implementation"
+  }
+}

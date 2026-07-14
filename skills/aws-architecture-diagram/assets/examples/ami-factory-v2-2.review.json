@@ -1,0 +1,192 @@
+{
+  "artefacts": {
+    "drawio": "/home/user/.AGENTS-temp/awsops/aws-architecture-diagram-mcp-validation-20260713/final-review-v2.2/ami-factory-v2-2.pass-02.drawio",
+    "png": "/home/user/.AGENTS-temp/awsops/aws-architecture-diagram-mcp-validation-20260713/final-review-v2.2/ami-factory-v2-2.pass-02.png",
+    "svg": "/home/user/.AGENTS-temp/awsops/aws-architecture-diagram-mcp-validation-20260713/final-review-v2.2/ami-factory-v2-2.pass-02.svg"
+  },
+  "changes": "Replaced regression-only AWS PNG fallbacks with MCP-verified native AWS4 mappings, added direct Parameter Store support, and confirmed icon consistency and exact Desktop rendering.",
+  "errors": [],
+  "metrics": {
+    "png": {
+      "background_rgb": [
+        255,
+        255,
+        255
+      ],
+      "content_bbox": [
+        58,
+        49,
+        2491,
+        1544
+      ],
+      "height": 1553,
+      "margins_px": {
+        "bottom": 9,
+        "left": 58,
+        "right": 3,
+        "top": 49
+      },
+      "mean_rgb": [
+        241.88,
+        242.0,
+        246.29
+      ],
+      "occupancy_ratio": 0.9391,
+      "width": 2494
+    },
+    "svg": {
+      "bytes": 146202,
+      "height": 1035.0,
+      "viewBox": "-0.5 -0.5 1663 1035",
+      "width": 1663.0
+    },
+    "xml": {
+      "caption_count": 12,
+      "cell_count": 81,
+      "edge_colors": {
+        "#0284C7": 1,
+        "#0F9D8A": 1,
+        "#16A34A": 2,
+        "#2563EB": 1,
+        "#4F46E5": 1,
+        "#7C3AED": 2,
+        "#D97706": 1,
+        "#E11D48": 2,
+        "#EA580C": 1
+      },
+      "edge_count": 12,
+      "edge_styles": {
+        "dashed": 6,
+        "solid": 6
+      },
+      "icon_sources": {
+        "drawio-native-aws4": 11,
+        "vendor-local": 1
+      },
+      "kind_counts": {
+        "annotation": 1,
+        "boundary-label": 1,
+        "boundary-shell": 1,
+        "diagram-metadata": 1,
+        "footer": 1,
+        "group-label": 1,
+        "group-shell": 1,
+        "legend-label": 4,
+        "legend-line": 4,
+        "legend-shell": 1,
+        "legend-title": 1,
+        "relationship": 12,
+        "relationship-caption": 12,
+        "resource-card": 12,
+        "resource-icon": 12,
+        "resource-label": 12,
+        "subtitle": 1,
+        "title": 1,
+        "untyped": 2
+      },
+      "legend_present": true,
+      "minimum_font_size": 12.0,
+      "page_height": 1050.0,
+      "page_width": 1700.0,
+      "resource_count": 12,
+      "resource_geometries": {
+        "built-ami": [
+          690.0,
+          180.0,
+          250.0,
+          96.0
+        ],
+        "codebuild": [
+          90.0,
+          420.0,
+          250.0,
+          96.0
+        ],
+        "ec2": [
+          1290.0,
+          180.0,
+          250.0,
+          96.0
+        ],
+        "gcc-ami": [
+          90.0,
+          180.0,
+          250.0,
+          96.0
+        ],
+        "guardduty": [
+          570.0,
+          770.0,
+          300.0,
+          96.0
+        ],
+        "image-builder": [
+          390.0,
+          180.0,
+          250.0,
+          96.0
+        ],
+        "inspector": [
+          1050.0,
+          770.0,
+          300.0,
+          96.0
+        ],
+        "kms": [
+          690.0,
+          420.0,
+          250.0,
+          96.0
+        ],
+        "nexus-iq": [
+          90.0,
+          770.0,
+          300.0,
+          96.0
+        ],
+        "s3-evidence": [
+          90.0,
+          560.0,
+          250.0,
+          96.0
+        ],
+        "s3-source": [
+          390.0,
+          420.0,
+          250.0,
+          96.0
+        ],
+        "ssm": [
+          990.0,
+          180.0,
+          250.0,
+          96.0
+        ]
+      },
+      "text_count": 35,
+      "transparent_text_count": 35
+    }
+  },
+  "pass_number": 2,
+  "quality_gate": "PASS",
+  "recommendations": [],
+  "renderer": "drawio-cli",
+  "renderer_confidence": "exact",
+  "schema_version": 1,
+  "status": "WARN",
+  "validator_output": "WARN AWS resource uses draw.io native icon: gcc-ami\nWARN AWS resource uses draw.io native icon: image-builder\nWARN AWS resource uses draw.io native icon: built-ami\nWARN AWS resource uses draw.io native icon: ssm\nWARN AWS resource uses draw.io native icon: ec2\nWARN AWS resource uses draw.io native icon: codebuild\nWARN AWS resource uses draw.io native icon: s3-evidence\nWARN AWS resource uses draw.io native icon: s3-source\nWARN AWS resource uses draw.io native icon: kms\nWARN AWS resource uses draw.io native icon: guardduty\nWARN AWS resource uses draw.io native icon: inspector\nPASS drawio=/home/user/.AGENTS-temp/awsops/aws-architecture-diagram-mcp-validation-20260713/final-review-v2.2/ami-factory-v2-2.pass-02.drawio resources=12 edges=12 official_icons=0 native_icons=11 unverified_icons=0 warnings=11 portable=yes",
+  "warnings": [
+    "AWS resource uses draw.io native icon: gcc-ami",
+    "AWS resource uses draw.io native icon: image-builder",
+    "AWS resource uses draw.io native icon: built-ami",
+    "AWS resource uses draw.io native icon: ssm",
+    "AWS resource uses draw.io native icon: ec2",
+    "AWS resource uses draw.io native icon: codebuild",
+    "AWS resource uses draw.io native icon: s3-evidence",
+    "AWS resource uses draw.io native icon: s3-source",
+    "AWS resource uses draw.io native icon: kms",
+    "AWS resource uses draw.io native icon: guardduty",
+    "AWS resource uses draw.io native icon: inspector",
+    "rendered content approaches a page edge; minimum margin is 3px"
+  ]
+}
