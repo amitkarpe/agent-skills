@@ -27,6 +27,17 @@ Purpose:
 - expose only stable, proven skills globally
 - keep repo-specific policy in the owning repo, not in shared skills
 
+## tmux prompt submission
+
+- When sending a prompt to another tmux Codex worker, paste the complete prompt
+  or `@/absolute/path/to/goal.md`, then always send `Enter`.
+- Wait 3-4 seconds after `Enter`, then run one `tmux capture-pane` check.
+- Success means the target changed to `Working` or visibly accepted the prompt.
+- If the prompt remains in the composer, send `Enter` once more, wait 3-4
+  seconds, and confirm again.
+- After confirmed submission, stop polling. The worker must write its
+  `RESULT.md` and `.done` marker and wake the controller when finished.
+
 ## Promotion path
 
 1. create or refine the skill in:
