@@ -367,25 +367,62 @@ def write_tsv(path: Path, rows: list[dict[str, str]]) -> None:
 
 def html_report(summary: dict[str, Any], rows: list[dict[str, str]]) -> str:
     esc = lambda value: html.escape(str(value), quote=True)
-    severity_cards = "".join(f"<article><b>{esc(name)}</b><strong>{summary['severity'].get(name, 0)}</strong></article>" for name in SEVERITY_ORDER[:4])
+    severity_cards = "".join(f"<article><b>{esc(name.title())}</b><strong>{summary['severity'].get(name, 0)}</strong></article>" for name in SEVERITY_ORDER[:4])
+    comparison = summary["comparison"]
+    comparison_cards = "" if not comparison["compatible"] else "".join(
+        f"<article><b>{esc(label)}</b><strong>{comparison[key]}</strong></article>"
+        for key, label in (("recurring", "Recurring"), ("new_or_changed", "New or changed"), ("prior_only", "Prior only"))
+    )
     host_groups: dict[str, list[dict[str, str]]] = defaultdict(list)
     for row in rows:
         host_groups[row["ip"] or "unknown IP"].append(row)
     host_rows = []
-    for ip, grouped in sorted(host_groups.items()):
+    for ip, grouped in sorted(host_groups.items(), key=lambda item: (
+        -sum(row["severity"] == "CRITICAL" for row in item[1]),
+        -sum(row["severity"] == "HIGH" for row in item[1]),
+        -len(item[1]), item[0],
+    )):
         counts = Counter(item["severity"] for item in grouped)
         hosts = sorted({item["hostname"] for item in grouped if item["hostname"]}) or ["unknown"]
         mapping = sorted({item["inventory_mapping"] for item in grouped if item["inventory_mapping"]}) or ["unknown"]
-        host_rows.append(f"<tr><td>{esc(ip)}</td><td>{esc(', '.join(hosts))}</td><td>{len(grouped)}</td><td>{esc(', '.join(f'{key}:{counts[key]}' for key in SEVERITY_ORDER if counts[key]))}</td><td>{esc(', '.join(mapping))}</td></tr>")
+        host_rows.append(
+            f"<tr><td>{esc(ip)}</td><td>{esc(', '.join(hosts))}</td><td>{len(grouped)}</td>"
+            f"<td>{counts['CRITICAL']}</td><td>{counts['HIGH']}</td><td>{counts['MEDIUM']}</td><td>{counts['LOW']}</td>"
+            f"<td>{esc(', '.join(mapping))}</td></tr>"
+        )
     findings: dict[tuple[str, str], list[dict[str, str]]] = defaultdict(list)
     for row in rows:
         if row["severity"] in ("CRITICAL", "HIGH"):
             findings[(row["severity"], row["finding"])].append(row)
     finding_rows = []
-    for (sev, finding), grouped in sorted(findings.items(), key=lambda item: (SEVERITY_ORDER.index(item[0][0]), -len(item[1]), item[0][1]))[:20]:
-        finding_rows.append(f"<tr><td>{esc(sev)}</td><td>{esc(finding)}</td><td>{len(grouped)}</td><td>{esc(', '.join(sorted({item['ip'] or 'unknown' for item in grouped})))}</td><td>{esc(', '.join(sorted({item['action'] for item in grouped})))}</td></tr>")
+    ranked_findings = sorted(
+        findings.items(),
+        key=lambda item: (SEVERITY_ORDER.index(item[0][0]), -len({row["ip"] or "unknown" for row in item[1]}), -len(item[1]), item[0][1]),
+    )[:5]
+    for (sev, finding), grouped in ranked_findings:
+        ips = sorted({item["ip"] or "unknown" for item in grouped})
+        actions = sorted({item["action"] for item in grouped})
+        finding_rows.append(
+            f"<tr><td>{esc(sev.title())}</td><td>{esc(finding)}</td><td>{len(grouped)}</td>"
+            f"<td>{len(ips)}<details><summary>Show affected IPs</summary><code>{esc(', '.join(ips))}</code></details></td>"
+            f"<td>{esc(', '.join(actions))}</td></tr>"
+        )
+    high_risk_rows = sum(summary["severity"][name] for name in ("CRITICAL", "HIGH"))
+    high_risk_ips = len({row["ip"] for row in rows if row["ip"] and row["severity"] in ("CRITICAL", "HIGH")})
+    comparison_fact = (
+        f"Prior evidence: {comparison['recurring']} recurring, {comparison['new_or_changed']} new or changed, {comparison['prior_only']} prior only."
+        if comparison["compatible"] else "Prior comparison: not supplied."
+    )
+    coverage = summary["mapping_coverage"]
+    facts = (
+        f"Critical + High: {high_risk_rows} report rows across {high_risk_ips} affected IPs.",
+        comparison_fact,
+        f"Workbook actions: Remediation {summary['actions'].get('Remediation', 0)}, Recast {summary['actions'].get('Recast', 0)}.",
+        f"Workbook hostnames: {coverage['workbook_hostname_ips']} of {summary['unique_ips']} unique IPs.",
+        f"Local inventory: {coverage['inventory_mapped_ips']} mapped; {coverage['unmapped_ips']} still unmapped.",
+    )
     warnings = "".join(f"<li>{esc(item)}</li>" for item in summary["warnings"]) or "<li>none</li>"
-    return f"""<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>{esc(summary['app_system'])} VA review</title><style>:root{{--bg:#07111f;--panel:#10233a;--line:#31506d;--text:#eef6ff;--muted:#afc1d4;--critical:#ff8f98;--high:#ffcd70;--medium:#75c9ff;--low:#7ae0a7}}*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,sans-serif}}main{{max-width:1200px;margin:auto;padding:32px 20px 56px}}h1,h2{{line-height:1.15}}.muted{{color:var(--muted)}}.cards{{display:grid;grid-template-columns:repeat(6,minmax(110px,1fr));gap:12px}}article,.box{{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}}article b{{display:block;color:var(--muted);font-size:14px}}article strong{{font-size:30px}}table{{width:100%;border-collapse:collapse;background:var(--panel)}}th,td{{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}th{{color:var(--muted);font-size:13px}}code{{word-break:break-all}}@media(max-width:720px){{main{{padding:20px 12px}}.cards{{grid-template-columns:repeat(2,1fr)}}table{{font-size:13px}}}}</style></head><body><main><p class=\"muted\">Local evidence-only VA review</p><h1>{esc(summary['app_system'])}</h1><p>Report date: <b>{esc(summary['report_date'])}</b> · Scan/observation dates: <b>{esc(', '.join(summary['scan_dates']) or 'unknown')}</b> · Evidence cutoff: <b>{esc(summary['evidence_cutoff'])}</b></p><section class=\"cards\"><article><b>Filtered rows</b><strong>{summary['row_count']}</strong></article><article><b>Unique IPs</b><strong>{summary['unique_ips']}</strong></article>{severity_cards}</section><h2>Interpretation boundary</h2><div class=\"box\">This report is source evidence, not current asset, remediation, or false-positive proof. Unknown host mappings remain unknown. Remediation/recast labels are workbook classifications only.</div><h2>Critical and High shortlist</h2><table><thead><tr><th>Severity</th><th>Finding</th><th>Rows</th><th>IPs</th><th>Workbook action</th></tr></thead><tbody>{''.join(finding_rows) or '<tr><td colspan=5>none</td></tr>'}</tbody></table><h2>Per-host/IP summary</h2><table><thead><tr><th>IP</th><th>Workbook host</th><th>Rows</th><th>Severity</th><th>Inventory mapping</th></tr></thead><tbody>{''.join(host_rows)}</tbody></table><h2>Integrity and warnings</h2><ul><li>Source SHA256: <code>{esc(summary['source_sha256'])}</code></li><li>Parser table: {esc(summary['table'])}; header row: {summary['header_row']}</li><li>Duplicate records observed: {summary['duplicate_records']}; source rows remain preserved.</li>{warnings}</ul></main></body></html>"""
+    return f"""<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>{esc(summary['app_system'])} VA review</title><style>:root{{--bg:#07111f;--panel:#10233a;--line:#31506d;--text:#eef6ff;--muted:#afc1d4}}*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,sans-serif}}main{{max-width:1200px;margin:auto;padding:32px 20px 56px}}h1,h2{{line-height:1.15}}.muted{{color:var(--muted)}}.cards{{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}}article,.box{{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}}article b{{display:block;color:var(--muted);font-size:14px}}article strong{{font-size:30px}}.facts{{padding-left:24px}}.facts li{{margin:7px 0}}.table-wrap{{overflow-x:auto;border:1px solid var(--line);border-radius:12px}}table{{width:100%;min-width:720px;border-collapse:collapse;background:var(--panel)}}th,td{{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}th{{color:var(--muted);font-size:13px}}details{{margin-top:4px}}summary{{cursor:pointer;color:var(--muted)}}code{{word-break:break-all}}@media(max-width:720px){{main{{padding:20px 12px}}.cards{{grid-template-columns:repeat(2,1fr)}}table{{font-size:13px}}}}</style></head><body><main><p class=\"muted\">Local evidence-only VA review</p><h1>{esc(summary['app_system'])}</h1><p>Report date: <b>{esc(summary['report_date'])}</b> · Scan/observation dates: <b>{esc(', '.join(summary['scan_dates']) or 'unknown')}</b> · Evidence cutoff: <b>{esc(summary['evidence_cutoff'])}</b></p><h2>Executive snapshot</h2><section class=\"cards\"><article><b>Filtered rows</b><strong>{summary['row_count']}</strong></article><article><b>Unique IPs</b><strong>{summary['unique_ips']}</strong></article>{severity_cards}<article><b>Remediation</b><strong>{summary['actions'].get('Remediation', 0)}</strong></article><article><b>Recast</b><strong>{summary['actions'].get('Recast', 0)}</strong></article>{comparison_cards}</section><h2>Operator facts</h2><ol class=\"facts\">{''.join(f'<li>{esc(fact)}</li>' for fact in facts)}</ol><h2>Interpretation boundary</h2><div class=\"box\">Prior comparison is key-based evidence against the supplied prior using <code>{esc(comparison.get('key') or 'not supplied')}</code>; it is not remediation, exposure, current-state, or false-positive proof. Workbook action labels are source classifications only.</div><h2>Top five Critical/High findings</h2><div class=\"table-wrap\"><table><thead><tr><th>Severity</th><th>Finding</th><th>Rows</th><th>Affected IPs</th><th>Workbook action</th></tr></thead><tbody>{''.join(finding_rows) or '<tr><td colspan=5>none</td></tr>'}</tbody></table></div><h2>Host priority</h2><div class=\"table-wrap\"><table><thead><tr><th>IP</th><th>Workbook host</th><th>Total</th><th>Critical</th><th>High</th><th>Medium</th><th>Low</th><th>Local inventory mapping</th></tr></thead><tbody>{''.join(host_rows)}</tbody></table></div><h2>Mapping coverage</h2><div class=\"box\">Unique IPs with workbook hostname: <b>{coverage['workbook_hostname_ips']}</b> · unique IPs mapped by local inventory: <b>{coverage['inventory_mapped_ips']}</b> · unique IPs still unmapped: <b>{coverage['unmapped_ips']}</b></div><h2>Integrity and warnings</h2><ul><li>Source SHA256: <code>{esc(summary['source_sha256'])}</code></li><li>Parser table: {esc(summary['table'])}; header row: {summary['header_row']}</li><li>Duplicate records observed: {summary['duplicate_records']}; source rows remain preserved.</li>{warnings}</ul></main></body></html>"""
 
 
 def manifest(root: Path) -> None:
@@ -434,6 +471,8 @@ def review(args: argparse.Namespace) -> dict[str, Any]:
     duplicate_records = sum(value - 1 for value in Counter(record_key(row) for row in rows).values() if value > 1)
     scan_dates = sorted({row["scan_date"] for row in rows if row["scan_date"] != "unknown"})
     actions = Counter(row["action"] for row in rows)
+    workbook_hostname_ips = {row["ip"] for row in rows if row["ip"] and row["hostname"]}
+    inventory_mapped_ips = {row["ip"] for row in rows if row["ip"] and row["inventory_mapping"] != "unknown"}
     prior, comparison_key_name = prior_keys(Path(args.prior).expanduser().resolve() if args.prior else None)
     current = {record_key(row) for row in rows}
     warnings = list(schema_warnings)
@@ -461,6 +500,11 @@ def review(args: argparse.Namespace) -> dict[str, Any]:
         "evidence_cutoff": args.evidence_cutoff or "not supplied",
         "duplicate_records": duplicate_records,
         "unknown_inventory_mappings": sum(1 for row in rows if row["inventory_mapping"] == "unknown"),
+        "mapping_coverage": {
+            "workbook_hostname_ips": len(workbook_hostname_ips),
+            "inventory_mapped_ips": len(inventory_mapped_ips),
+            "unmapped_ips": len(unique_ips - workbook_hostname_ips - inventory_mapped_ips),
+        },
         "skipped_blank_rows": skipped_blank,
         "comparison": {"compatible": bool(args.prior), "key": comparison_key_name, "recurring": len(current & prior), "new_or_changed": len(current - prior), "prior_only": len(prior - current)} if args.prior else {"compatible": False},
         "warnings": warnings,

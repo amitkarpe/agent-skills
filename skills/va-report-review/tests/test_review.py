@@ -113,6 +113,55 @@ class VAReviewTests(unittest.TestCase):
             comparison = json.loads((output / "summary.json").read_text())["comparison"]
             self.assertEqual(comparison, {"compatible": True, "key": "ip|finding|normalized_severity", "recurring": 1, "new_or_changed": 1, "prior_only": 1})
 
+    def test_operator_html_prior_shortlist_host_order_and_mapping_coverage(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp); source = base / "current.xlsx"; output = base / "out"; prior = base / "prior.tsv"; inventory = base / "inventory.tsv"
+            rows = [HEADERS,
+                ["Lifebit-Synapxe", "Critical", "10.0.0.1", "Critical A", "host-a", "Remediation", "2026-07-05"],
+                ["Lifebit-Synapxe", "Critical", "10.0.0.1", "Critical A", "host-a", "Remediation", "2026-07-05"],
+                ["Lifebit-Synapxe", "High", "10.0.0.2", "High B", "", "Recast", "2026-07-05"],
+                ["Lifebit-Synapxe", "High", "10.0.0.3", "High C", "host-c", "Remediation", "2026-07-05"],
+                ["Lifebit-Synapxe", "High", "10.0.0.3", "High D", "host-c", "Recast", "2026-07-05"],
+                ["Lifebit-Synxe", "High", "10.0.0.4", "Ignore", "", "Remediation", "2026-07-05"],
+                ["Lifebit-Synapxe", "High", "10.0.0.4", "High E", "", "Remediation", "2026-07-05"],
+                ["Lifebit-Synapxe", "High", "10.0.0.5", "High F", "", "Recast", "2026-07-05"],
+                ["Lifebit-Synapxe", "Medium", "10.0.0.6", "Medium G", "", "Remediation", "2026-07-05"]]
+            write_xlsx(source, rows)
+            prior.write_text("ip\tfinding\tseverity\n10.0.0.1\tCritical A\tCritical\n10.0.0.99\tGone\tHigh\n")
+            inventory.write_text("ip\tinstance\n10.0.0.2\ti-two\n")
+            result = run_report(source, output, "--prior", str(prior), "--inventory", str(inventory))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            summary = json.loads((output / "summary.json").read_text())
+            self.assertEqual(summary["comparison"]["recurring"], 1)
+            self.assertEqual(summary["comparison"]["new_or_changed"], 6)
+            self.assertEqual(summary["comparison"]["prior_only"], 1)
+            self.assertEqual(summary["mapping_coverage"], {"workbook_hostname_ips": 2, "inventory_mapped_ips": 1, "unmapped_ips": 3})
+            report = (output / "output.html").read_text()
+            self.assertIn("<h2>Executive snapshot</h2>", report)
+            self.assertIn("<b>Remediation</b><strong>5</strong>", report)
+            self.assertIn("<b>Recast</b><strong>3</strong>", report)
+            self.assertIn("<b>Recurring</b><strong>1</strong>", report)
+            self.assertIn("<b>New or changed</b><strong>6</strong>", report)
+            self.assertIn("<b>Prior only</b><strong>1</strong>", report)
+            self.assertEqual(report.count("<summary>Show affected IPs</summary>"), 5)
+            self.assertIn("<details><summary>Show affected IPs</summary><code>10.0.0.1</code></details>", report)
+            self.assertLess(report.index("<td>10.0.0.1</td>"), report.index("<td>10.0.0.3</td>"))
+            self.assertLess(report.index("<td>10.0.0.3</td>"), report.index("<td>10.0.0.2</td>"))
+            self.assertIn("Unique IPs with workbook hostname: <b>2</b>", report)
+            self.assertIn("unique IPs mapped by local inventory: <b>1</b>", report)
+            self.assertIn("unique IPs still unmapped: <b>3</b>", report)
+
+    def test_comparison_cards_are_absent_without_prior(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp); source = base / "current.xlsx"; output = base / "out"
+            write_xlsx(source, self.fixture_rows())
+            result = run_report(source, output)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = (output / "output.html").read_text()
+            self.assertNotIn("<b>Recurring</b>", report)
+            self.assertNotIn("<b>New or changed</b>", report)
+            self.assertNotIn("<b>Prior only</b>", report)
+
 
 if __name__ == "__main__":
     unittest.main()

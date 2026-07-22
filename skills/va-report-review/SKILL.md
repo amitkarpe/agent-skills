@@ -38,12 +38,14 @@ the source.
 ## Read the output as evidence, not remediation truth
 
 The output bundle contains `output.html`, `normalized_rows.tsv`, `summary.json`,
-`MANIFEST.tsv`, and `RESULT.md`. It records report date, distinct scan dates,
-and evidence cutoff separately. Unknown inventory mappings stay `unknown`.
-Workbook actions such as Remediation or Recast are source classifications only;
-they do not prove a target is current, fixed, remediated, or false positive.
-Prior comparison uses `ip|finding|normalized_severity` and is key-based only;
-it does not prove remediation or exposure change.
+`MANIFEST.tsv`, and `RESULT.md`. The HTML starts with a compact operator
+snapshot, five source-derived facts, top five Critical/High findings, host risk
+priority, mapping coverage, then integrity evidence. It records report date,
+distinct scan dates, and evidence cutoff separately. Unknown inventory mappings
+stay `unknown`. Workbook actions such as Remediation or Recast are source
+classifications only; they do not prove a target is current, fixed, remediated,
+or false positive. Prior comparison uses `ip|finding|normalized_severity` and
+is key-based only; it does not prove remediation or exposure change.
 
 ## Stop conditions
 
