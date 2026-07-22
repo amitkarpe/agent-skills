@@ -147,9 +147,9 @@ class VAReviewTests(unittest.TestCase):
             self.assertIn("<details><summary>Show affected IPs</summary><code>10.0.0.1</code></details>", report)
             self.assertLess(report.index("<td>10.0.0.1</td>"), report.index("<td>10.0.0.3</td>"))
             self.assertLess(report.index("<td>10.0.0.3</td>"), report.index("<td>10.0.0.2</td>"))
-            self.assertIn("Unique IPs with workbook hostname: <b>2</b>", report)
-            self.assertIn("unique IPs mapped by local inventory: <b>1</b>", report)
-            self.assertIn("unique IPs still unmapped: <b>3</b>", report)
+            self.assertIn("Workbook hostnames: <b>2</b> of <b>6</b> unique IPs.", report)
+            self.assertIn("Local inventory mappings: <b>1</b> of <b>6</b> unique IPs.", report)
+            self.assertIn("Unidentified by workbook or local inventory: <b>3</b> unique IPs.", report)
 
     def test_comparison_cards_are_absent_without_prior(self):
         with tempfile.TemporaryDirectory() as temp:
