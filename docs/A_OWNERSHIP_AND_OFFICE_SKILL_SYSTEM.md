@@ -63,10 +63,12 @@ Shared cross-agent context:
 Local web apps and reports:
 
 ```text
-/opt/agent-web/web/   long-lived apps/pages
-/opt/agent-web/www/   generated reports
-/opt/agent-web/deep/  durable deep dashboards
+/opt/crypto-web/fast/   fast reports
+/opt/crypto-web/demos/  visual reports and demos
+/opt/crypto-web/deep/   durable deep dashboards
 ```
+
+`/opt/agent-web/AGENTS.md` is authoritative for publishing paths and URLs.
 
 ## Default Install Rule
 
@@ -136,7 +138,7 @@ When A starts on office, read:
 2. `~/git/agent-skills/README.md`
 3. this file
 4. `/opt/agent-share/agents/COMMUNICATION_CONTRACT.md`
-5. `/opt/agent-share/context/AGENT_WEB_REPORTS.md`
+5. `/opt/agent-web/AGENTS.md`
 6. `/opt/agent-share/ai/opencode/OPENCODE.md`
 
 Then run:
@@ -158,28 +160,12 @@ Agents must not write reports directly under:
 /opt/agent-web/www/reports/
 ```
 
-Use:
-
-```bash
-/opt/agent-share/bin/report-agent ...
-```
-
-Long-lived apps belong under:
+Use the surface documented by `/opt/agent-web/AGENTS.md`:
 
 ```text
-/opt/agent-web/web/
-```
-
-Generated reports belong under:
-
-```text
-/opt/agent-web/www/
-```
-
-Deep dashboards stay under:
-
-```text
-/opt/agent-web/deep/
+/opt/crypto-web/fast/<slug>/index.html
+/opt/crypto-web/demos/<slug>/index.html
+/opt/crypto-web/deep/<slug>/index.html
 ```
 
 ## Communication Contract

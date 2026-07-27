@@ -1,6 +1,6 @@
 ---
 name: web-html-page
-description: fast low-token static html reports for codex tasks. use when the user says show html, web report, publish report, what changed, summarize task, show me in browser, agent-web-reporting, or asks for a quick operational summary after a worker run. generate small self-contained offline html under /opt/agent-web with evidence in ~/.AGENTS-temp. do not create deep dashboards or rich diagrams.
+description: fast low-token static html reports for codex tasks. use when the user says show html, web report, publish report, what changed, summarize task, show me in browser, agent-web-reporting, or asks for a quick operational summary after a worker run. generate small self-contained offline html under /opt/crypto-web/fast with evidence in ~/.AGENTS-temp. do not create deep dashboards or rich diagrams.
 ---
 
 # Web HTML Page
@@ -24,32 +24,23 @@ Midnight Compact: dark-only, compact, operational, and never a white/day theme.
 
 ## Output contract
 
-- Preferred new publishing root is `/opt/agent-web/www/`.
-- Prefer publishing through `/opt/agent-web/bin/agent-report` when available.
-- Preferred URL shape is `http://192.168.0.9/www/reports/<type>/<YYYY>/<MM-DD>/<slug>/index.html`.
-- Legacy publish paths such as `/opt/agent-web/<project-or-repo>/<current-lane>/<slug>.html` remain compatibility mode. Do not remove or migrate old reports unless Amit explicitly asks.
-- Store source/evidence in `~/.AGENTS-temp/<project-or-repo>/<current-lane>/web-html-page/`.
-- Default always: print the LAN URL form from `agent-report` when used, otherwise print the compatibility URL.
-- Use the Tailscale URL form `http://100.72.42.94/<project-or-repo>/<current-lane>/<slug>.html` only when Amit explicitly says office or Tailscale.
+- Publish to `/opt/crypto-web/fast/<slug>/index.html`.
+- Return `http://home/fast/<slug>/`.
+- Store source and evidence under
+  `~/.AGENTS-temp/<project-or-repo>/<current-lane>/web-html-page/`.
+- Validate the exact URL with `curl -fsSI` before reporting success.
 - Default lifecycle: archive or delete after 7 days unless marked `keep`.
-- `agent-web` remains the web service name; only the old `agent-web-reporting` skill name is retired.
-- Old lane-only URLs such as `/td/report.html` are compatibility mode, not the new default.
-- Use a slug without `.html`; the helper adds the suffix.
+- Keep historical pages in place; never use their paths for new output.
+- Use a lowercase path-safe slug without `.html`.
 
 Recommended publish command after rendering `output.html`:
 
 ```bash
-/opt/agent-web/bin/agent-report \
-  --type web-html-page \
-  --title "Report Title" \
-  --slug report-slug \
-  --html-file output.html \
-  --evidence "$EVIDENCE_DIR" \
-  --owner "${USER:-agent}" \
-  --update-index yes
+python3 scripts/publish_html.py output.html \
+  --skill web-html-page \
+  --project <repo> \
+  --slug <slug>
 ```
-
-Use `/opt/agent-web/bin/agent-web-www validate` after publishing when the page is important or will be shared.
 
 ## Report shape
 
@@ -95,9 +86,9 @@ requested page. Fallback HTML must still follow `DESIGN.md` and pass
 
 ## Helper scripts
 
-- New preferred publisher: `/opt/agent-web/bin/agent-report`.
-- New preferred index/helper: `/opt/agent-web/bin/agent-web-www`.
-- Use `scripts/publish_html.py` to copy output into `/opt/agent-web`, write evidence, reject remote assets, back up overwritten output, and print the LAN URL.
+- Use `scripts/publish_html.py` to copy output into `/opt/crypto-web/fast`,
+  write evidence, reject remote assets, back up overwritten output, and print
+  the canonical LAN URL.
 - Use `scripts/validate_html.py` before publishing when the page contains copied logs or resource identifiers.
 - Use `scripts/archive_old_reports.py` for the 7-day lifecycle policy.
 

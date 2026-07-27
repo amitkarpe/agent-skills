@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Archive or delete old reports under /opt/agent-web."""
+"""Archive or delete old demos under /opt/crypto-web."""
 from __future__ import annotations
 import argparse, shutil, time
 from pathlib import Path
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument('--root', default='/opt/agent-web')
+    ap.add_argument('--root', default='/opt/crypto-web/demos')
     ap.add_argument('--days', type=int, required=True)
     ap.add_argument('--delete', action='store_true')
     ap.add_argument('--dry-run', action='store_true')

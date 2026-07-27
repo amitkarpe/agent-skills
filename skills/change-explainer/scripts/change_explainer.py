@@ -376,7 +376,10 @@ def main() -> int:
     args = parser.parse_args()
     ctx = build_context(args)
     stamp = timestamp()
-    base = args.slug or f"change-explainer-{stamp}"
+    raw_base = args.slug or f"change-explainer-{stamp}"
+    base = re.sub(r"[^a-z0-9._-]+", "-", raw_base.lower()).strip("-._")
+    if not base:
+        base = "change-explainer"
 
     if args.mode in ("txt", "both"):
         if Console:
@@ -402,11 +405,22 @@ def main() -> int:
         print(f"ansi_evidence={ansi_path}")
 
     if args.mode in ("html", "both"):
-        html_dir = pathlib.Path("/opt/agent-web") / ctx.repo_name / "change-explainer"
+        html_dir = pathlib.Path("/opt/crypto-web/demos") / base
         html_dir.mkdir(parents=True, exist_ok=True)
-        html_path = html_dir / f"{base}.html"
+        html_path = html_dir / "index.html"
         write_html(ctx, html_path)
-        print(f"html=http://192.168.0.9/{ctx.repo_name}/change-explainer/{base}.html")
+        url = f"http://home/demos/{base}/"
+        if not shutil.which("curl"):
+            raise RuntimeError("HTML written but URL validation requires curl")
+        check = subprocess.run(
+            ["curl", "-fsSI", "--max-time", "5", url],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+        if check.returncode != 0:
+            raise RuntimeError(f"HTML written but URL validation failed: {url}")
+        print(f"html={url}")
         print(f"html_file={html_path}")
     return 0
 

@@ -114,28 +114,12 @@ The latest ANSI/TXT terminal artifact is also copied to:
 
 HTML path when requested:
 
-Preferred new HTML path when publishing through `agent-report`:
-
-`/opt/agent-web/www/reports/change-explainer/<YYYY>/<MM-DD>/<slug>/index.html`
-
-Compatibility HTML path remains:
-
-`/opt/agent-web/<repo>/change-explainer/<slug>.html`
-
-Do not remove, rewrite, or bulk-migrate compatibility paths unless Amit explicitly asks.
-
-Recommended publish command after rendering `output.html`:
-
-```bash
-/opt/agent-web/bin/agent-report \
-  --type change-explainer \
-  --title "Change Explainer" \
-  --slug report-slug \
-  --html-file output.html \
-  --evidence "$EVIDENCE_DIR" \
-  --owner "${USER:-agent}" \
-  --update-index yes
-```
+- Publish to `/opt/crypto-web/demos/<slug>/index.html`.
+- Return `http://home/demos/<slug>/`.
+- Keep TXT/ANSI evidence under
+  `~/.AGENTS-temp/<repo>/change-explainer/`.
+- Validate the exact URL with `curl -fsSI` before reporting success.
+- Keep historical pages in place; never use their paths for new output.
 
 Return the TXT evidence path and HTML LAN URL when created.
 
@@ -148,10 +132,9 @@ Fall back to `.txt` only when ANSI/color output is unavailable.
 Do not render a final "Run / Mode / Saved file" panel inside the ANSI/TXT
 report. Put those instructions in the Codex chat response instead.
 
-## Agent Web WWW Compatibility
+## Publishing
 
-- Prefer `/opt/agent-web/bin/agent-report` for HTML publication.
-- Prefer `/opt/agent-web/bin/agent-web-www validate` after publishing major change dashboards.
+- Use HTML only when requested; TXT/ANSI remains the default.
+- Publish HTML through `scripts/change_explainer.py`.
 - Keep TXT/ANSI evidence under `~/.AGENTS-temp/<repo>/change-explainer/`.
 - Keep `/tmp/change.ansi` behavior unchanged for terminal review.
-- Keep old `/opt/agent-web/<repo>/change-explainer/` URLs as compatibility.

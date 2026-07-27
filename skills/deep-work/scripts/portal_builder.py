@@ -3,7 +3,7 @@
 Build a deep-work portal: generate index.html and all-in-one.html from a manifest.
 
 Usage:
-  python3 portal_builder.py manifest.json --out-dir /opt/agent-web/deep/aws/ami-factory/portal/
+  python3 portal_builder.py manifest.json --out-dir /opt/crypto-web/deep/ami-factory/
 
 Manifest format (JSON):
   {

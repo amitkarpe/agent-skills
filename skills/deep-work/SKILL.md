@@ -30,29 +30,22 @@ white/day screen theme.
 
 One self-contained HTML file per topic.
 
-- Preferred new publishing root is `/opt/agent-web/www/`.
-- Prefer publishing through `/opt/agent-web/bin/agent-report` when available.
-- Preferred URL shape is `http://192.168.0.9/www/reports/deep-work/<YYYY>/<MM-DD>/<slug>/index.html`.
-- Compatibility publish path remains `/opt/agent-web/deep/<category>/<topic>/<slug>.html`.
-- Store evidence in `~/.AGENTS-temp/deep-work/<category>/<topic>/`
-- Default always: print the LAN URL form from `agent-report` when used, otherwise print the compatibility URL.
-- Use Tailscale URL `http://100.72.42.94/deep/<category>/<topic>/<slug>.html` only when Amit explicitly says office or Tailscale.
+- Publish to `/opt/crypto-web/deep/<slug>/index.html`.
+- Return `http://home/deep/<slug>/`.
+- Store source and evidence under `~/.AGENTS-temp/<repo>/deep-work/<slug>/`.
+- Validate the exact URL with `curl -fsSI` before reporting success.
 - Lifecycle: never auto-delete. These are durable learning artifacts.
 
 Recommended publish command after rendering `output.html`:
 
 ```bash
-/opt/agent-web/bin/agent-report \
-  --type deep-work \
-  --title "Deep Work Topic" \
-  --slug report-slug \
-  --html-file output.html \
-  --evidence "$EVIDENCE_DIR" \
-  --owner "${USER:-agent}" \
-  --update-index yes
+python3 scripts/publish_html.py output.html \
+  --skill deep-work \
+  --project <repo> \
+  --slug <slug>
 ```
 
-Keep `/opt/agent-web/deep/...` compatibility paths for existing deep portals and do not bulk-migrate old learning dashboards.
+Keep historical pages in place; never use their paths for new output.
 
 ### portal mode
 
@@ -68,7 +61,7 @@ A portal is a named set of pages under a shared prefix with:
 
 Portal file structure:
 ```
-/opt/agent-web/www/reports/deep-work/<YYYY>/<MM-DD>/<slug>/portal/
+/opt/crypto-web/deep/<slug>/
   index.html          ← entry landing page (hero, 30-sec view, nav cards to all pages)
   architecture.html
   inventory.html
@@ -77,8 +70,6 @@ Portal file structure:
   runbook.html
   all-in-one.html     ← export-safe concatenation of all pages
 ```
-
-Compatibility portal paths under `/opt/agent-web/deep/<category>/<topic>/portal/` remain valid when an older workflow or link expects them.
 
 When building a portal:
 1. Decide all page names before writing any HTML.

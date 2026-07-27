@@ -2,7 +2,11 @@
 
 HTML is requested only, not default.
 
-Create a local cockpit under `/opt/agent-web/<repo>/change-explainer/`.
+Publish the local cockpit to `/opt/crypto-web/demos/<slug>/index.html` and
+return `http://home/demos/<slug>/` after validating the exact URL.
+
+Keep source and evidence under
+`~/.AGENTS-temp/<repo>/change-explainer/`.
 
 Required visual sections:
 

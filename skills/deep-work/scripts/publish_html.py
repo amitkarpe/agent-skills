@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Publish a self-contained HTML file to /opt/agent-web and print the LAN URL."""
+"""Publish self-contained HTML to the canonical local reporting surface."""
 from __future__ import annotations
-import argparse, os, re, shutil, subprocess
+import argparse, re, shutil, subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -64,7 +64,6 @@ def main() -> int:
     p.add_argument('--category', default='general')
     p.add_argument('--topic', default='untitled')
     p.add_argument('--slug', default='')
-    p.add_argument('--lan-ip', default=os.environ.get('AGENT_WEB_LAN_IP','192.168.0.9'))
     p.add_argument('--keep', action='store_true')
     p.add_argument('--no-url-check', action='store_true')
     args = p.parse_args()
@@ -79,21 +78,19 @@ def main() -> int:
         raise SystemExit(f'slug must not include .html: {slug}')
     project = slugify(args.project, 'unknown-project')
     lane = slugify(args.lane, 'current')
-    category = slugify(args.category, 'general')
-    topic = slugify(args.topic, 'untitled')
+    surface = {
+        'web-html-page': 'fast',
+        'visual-explainer': 'demos',
+        'deep-work': 'deep',
+    }[args.skill]
+    rel_dir = Path(surface) / slug
+    evidence_dir = Path.home() / '.AGENTS-temp' / project / lane / args.skill / slug
 
-    if args.skill == 'deep-work':
-        rel_dir = Path('deep') / category / topic
-        evidence_dir = Path.home() / '.AGENTS-temp' / 'deep-work' / category / topic
-    else:
-        rel_dir = Path(project) / lane
-        evidence_dir = Path.home() / '.AGENTS-temp' / project / lane / args.skill
-
-    out_dir = Path('/opt/agent-web') / rel_dir
+    out_dir = Path('/opt/crypto-web') / rel_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     evidence_dir.mkdir(parents=True, exist_ok=True)
 
-    out_file = out_dir / f'{slug}.html'
+    out_file = out_dir / 'index.html'
     if out_file.exists():
         archive_dir = out_dir / 'archive'
         archive_dir.mkdir(parents=True, exist_ok=True)
@@ -105,12 +102,20 @@ def main() -> int:
     if args.keep:
         out_file.with_suffix(out_file.suffix + '.keep').write_text('keep\n', encoding='utf-8')
 
-    url = f'http://{args.lan_ip}/{rel_dir.as_posix()}/{slug}.html'
-    if not args.no_url_check and shutil.which('curl'):
-        check = subprocess.run(['curl', '-fsSI', '--max-time', '5', url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    url = f'http://home/{rel_dir.as_posix()}/'
+    if args.no_url_check:
+        print(f'unvalidated_url={url}')
+    else:
+        if not shutil.which('curl'):
+            raise SystemExit('published but URL validation requires curl')
+        check = subprocess.run(
+            ['curl', '-fsSI', '--max-time', '5', url],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         if check.returncode != 0:
-            print(f'warning: published but URL validation failed: {url}')
-    print(url)
+            raise SystemExit(f'published but URL validation failed: {url}')
+        print(url)
     return 0
 
 if __name__ == '__main__':
