@@ -117,6 +117,7 @@ Expose a skill through `~/.codex/skills` when:
 - `skills/skill-autoresearch-loop/`
 - `skills/amit-operator-commands/`
 - `skills/linux-backup-to-s3/`
+- `skills/plan-decision-form/`
 
 ## Skill shape
 

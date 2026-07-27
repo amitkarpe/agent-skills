@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan Decision Form"
+  short_description: "Create safe local decision forms"
+  default_prompt: "Use $plan-decision-form to create a dark local decision form for this topic."

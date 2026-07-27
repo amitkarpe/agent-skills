@@ -14,6 +14,16 @@ For this repo, "Generative UI" should mean:
 
 Do not add Vercel AI SDK, LangGraph UI, CopilotKit, or MCP Apps for these report skills yet. Those are useful for real interactive apps, but they are too heavy for local static HTML reports.
 
+## Decision Form Threshold
+
+- One to five questions default to TEXT/TUI.
+- More than five questions may justify HTML, but ask Amit first.
+- For one to five questions needing diagrams, long evidence, or comparisons,
+  also ask Amit before creating HTML.
+- An explicit Amit request for a decision form or HTML is direct approval.
+- TEXT/TUI is faster and uses fewer tokens. HTML is optional decision support,
+  not the default.
+
 ## Target Shape
 
 Add a small shared block catalog later:
