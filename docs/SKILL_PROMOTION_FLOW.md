@@ -66,6 +66,17 @@ Move a draft into `agent-skills` when:
 - evidence supports promotion without copying raw run data into the skill
 - it does not duplicate repo policy, global policy, or another skill
 
+Before adding a test program, run:
+
+```bash
+scripts/skill-inventory.py --tests --format md
+```
+
+Extend an existing test when it protects the same contract. Add a new test
+only for distinct coverage, and record its protected contract in the
+inventory. Fixtures and examples are not test programs. Delete no test unless
+equivalent coverage is proven and the owner explicitly approves removal.
+
 Install it into `~/.codex/skills` when:
 
 - it is good enough for cross-repo use

@@ -43,6 +43,16 @@ DEFAULT_TIERS = {
     "skill-autoresearch-loop": "installed-disabled/call-by-name",
 }
 
+TEST_CONTRACTS = {
+    "ami-validation-ssm/tests/smoke-test.sh": "launcher syntax and help contract",
+    "aws-architecture-diagram/scripts/self_test.sh": "end-to-end diagram build, validation, render, and review",
+    "aws-architecture-diagram/scripts/test_v24.py": "accessible metadata and non-mutating clearance validation",
+    "cis-ssm-apply-validate/tests/smoke-test.sh": "validation evidence, isolation, and dry-run workflow",
+    "cis-ssm-apply-validate/tests/test.sh": "input, schema, required-flag, and output-directory rejection",
+    "imagebuilder-component-publish/tests/smoke-test.sh": "publisher syntax and help contract",
+    "skill-autoresearch-loop/tests/smoke-test.sh": "deterministic autoresearch workspace scaffolding",
+}
+
 
 @dataclass(frozen=True)
 class Skill:
@@ -53,6 +63,15 @@ class Skill:
     active_path: str
     tier: str
     recommendation: str
+
+
+@dataclass(frozen=True)
+class TestArtifact:
+    skill: str
+    path: str
+    kind: str
+    runnable: bool
+    protected_contract: str
 
 
 def parse_front_matter(skill_file: Path) -> dict[str, str]:
@@ -130,6 +149,41 @@ def count_dest_entries(dest_root: Path) -> int:
     return sum(1 for path in dest_root.iterdir() if path.name != ".system")
 
 
+def artifact_kind(relative: Path) -> str | None:
+    parts = relative.parts
+    if "fixtures" in parts:
+        return "fixture"
+    if "examples" in parts:
+        return "example"
+    name = relative.name.lower()
+    if relative.suffix.lower() in {".sh", ".py", ".js", ".ts"} and (
+        "tests" in parts
+        or name.startswith(("test_", "test-", "self_test", "self-test", "smoke_test", "smoke-test"))
+    ):
+        return "test"
+    return None
+
+
+def collect_test_artifacts(skills_root: Path) -> list[TestArtifact]:
+    artifacts: list[TestArtifact] = []
+    for path in sorted(item for item in skills_root.rglob("*") if item.is_file()):
+        relative = path.relative_to(skills_root)
+        kind = artifact_kind(relative)
+        if not kind:
+            continue
+        relative_text = relative.as_posix()
+        artifacts.append(
+            TestArtifact(
+                skill=relative.parts[0],
+                path=relative_text,
+                kind=kind,
+                runnable=kind == "test",
+                protected_contract=TEST_CONTRACTS.get(relative_text, "review required") if kind == "test" else "-",
+            )
+        )
+    return artifacts
+
+
 def print_table(skills: list[Skill]) -> None:
     rows = [["skill", "desc_len", "active", "tier", "recommendation"]]
     for skill in skills:
@@ -162,17 +216,77 @@ def print_csv(skills: list[Skill]) -> None:
         writer.writerow([skill.name, len(skill.description), skill.active, skill.active_path, skill.tier, skill.recommendation])
 
 
+def print_test_table(artifacts: list[TestArtifact]) -> None:
+    rows = [["kind", "skill", "runnable", "path", "protected contract"]]
+    for artifact in artifacts:
+        rows.append([
+            artifact.kind,
+            artifact.skill,
+            "yes" if artifact.runnable else "no",
+            artifact.path,
+            artifact.protected_contract,
+        ])
+    widths = [max(len(row[index]) for row in rows) for index in range(len(rows[0]))]
+    for index, row in enumerate(rows):
+        print("  ".join(value.ljust(widths[column]) for column, value in enumerate(row)))
+        if index == 0:
+            print("  ".join("-" * width for width in widths))
+
+
+def print_test_markdown(artifacts: list[TestArtifact]) -> None:
+    print("| kind | skill | runnable | path | protected contract |")
+    print("| --- | --- | :---: | --- | --- |")
+    for artifact in artifacts:
+        runnable = "yes" if artifact.runnable else "no"
+        print(
+            f"| {artifact.kind} | `{artifact.skill}` | {runnable} | "
+            f"`{artifact.path}` | {artifact.protected_contract} |"
+        )
+
+
+def print_test_csv(artifacts: list[TestArtifact]) -> None:
+    writer = csv.writer(sys.stdout)
+    writer.writerow(["kind", "skill", "runnable", "path", "protected_contract"])
+    for artifact in artifacts:
+        writer.writerow([
+            artifact.kind,
+            artifact.skill,
+            artifact.runnable,
+            artifact.path,
+            artifact.protected_contract,
+        ])
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skills-root", default="skills")
     parser.add_argument("--dest-root", default=str(Path.home() / ".codex" / "skills"))
     parser.add_argument("--format", choices=["table", "md", "csv"], default="table")
+    parser.add_argument("--tests", action="store_true", help="Inventory test programs, fixtures, and examples")
     args = parser.parse_args()
 
     skills_root = Path(args.skills_root).expanduser().resolve()
     dest_root = Path(args.dest_root).expanduser()
     if not skills_root.is_dir():
         raise SystemExit(f"skills root not found: {skills_root}")
+
+    if args.tests:
+        artifacts = collect_test_artifacts(skills_root)
+        counts = {kind: sum(1 for item in artifacts if item.kind == kind) for kind in ("test", "fixture", "example")}
+        unmapped = sum(
+            1 for item in artifacts if item.kind == "test" and item.protected_contract == "review required"
+        )
+        print(
+            f"test_programs={counts['test']} fixtures={counts['fixture']} "
+            f"examples={counts['example']} unmapped_contracts={unmapped}"
+        )
+        if args.format == "table":
+            print_test_table(artifacts)
+        elif args.format == "md":
+            print_test_markdown(artifacts)
+        else:
+            print_test_csv(artifacts)
+        return 0
 
     skills = collect(skills_root, dest_root)
     active_count = sum(1 for skill in skills if skill.active)
