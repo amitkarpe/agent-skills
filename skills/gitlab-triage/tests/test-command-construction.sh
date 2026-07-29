@@ -30,6 +30,9 @@ chmod +x "$tmp/bin/aws"
 
 export PATH="$tmp/bin:$PATH"
 run_bash() { env -u BASH_ENV PATH="$PATH" /bin/bash "$@"; }
+expected_aws="$tmp/bin/aws"
+assert_fake_aws() { run_bash -c 'test "$(command -v aws)" = "$1"' bash "$expected_aws"; }
+assert_fake_aws
 export FAKE_AWS_CALLS="$tmp/calls.log"
 export FAKE_PARAMETERS="$tmp/parameters.jsonl"
 : > "$FAKE_AWS_CALLS"
@@ -72,4 +75,5 @@ if run_bash "$dns" dev ap-southeast-1 gitlab.example.com 'i-bad' >/dev/null 2>&1
 if run_bash "$trace" 'bad;profile' ap-southeast-1 "$valid_id_a" "$valid_id_b" >/dev/null 2>&1; then exit 1; fi
 test "$before" = "$(wc -l < "$FAKE_AWS_CALLS")"
 
+printf 'fake_aws_interception=PASS calls=%s\n' "$(wc -l < "$FAKE_AWS_CALLS")"
 echo "gitlab command-construction tests passed"

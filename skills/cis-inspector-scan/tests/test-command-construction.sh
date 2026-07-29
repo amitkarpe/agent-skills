@@ -49,6 +49,9 @@ EOF
 chmod +x "$tmp/bin/aws"
 export PATH="$tmp/bin:$PATH"
 run_bash() { env -u BASH_ENV PATH="$PATH" /bin/bash "$@"; }
+expected_aws="$tmp/bin/aws"
+assert_fake_aws() { run_bash -c 'test "$(command -v aws)" = "$1"' bash "$expected_aws"; }
+assert_fake_aws
 
 fetch="$repo/skills/cis-inspector-scan/scripts/inspector_cis_fetch_results.sh"
 create="$repo/skills/cis-inspector-scan/scripts/inspector_cis_create_or_recover_scan.sh"
@@ -75,4 +78,5 @@ if run_bash "$create" --profile dev --region ap-southeast-1 --instance-id i-0123
 if run_bash "$pipeline" --profile 'dev;bad' --region ap-southeast-1 --instance-id i-0123456789abcdef0 --scan-name scan-123 --output-dir "$tmp/no-call" >/dev/null 2>&1; then exit 1; fi
 test "$before" = "$(wc -l < "$FAKE_AWS_CALLS")"
 
+printf 'fake_aws_interception=PASS calls=%s\n' "$(wc -l < "$FAKE_AWS_CALLS")"
 echo "cis command-construction tests passed"
