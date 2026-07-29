@@ -59,6 +59,12 @@ Move a draft into `agent-skills` when:
 - it saves time or tokens
 - the loop is reusable
 - the interface is stable enough to document
+- its trigger and non-trigger are explicit
+- its default workflow is short
+- repeatable operations use a deterministic repo-owned script
+- validation is proportional to the risk
+- evidence supports promotion without copying raw run data into the skill
+- it does not duplicate repo policy, global policy, or another skill
 
 Install it into `~/.codex/skills` when:
 
@@ -72,6 +78,22 @@ Install it into `~/.codex/skills` when:
 - `agent-skills` owns shared operator mechanics
 - each working repo owns its own policy, decisions, and runbooks
 - do not put lane-specific policy into shared skills
+
+## Review and retirement
+
+Review skills periodically for trigger clarity, boundaries, deterministic
+behavior, validation, duplication, and current evidence.
+
+Use only these evidence classifications:
+
+- `observed-active`: explicit recent evidence shows the skill was selected
+- `situational`: a narrow valid trigger explains infrequent use
+- `not-observed`: bounded evidence did not show use
+- `needs-review`: evidence is ambiguous or the skill contract may be stale
+
+`not-observed` never means unused, unsafe, or deletable. Usage reports are
+best-effort evidence, not lifecycle authority. Archive, disable, unlink,
+rename, or delete a skill only with explicit owner approval.
 
 ## Current proven examples
 
