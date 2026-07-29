@@ -1,0 +1,4 @@
+interface:
+  display_name: "VA Report Review"
+  short_description: "Review VA email and workbook evidence safely."
+  default_prompt: "Use $va-report-review to analyze this VA report locally and produce an evidence-backed review."

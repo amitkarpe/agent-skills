@@ -1,0 +1,3 @@
+IP	Hostname	Location	Environment	AppSystem	Name	Severity	Action	AuthenticatedScanTime
+100.123.206.201	GITLAB-LIFEBIT-PLATFORM	GCC	PROD	Lifebit-Synapxe	nginx 1.3.0 < 1.28.2 / 1.29.x < 1.29.5 SSL Upstream Injection	MEDIUM	Recast	21-Jun-2026
+100.123.206.245	CLOUDOS-CLUSTER-PRO-I-0C67E00E2869A444A	GCC	PROD	Lifebit-Synapxe	legacy only finding	HIGH	Remediation	21-Jun-2026
