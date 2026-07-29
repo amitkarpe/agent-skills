@@ -53,6 +53,21 @@ Use only the components needed:
 6. Risks, unknowns, and validation evidence.
 7. Short recap or action checklist.
 
+For AWS Ops deploy presentations, follow
+`docs/OPS_DEPLOY_PRESENTATION_GUIDE.md` and keep the main story to five bands:
+
+1. Current live proof and readiness.
+2. Main AWS architecture and responsibility boundaries.
+3. Proposed code/control path.
+4. Operator workflow, health gates, and stop behavior.
+5. Expected after state, evidence, and next decision.
+
+Use one claim vocabulary throughout: `PROVEN`, `IMPLEMENTED`, `BLOCKED`, and
+`FUTURE`. A green/check treatment is reserved for observed runtime proof.
+Implemented-but-not-run, blocked, and future behavior must not look successful.
+Show the evidence as-of date and scope for factual runtime claims. Put current
+readiness and the exact blocker in the first viewport.
+
 For AWS examples, separate concept from real resources. If a real ID, ARN, IP, AMI ID, instance ID, account ID, or tag is unavailable, mark it `unknown / needs refresh`. Never invent realistic identifiers.
 
 ## Diagram guidance
@@ -98,5 +113,10 @@ escaping.
 Direct handwritten HTML is fallback only when the catalog cannot express the
 requested page. Fallback HTML must still follow `DESIGN.md` and pass
 `validate_html.py`.
+
+Browser screenshot QA is required for an Ops deploy presentation. Check at
+least 1366x768 and 390x844, with no horizontal page overflow, broken anchors or
+images, console errors, clipped critical text, or primary diagram that requires
+horizontal scrolling on a laptop.
 
 See `references/visual-patterns.md`, `references/aws-resource-safety.md`, and `assets/visual-explainer-template.html` only when needed.

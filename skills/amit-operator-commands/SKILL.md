@@ -93,7 +93,7 @@ Alias routing:
 
 - `check <lane>`, `status <lane>`, `<lane>?`, `update <lane>`:
   status-only check; no edits, no new goals, no AWS mutation.
-- `check cc`, `check aa`, `check td`, `check tdm`, `check pat`,
+- `check cc`, `check aa`, `check td`, `check pat`,
   `check workers`, `are all workers active?`:
   status-only check; inspect markers/results first, then tmux only to confirm
   stale or live state.

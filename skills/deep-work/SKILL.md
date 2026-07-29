@@ -120,6 +120,13 @@ Use the smallest set that creates deep understanding:
 
 DD is generic first, but architecture-aware. If the prompt mentions architecture, AWS, AMI factory, DEV/PROD, VPC, EC2, AMI, KMS, IAM, SSM, launch templates, deployment flow, or environment boundaries, add an Architecture Lens unless the user asks for a lighter page.
 
+For an AWS Ops deploy portal, follow
+`docs/OPS_DEPLOY_PRESENTATION_GUIDE.md`. Keep portal facts aligned with the same
+`PROVEN`, `IMPLEMENTED`, `BLOCKED`, and `FUTURE` vocabulary used by the
+companion presentation. Prefer Graphviz/DOT for complex deterministic graphs;
+use Python `diagrams` when AWS icons materially improve recognition. Keep the
+diagram source and generated asset with the evidence bundle.
+
 Architecture Lens decision logic:
 - DEV/PROD boundary present → add account boundary diagram
 - Build pipeline present → add swimlane (numbered steps, color-coded lanes)

@@ -49,6 +49,11 @@ Detail/big output may add:
 For exact terminal patterns, read `references/txt-mode.md`.
 For HTML cockpit expectations, read `references/html-mode.md`.
 
+When a change explanation feeds an Ops deploy presentation, use the shared
+`PROVEN`, `IMPLEMENTED`, `BLOCKED`, and `FUTURE` vocabulary from
+`docs/OPS_DEPLOY_PRESENTATION_GUIDE.md`. A successful command or green diff is
+validation evidence, but does not by itself prove runtime behavior.
+
 ## Scope Rules
 
 Default scope:
