@@ -51,6 +51,7 @@ TEST_CONTRACTS = {
     "cis-ssm-apply-validate/tests/test.sh": "input, schema, required-flag, and output-directory rejection",
     "imagebuilder-component-publish/tests/smoke-test.sh": "publisher syntax and help contract",
     "skill-autoresearch-loop/tests/smoke-test.sh": "deterministic autoresearch workspace scaffolding",
+    "va-report-review/tests/test_review.py": "source parsing, filtering, escaping, comparison, and failure contracts",
 }
 
 
