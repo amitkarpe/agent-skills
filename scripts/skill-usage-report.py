@@ -49,6 +49,15 @@ def iter_files(roots: list[Path], since: datetime | None) -> list[Path]:
         if not root.exists():
             continue
         if root.is_file():
+            if root.suffix.lower() not in suffixes:
+                continue
+            if since:
+                try:
+                    mtime = datetime.fromtimestamp(root.stat().st_mtime, timezone.utc)
+                except OSError:
+                    continue
+                if mtime < since:
+                    continue
             out.append(root)
             continue
         for path in root.rglob("*"):
@@ -61,7 +70,7 @@ def iter_files(roots: list[Path], since: datetime | None) -> list[Path]:
                     continue
                 if mtime < since:
                     continue
-                out.append(path)
+            out.append(path)
     return out
 
 
@@ -102,14 +111,17 @@ def confidence_for(skill: str, text: str) -> str | None:
     return None
 
 
-def summarize(skill_root: Path, roots: list[Path], max_file_bytes: int, days: int) -> dict[str, SkillHit]:
+def summarize(
+    skill_root: Path,
+    evidence_files: list[Path],
+    max_file_bytes: int,
+) -> dict[str, SkillHit]:
     names = skill_names(skill_root)
     hits = {name: SkillHit() for name in names}
     if not names:
         return hits
     name_re = re.compile("|".join(re.escape(name) for name in names), re.IGNORECASE)
-    since = datetime.now(timezone.utc) - timedelta(days=days) if days > 0 else None
-    for path in iter_files(roots, since):
+    for path in evidence_files:
         try:
             if path.stat().st_size > max_file_bytes:
                 text = path.read_text(errors="ignore")[:max_file_bytes]
@@ -149,31 +161,78 @@ def hit_confidence(hit: SkillHit) -> str:
     return "none"
 
 
-def write_markdown(hits: dict[str, SkillHit], out: Path) -> None:
+def evidence_classification(hit: SkillHit) -> str:
+    confidence = hit_confidence(hit)
+    if confidence == "high":
+        return "observed-active"
+    if confidence == "medium":
+        return "needs-review"
+    return "not-observed"
+
+
+def write_markdown(
+    hits: dict[str, SkillHit],
+    out: Path,
+    roots: list[Path],
+    days: int,
+    evidence_files: list[Path],
+) -> None:
     rows = []
     for name, hit in hits.items():
         if hit.count:
             rows.append((hit.count, name, hit))
     rows.sort(reverse=True)
+    classifications = Counter(evidence_classification(hit) for hit in hits.values())
+    root_text = ", ".join(f"`{root}`" for root in roots)
+    window = f"last {days} days" if days > 0 else "all matching files"
 
     lines = [
         "# Skill Usage Report",
         "",
         f"Generated: {datetime.now().astimezone().isoformat(timespec='seconds')}",
         "",
-        "Method: best-effort log mining from recent ~/.AGENTS-temp/agent-skills files.",
-        "Confidence is high when explicit SKILL.md paths or use statements are found; medium when only skill names are mentioned.",
+        f"Evidence roots: {root_text or '-'}",
+        f"Window: {window}, based on file modification time.",
+        f"Evidence files scanned: {len(evidence_files)}",
         "",
-        "## Summary",
+        "Method: best-effort text mining for explicit skill paths, use statements, and names.",
+        "High-confidence evidence is classified as `observed-active`; name-only evidence is `needs-review`.",
+        "`not-observed` means only that this bounded evidence set contained no match. It never permits deletion, archival, disabling, or unlinking.",
+        "`situational` requires human review of the skill trigger and is not inferred from text counts.",
         "",
-        "| Skill | Estimated mentions | Confidence | Last seen | Top repos/lanes |",
-        "|---|---:|---|---|---|",
+        "## Classification Summary",
+        "",
+        f"- `observed-active`: {classifications['observed-active']}",
+        f"- `situational`: 0 (manual classification only)",
+        f"- `not-observed`: {classifications['not-observed']}",
+        f"- `needs-review`: {classifications['needs-review']}",
+        "",
+        "## Skills with Evidence",
+        "",
+        "| Skill | Classification | Estimated mentions | Confidence | Last seen | Top repos/lanes |",
+        "|---|---|---:|---|---|---|",
     ]
     for count, name, hit in rows:
         repos = ", ".join(f"{repo} ({num})" for repo, num in hit.repos.most_common(4))
-        lines.append(f"| `{name}` | {count} | {hit_confidence(hit)} | {hit.last_seen or '-'} | {repos or '-'} |")
+        lines.append(
+            f"| `{name}` | {evidence_classification(hit)} | {count} | "
+            f"{hit_confidence(hit)} | {hit.last_seen or '-'} | {repos or '-'} |"
+        )
 
-    lines.extend(["", "## Top Evidence Files", ""])
+    not_observed = sorted(
+        name for name, hit in hits.items() if evidence_classification(hit) == "not-observed"
+    )
+    lines.extend(
+        [
+            "",
+            "## Not Observed in This Evidence Set",
+            "",
+            ", ".join(f"`{name}`" for name in not_observed) or "None.",
+            "",
+            "## Top Evidence Files",
+            "",
+        ]
+    )
     for count, name, hit in rows[:25]:
         lines.append(f"### {name}")
         for file, num in hit.files.most_common(5):
@@ -188,6 +247,7 @@ def write_json(hits: dict[str, SkillHit], out: Path) -> None:
     data = {}
     for name, hit in hits.items():
         data[name] = {
+            "classification": evidence_classification(hit),
             "count": hit.count,
             "confidence": hit_confidence(hit),
             "last_seen": hit.last_seen,
@@ -209,11 +269,18 @@ def main() -> int:
     args = parser.parse_args()
 
     roots = args.root or DEFAULT_ROOTS
-    hits = summarize(args.skill_root, roots, args.max_file_bytes, args.days)
-    write_markdown(hits, args.out_md)
+    since = datetime.now(timezone.utc) - timedelta(days=args.days) if args.days > 0 else None
+    evidence_files = iter_files(roots, since)
+    hits = summarize(args.skill_root, evidence_files, args.max_file_bytes)
+    write_markdown(hits, args.out_md, roots, args.days, evidence_files)
     write_json(hits, args.out_json)
-    active = sum(1 for hit in hits.values() if hit.count)
-    print(f"skills_seen={active} report={args.out_md} json={args.out_json}")
+    classifications = Counter(evidence_classification(hit) for hit in hits.values())
+    print(
+        f"observed_active={classifications['observed-active']} "
+        f"needs_review={classifications['needs-review']} "
+        f"not_observed={classifications['not-observed']} "
+        f"report={args.out_md} json={args.out_json}"
+    )
     return 0
 
 
