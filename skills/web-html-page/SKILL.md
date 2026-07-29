@@ -21,6 +21,9 @@ Midnight Compact: dark-only, compact, operational, and never a white/day theme.
 
 - Rich architecture diagrams or visual teaching. Use `visual-explainer`.
 - Durable learning dashboards, research, study mode, or DD. Use `deep-work`.
+- An Ops deploy presentation with architecture and workflow teaching. Use
+  `visual-explainer`; this skill may provide its compact status or evidence
+  appendix.
 
 ## Output contract
 
@@ -63,6 +66,10 @@ Use a compact static page:
 6. Next action.
 
 Keep it small. Prefer summary boxes, simple tables, short timelines, and status badges. Use inline SVG only when it improves scan speed.
+
+When the report summarizes a deploy or validation run, include available build
+ID, evidence as-of date, source revision, and QA status. Do not invent missing
+metadata.
 
 ## Safety rules
 

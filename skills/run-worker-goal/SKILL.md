@@ -1,6 +1,6 @@
 ---
 name: run-worker-goal
-description: Execute an already prepared Codex worker goal. Use when Amit asks to run, continue, or refresh a worker lane such as td, tdg, tdm, pat, boss, or localai from a goal file. Defaults to direct/goal execution and uses plan-first only when explicitly requested or safety is unclear.
+description: Execute an already prepared Codex worker goal. Use when Amit asks to run, continue, or refresh a worker lane such as td, tdg, pat, boss, or localai from a goal file. Defaults to direct/goal execution and uses plan-first only when explicitly requested or safety is unclear.
 ---
 
 # Run Worker Goal
@@ -12,7 +12,7 @@ Examples:
 
 - `$run-worker-goal tdg`
 - `give goal to TD`
-- `run goal for TDM`
+- `run MongoDB goal for TD`
 - `continue the worker goal`
 
 ## Core Rule
@@ -70,7 +70,6 @@ Results live under:
 
 - `td`, `trustdev`: repo `/home/dev/git/trustdev`, temp `/home/dev/.AGENTS-temp/trustdev`, tmux `trustdev`.
 - `tdg`, `td-gitlab`, `trustdev-gitlab`: repo `/home/dev/git/trustdev-gitlab`, temp `/home/dev/.AGENTS-temp/trustdev-gitlab`, tmux `td-gitlab`.
-- `tdm`, `td-mongodb`, `trustdev-mongodb`: repo `/home/dev/git/trustdev-mongodb`, temp `/home/dev/.AGENTS-temp/trustdev-mongodb`, tmux `td-mongodb`.
 - `pat`, `patching`: repo `/home/dev/git/patching`, temp `/home/dev/.AGENTS-temp/patching`, tmux `patching`.
 - `boss`: repo `/home/dev/git/boss`, temp `/home/dev/.AGENTS-temp/boss`, tmux `boss`.
 - `localai`: repo `/home/dev/git/localai`, temp `/home/dev/.AGENTS-temp/localai-lab/repos/localai`, tmux `localai`.
@@ -80,7 +79,8 @@ Results live under:
 
 Choose runtime by risk, not by habit.
 
-Use Spark xhigh for support work and approved operator-mode execution:
+Use Luna low/medium for repetitive support work and approved operator-mode
+execution:
 
 - read-only repo inventory
 - summaries and first-pass reports
@@ -95,7 +95,15 @@ Use Spark xhigh for support work and approved operator-mode execution:
 - repo-owned AMI Factory cleanup commands with exact allowlist gates
 - approved DEV validation SSM/Patch commands with clear stop conditions
 
-Use `gpt-5.5` for decision-mode and serious office execution:
+Use Terra medium for normal repo work that needs interpretation or
+implementation:
+
+- ordinary TD/PAT/AA/A investigation
+- bounded script, test, documentation, and report implementation
+- read-only AWS analysis where results require interpretation
+- routine feature work with clear success criteria
+
+Use Sol high for decision-mode and serious office execution:
 
 - deciding whether AWS mutation is safe
 - PROD or production-like validation
@@ -107,24 +115,25 @@ Use `gpt-5.5` for decision-mode and serious office execution:
 - recovery after a failed or confused worker loop
 - final judgment before Amit approval
 
-Spark operator-mode rule:
+Luna operator-mode rule:
 
-- Spark may execute proven code, but it must not decide risky changes.
-- Spark stops and escalates to Q/5.5 when output differs from the expected
+- Luna may execute proven code, but it must not decide risky changes.
+- Luna stops and escalates to Terra/Sol when output differs from the expected
   plan, a command asks for unapproved IAM/network/state changes, PROD appears,
   cleanup fails halfway, or stale/current truth conflicts.
 
 Recommended defaults:
 
 ```text
-controller/work: gpt-5.5 medium
-planning/risk review: gpt-5.5 high
-office mutation worker: gpt-5.5 high
-proven DEV/QA operator worker: gpt-5.3-codex-spark xhigh
-read-only helper worker: gpt-5.3-codex-spark xhigh
+controller/work: gpt-5.6-sol medium
+planning/risk review: gpt-5.6-sol high
+office mutation worker: gpt-5.6-sol high
+normal repo worker: gpt-5.6-terra medium
+proven DEV/QA operator worker: gpt-5.6-luna medium
+repetitive read-only helper: gpt-5.6-luna low/medium
 ```
 
-If a running worker is on Spark and the goal changes from approved
+If a running worker is on Luna and the goal changes from approved
 operator-mode into decision-mode, stop and ask the controller to restart or
 reassign the worker before continuing.
 
@@ -132,10 +141,13 @@ Controller restart examples:
 
 ```bash
 # Read-only helper
-codex resume --last -m gpt-5.3-codex-spark -c 'model_reasoning_effort="xhigh"'
+codex resume --last -m gpt-5.6-luna -c 'model_reasoning_effort="medium"'
+
+# Normal repo worker
+codex resume --last -m gpt-5.6-terra -c 'model_reasoning_effort="medium"'
 
 # Serious office execution
-codex resume --last -m gpt-5.5 -c 'model_reasoning_effort="high"'
+codex resume --last -m gpt-5.6-sol -c 'model_reasoning_effort="high"'
 ```
 
 Codex 0.137 multi-agent v2 note:
@@ -143,7 +155,7 @@ Codex 0.137 multi-agent v2 note:
 - spawned subagents can keep runtime choices per thread more cleanly
 - use subagents for short parallel R&D/review
 - keep tmux workers for durable repo/AWS execution lanes
-- do not replace TD/TDG/TDM/PAT tmux lanes with subagents for long work
+- do not replace TD/TDG/PAT tmux lanes with subagents for long work
 
 ## Mode Selection
 

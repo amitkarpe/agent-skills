@@ -29,6 +29,8 @@ Purpose:
 
 ## tmux prompt submission
 
+- If a pasted prompt is still visible in the composer, it was not submitted:
+  `u forgot to press enter.`
 - When sending a prompt to another tmux Codex worker, paste the complete prompt
   or `@/absolute/path/to/goal.md`, then always send `Enter`.
 - Wait 3-4 seconds after `Enter`, then run one `tmux capture-pane` check.
