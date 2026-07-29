@@ -13,6 +13,13 @@ set -euo pipefail
 
 command -v python3 >/dev/null 2>&1 || { echo "ERROR: python3 not found (required for JSON parsing)"; exit 1; }
 
+valid_profile() { [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*$ ]]; }
+valid_region() { [[ "$1" =~ ^[a-z]{2}(-gov)?-[a-z0-9-]+-[0-9]+$ ]]; }
+valid_scan_config_arn() {
+  [[ "$1" =~ ^arn:aws[a-zA-Z0-9-]*:inspector2:[a-z0-9-]+:[0-9]{12}:cis-scan-configuration/[A-Za-z0-9-]+$ ]]
+}
+valid_positive_integer() { [[ "$1" =~ ^[1-9][0-9]*$ ]]; }
+
 usage() {
   echo "Usage: $0 --profile <p> --region <r> --scan-config-arn <arn> --output-dir <dir>"
   exit 1
@@ -35,11 +42,14 @@ done
 
 [[ -z "$PROFILE" || -z "$REGION" || -z "$SCAN_CONFIG_ARN" || -z "$OUTPUT_DIR" ]] && usage
 
-AWS="aws --profile $PROFILE --region $REGION"
+valid_profile "$PROFILE" || { echo "ERROR: invalid profile" >&2; exit 2; }
+valid_region "$REGION" || { echo "ERROR: invalid region" >&2; exit 2; }
+valid_scan_config_arn "$SCAN_CONFIG_ARN" || { echo "ERROR: invalid scan configuration ARN" >&2; exit 2; }
+valid_positive_integer "$POLL_INTERVAL" || { echo "ERROR: invalid poll interval" >&2; exit 2; }
+
+AWS=(aws --profile "$PROFILE" --region "$REGION")
 mkdir -p "$OUTPUT_DIR"
 log() { echo "[fetch-results] $*"; }
-
-FILTER="{\"scanConfigurationArnFilters\":[{\"comparison\":\"EQUALS\",\"value\":\"$SCAN_CONFIG_ARN\"}]}"
 
 # --- poll loop ---
 SCAN_ARN=""
@@ -50,23 +60,23 @@ while [[ $ATTEMPT -lt $MAX_POLLS ]]; do
   log "Poll $ATTEMPT/$MAX_POLLS — querying scan rows..."
 
   # Use --query JMESPath filter to avoid shell quoting issues with --filter-criteria JSON
-  SCAN_LIST=$($AWS inspector2 list-cis-scans --output json 2>/dev/null || echo '{"scans":[]}')
+  SCAN_LIST=$("${AWS[@]}" inspector2 list-cis-scans --output json 2>/dev/null || echo '{"scans":[]}')
 
-  SCAN_ROW=$(echo "$SCAN_LIST" | python3 -c "
-import sys,json
-scans=json.load(sys.stdin).get('scans',[])
-match=[s for s in scans if s.get('scanConfigurationArn')=='$SCAN_CONFIG_ARN']
-print(json.dumps(match[0]) if match else '')
-" 2>/dev/null || echo "")
+  SCAN_ROW=$(printf '%s' "$SCAN_LIST" | python3 -c '
+import json, sys
+scans = json.load(sys.stdin).get("scans", [])
+match = [scan for scan in scans if scan.get("scanConfigurationArn") == sys.argv[1]]
+print(json.dumps(match[0]) if match else "")
+' "$SCAN_CONFIG_ARN" 2>/dev/null || echo "")
 
   if [[ -z "$SCAN_ROW" ]]; then
     log "No scan row yet — waiting ${POLL_INTERVAL}s..."
     sleep "$POLL_INTERVAL"
     continue
   fi
-  STATUS=$(echo "$SCAN_ROW" | python3 -c "import sys,json; print(json.load(sys.stdin).get('status','UNKNOWN'))")
-  TOTAL=$(echo "$SCAN_ROW" | python3 -c "import sys,json; print(json.load(sys.stdin).get('totalChecks',0))")
-  SCAN_ARN=$(echo "$SCAN_ROW" | python3 -c "import sys,json; print(json.load(sys.stdin).get('scanArn',''))")
+  STATUS=$(printf '%s' "$SCAN_ROW" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status","UNKNOWN"))')
+  TOTAL=$(printf '%s' "$SCAN_ROW" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("totalChecks",0))')
+  SCAN_ARN=$(printf '%s' "$SCAN_ROW" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("scanArn",""))')
 
   log "Status=$STATUS  totalChecks=$TOTAL  scanArn=$SCAN_ARN"
 
@@ -118,26 +128,35 @@ PAGE=0
 while true; do
   PAGE=$((PAGE + 1))
   if [[ -n "$NEXT_TOKEN" ]]; then
-    PAGE_JSON=$($AWS inspector2 list-cis-scan-results-aggregated-by-checks \
+    PAGE_JSON=$("${AWS[@]}" inspector2 list-cis-scan-results-aggregated-by-checks \
       --scan-arn "$SCAN_ARN" \
       --next-token "$NEXT_TOKEN" \
       --output json)
   else
-    PAGE_JSON=$($AWS inspector2 list-cis-scan-results-aggregated-by-checks \
+    PAGE_JSON=$("${AWS[@]}" inspector2 list-cis-scan-results-aggregated-by-checks \
       --scan-arn "$SCAN_ARN" \
       --output json)
   fi
 
-  echo "$PAGE_JSON" | python3 -c "import sys,json; print(json.dumps(json.load(sys.stdin).get('checkAggregations',[])))" > "$TEMP_PAGE"
-  python3 -c "import json; a=json.load(open('$TEMP_ALL')); b=json.load(open('$TEMP_PAGE')); json.dump(a+b, open('$TEMP_ALL','w'))"
+  printf '%s' "$PAGE_JSON" | python3 -c 'import json,sys; print(json.dumps(json.load(sys.stdin).get("checkAggregations",[])))' > "$TEMP_PAGE"
+  python3 -c '
+import json, sys
+all_path, page_path = sys.argv[1:3]
+with open(all_path) as handle:
+    all_checks = json.load(handle)
+with open(page_path) as handle:
+    page_checks = json.load(handle)
+with open(all_path, "w") as handle:
+    json.dump(all_checks + page_checks, handle)
+' "$TEMP_ALL" "$TEMP_PAGE"
 
-  NEXT_TOKEN=$(echo "$PAGE_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('nextToken',''))" 2>/dev/null || echo "")
+  NEXT_TOKEN=$(printf '%s' "$PAGE_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("nextToken",""))' 2>/dev/null || echo "")
   [[ -z "$NEXT_TOKEN" ]] && break
 done
 
 mv "$TEMP_ALL" "$OUTPUT_DIR/aggregated-checks.json"
 rm -f "$TEMP_PAGE"
 
-CHECK_COUNT=$(python3 -c "import json; print(len(json.load(open('$OUTPUT_DIR/aggregated-checks.json'))))")
+CHECK_COUNT=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$OUTPUT_DIR/aggregated-checks.json")
 log "Aggregated checks saved: $CHECK_COUNT checks → $OUTPUT_DIR/aggregated-checks.json"
 log "scan.json saved → $OUTPUT_DIR/scan.json"

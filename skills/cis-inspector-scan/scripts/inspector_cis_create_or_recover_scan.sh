@@ -13,6 +13,26 @@ set -euo pipefail
 
 command -v python3 >/dev/null 2>&1 || { echo "ERROR: python3 not found (required for JSON parsing)"; exit 1; }
 
+valid_profile() { [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*$ ]]; }
+valid_region() { [[ "$1" =~ ^[a-z]{2}(-gov)?-[a-z0-9-]+-[0-9]+$ ]]; }
+valid_instance_id() { [[ "$1" =~ ^i-[0-9a-f]{8,17}$ ]]; }
+valid_scan_name() { [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$ ]]; }
+valid_scan_config_arn() {
+  [[ "$1" =~ ^arn:aws[a-zA-Z0-9-]*:inspector2:[a-z0-9-]+:[0-9]{12}:cis-scan-configuration/[A-Za-z0-9-]+$ ]]
+}
+config_by_arn() {
+  python3 -c '
+import json, sys
+arn = sys.argv[1]
+configs = json.load(sys.stdin).get("scanConfigurations", [])
+match = [config for config in configs if config.get("scanConfigurationArn") == arn]
+print(json.dumps(match[0]) if match else "null")
+' "$1"
+}
+targets_json() {
+  python3 -c 'import json,sys; print(json.dumps({"accountIds":["SELF"],"targetResourceTags":{"instance_id":[sys.argv[1]]}}))' "$1"
+}
+
 usage() {
   echo "Usage: $0 --profile <p> --region <r> --output-dir <dir>"
   echo "          [--scan-config-arn <arn>]  # recovery mode"
@@ -38,6 +58,13 @@ done
 
 [[ -z "$PROFILE" || -z "$REGION" || -z "$OUTPUT_DIR" ]] && usage
 
+valid_profile "$PROFILE" || { echo "ERROR: invalid profile" >&2; exit 2; }
+valid_region "$REGION" || { echo "ERROR: invalid region" >&2; exit 2; }
+if [[ -n "$SCAN_CONFIG_ARN" ]] && ! valid_scan_config_arn "$SCAN_CONFIG_ARN"; then echo "ERROR: invalid scan configuration ARN" >&2; exit 2; fi
+if [[ -n "$INSTANCE_ID" ]] && ! valid_instance_id "$INSTANCE_ID"; then echo "ERROR: invalid instance ID" >&2; exit 2; fi
+if [[ -n "$SCAN_NAME" ]] && ! valid_scan_name "$SCAN_NAME"; then echo "ERROR: invalid scan name" >&2; exit 2; fi
+[[ "$SECURITY_LEVEL" == "LEVEL_1" || "$SECURITY_LEVEL" == "LEVEL_2" ]] || { echo "ERROR: invalid security level" >&2; exit 2; }
+
 # Validate required params based on mode
 if [[ -z "$SCAN_CONFIG_ARN" ]]; then
   # Create mode: instance-id and scan-name required
@@ -45,7 +72,7 @@ if [[ -z "$SCAN_CONFIG_ARN" ]]; then
   [[ -z "$SCAN_NAME" ]] && { echo "ERROR: --scan-name required when creating a new scan"; exit 1; }
 fi
 
-AWS="aws --profile $PROFILE --region $REGION"
+AWS=(aws --profile "$PROFILE" --region "$REGION")
 mkdir -p "$OUTPUT_DIR"
 log() { echo "[create-or-recover] $*"; }
 
@@ -53,17 +80,13 @@ log() { echo "[create-or-recover] $*"; }
 if [[ -n "$SCAN_CONFIG_ARN" ]]; then
   log "Recovery mode — using existing config ARN: $SCAN_CONFIG_ARN"
 
-  CONFIG_JSON=$($AWS inspector2 list-cis-scan-configurations \
-    --query "scanConfigurations[?scanConfigurationArn=='$SCAN_CONFIG_ARN'] | [0]" \
-    --output json)
+  CONFIG_LIST=$("${AWS[@]}" inspector2 list-cis-scan-configurations --output json)
+  CONFIG_JSON=$(printf '%s' "$CONFIG_LIST" | config_by_arn "$SCAN_CONFIG_ARN")
   echo "$CONFIG_JSON" > "$OUTPUT_DIR/scan-config.json"
   echo "$SCAN_CONFIG_ARN" > "$OUTPUT_DIR/scan-config-arn.txt"
 
-  cat > "$OUTPUT_DIR/recovery-note.txt" <<EOF
-Recovery mode: scan config ARN was provided, no new config created.
-Config ARN: $SCAN_CONFIG_ARN
-Config saved to: $OUTPUT_DIR/scan-config.json
-EOF
+  printf 'Recovery mode: scan config ARN was provided, no new config created.\nConfig ARN: %s\nConfig saved to: %s\n' \
+    "$SCAN_CONFIG_ARN" "$OUTPUT_DIR/scan-config.json" > "$OUTPUT_DIR/recovery-note.txt"
 
   log "Recovery complete. Config ARN saved to $OUTPUT_DIR/scan-config-arn.txt"
   exit 0
@@ -74,23 +97,20 @@ log "Creating new CIS scan config: $SCAN_NAME (level: $SECURITY_LEVEL, target: $
 
 # Check for existing configs targeting the same instance_id tag
 log "Checking for existing scan configs targeting instance_id=$INSTANCE_ID..."
-EXISTING_ARNS=$($AWS inspector2 list-cis-scan-configurations --output json | \
-  python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-target_id = '$INSTANCE_ID'
-arns = []
-for cfg in data.get('scanConfigurations', []):
-    tags = cfg.get('targets', {}).get('targetResourceTags', {})
-    if 'instance_id' in tags and target_id in tags['instance_id']:
-        arns.append(cfg['scanConfigurationArn'])
-print(' '.join(arns))
-" 2>/dev/null || echo "")
+mapfile -t EXISTING_ARNS < <("${AWS[@]}" inspector2 list-cis-scan-configurations --output json | \
+  python3 -c '
+import json, sys
+target_id = sys.argv[1]
+for config in json.load(sys.stdin).get("scanConfigurations", []):
+    tags = config.get("targets", {}).get("targetResourceTags", {})
+    if target_id in tags.get("instance_id", []):
+        print(config["scanConfigurationArn"])
+' "$INSTANCE_ID" 2>/dev/null || true)
 
-if [[ -n "$EXISTING_ARNS" ]]; then
+if [[ ${#EXISTING_ARNS[@]} -gt 0 ]]; then
   log "Found existing scan config(s) for instance_id=$INSTANCE_ID — deleting to avoid ConflictException"
-  for ARN in $EXISTING_ARNS; do
-    $AWS inspector2 delete-cis-scan-configuration --scan-configuration-arn "$ARN" >/dev/null 2>&1 || true
+  for ARN in "${EXISTING_ARNS[@]}"; do
+    "${AWS[@]}" inspector2 delete-cis-scan-configuration --scan-configuration-arn "$ARN" >/dev/null 2>&1 || true
     log "  Deleted: $ARN"
   done
   log "Waiting 15s for conflict to clear..."
@@ -99,10 +119,10 @@ else
   log "No existing configs found — proceeding with creation"
 fi
 
-CONFIG_JSON=$($AWS inspector2 create-cis-scan-configuration \
+CONFIG_JSON=$("${AWS[@]}" inspector2 create-cis-scan-configuration \
   --scan-name "$SCAN_NAME" \
   --security-level "$SECURITY_LEVEL" \
-  --targets "{\"accountIds\":[\"SELF\"],\"targetResourceTags\":{\"instance_id\":[\"$INSTANCE_ID\"]}}" \
+  --targets "$(targets_json "$INSTANCE_ID")" \
   --schedule '{"oneTime":{}}' \
   --output json 2>&1)
 
@@ -110,20 +130,19 @@ CONFIG_JSON=$($AWS inspector2 create-cis-scan-configuration \
 if echo "$CONFIG_JSON" | grep -q 'already exists\|ConflictException'; then
   SCAN_NAME="${SCAN_NAME}-$(date +%H%M%S)"
   log "Name conflict — retrying with: $SCAN_NAME"
-  CONFIG_JSON=$($AWS inspector2 create-cis-scan-configuration \
+  CONFIG_JSON=$("${AWS[@]}" inspector2 create-cis-scan-configuration \
     --scan-name "$SCAN_NAME" \
     --security-level "$SECURITY_LEVEL" \
-    --targets "{\"accountIds\":[\"SELF\"],\"targetResourceTags\":{\"instance_id\":[\"$INSTANCE_ID\"]}}" \
+    --targets "$(targets_json "$INSTANCE_ID")" \
     --schedule '{"oneTime":{}}' \
     --output json)
 fi
 
-SCAN_CONFIG_ARN=$(echo "$CONFIG_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['scanConfigurationArn'])")
+SCAN_CONFIG_ARN=$(printf '%s' "$CONFIG_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["scanConfigurationArn"])')
 
 # fetch full config and save
-FULL_CONFIG=$($AWS inspector2 list-cis-scan-configurations \
-  --query "scanConfigurations[?scanConfigurationArn=='$SCAN_CONFIG_ARN'] | [0]" \
-  --output json)
+FULL_CONFIG_LIST=$("${AWS[@]}" inspector2 list-cis-scan-configurations --output json)
+FULL_CONFIG=$(printf '%s' "$FULL_CONFIG_LIST" | config_by_arn "$SCAN_CONFIG_ARN")
 echo "$FULL_CONFIG" > "$OUTPUT_DIR/scan-config.json"
 echo "$SCAN_CONFIG_ARN" > "$OUTPUT_DIR/scan-config-arn.txt"
 
