@@ -53,17 +53,21 @@ For edited or generated shell scripts:
 
 1. write the script file first
 2. run `bash -n <script>` or `zsh -n <script>`
-3. run `shellcheck <script>` when available
-4. execute only after syntax validation passes
+3. execute only after syntax validation passes
 
 ## Command Rule
 
-- Use `/bin/bash` for agent command execution unless testing zsh itself.
+- Use explicit `shell=/bin/bash` and `login=false` for agent command execution
+  unless testing zsh itself.
+- Do not wrap a command in nested `bash -lc`; invoke the command directly or
+  use one temporary Bash script for complex logic.
 - Quote variable expansions.
 - Prefer arrays over string-built commands.
 - Avoid `eval`.
-- Avoid complex one-liners; make a temp script when logic grows past a few
-  simple commands.
+- Pass dynamic jq values with `--arg` (or `--argjson` for JSON), never by
+  interpolating them into a jq program.
+- Avoid complex one-liners; make a temporary script when logic grows past a
+  few simple commands.
 
 For infra mutation helpers, prefer invoking repo-owned Terraform/Terragrunt
 commands or the owning repo cleanup runner over ad-hoc generated AWS CLI scripts.
