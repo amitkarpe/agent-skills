@@ -53,8 +53,7 @@ For edited or generated shell scripts:
 
 1. write the script file first
 2. run `bash -n <script>` or `zsh -n <script>`
-3. run `shellcheck <script>` when available
-4. execute only after syntax validation passes
+3. execute only after syntax validation passes
 
 ## Command Rule
 
