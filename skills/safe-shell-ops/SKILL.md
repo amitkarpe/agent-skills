@@ -1,6 +1,6 @@
 ---
 name: safe-shell-ops
-description: Prevent shell quoting, heredoc, globbing, and generated-file mistakes. Use when writing files through shell, generating Markdown/docs with backticks or dollar signs, creating temp scripts, running bash/zsh snippets, or fixing failures caused by heredoc expansion, command substitution, word splitting, or shell quoting.
+description: Prevent shell quoting, heredoc, globbing, interpreter-boundary, and generated-file mistakes. Use when writing files through shell, generating Markdown/docs with backticks or dollar signs, creating temp scripts, running bash/zsh snippets, generating SSM RunShellScript or remote wrappers, or fixing failures caused by heredoc expansion, command substitution, word splitting, shell quoting, or the wrong shell parsing a payload.
 ---
 
 # Safe Shell Ops
@@ -71,6 +71,32 @@ For edited or generated shell scripts:
 
 For infra mutation helpers, prefer invoking repo-owned Terraform/Terragrunt
 commands or the owning repo cleanup runner over ad-hoc generated AWS CLI scripts.
+
+## Remote And Generated Shell Boundary
+
+A Bash agent shell does not prove that SSM RunShellScript, cloud-init, CI, SSH,
+or another generated remote wrapper uses Bash.
+
+Use two explicit layers:
+
+1. Keep the outer wrapper POSIX-safe.
+2. Stage the real Bash script separately, verify its checksum, validate it with
+   `/usr/bin/bash -n`, and execute it with `/usr/bin/bash`.
+
+Never place process substitution, arrays, `[[ ]]`, here-strings, or Bash
+functions anywhere in a file parsed by `/bin/sh`, even after an
+`exec /usr/bin/bash` line. The parser can reject the file before `exec` runs.
+
+Validate both layers:
+
+```text
+/bin/sh -n outer-wrapper
+/usr/bin/bash -n inner-script
+```
+
+For SSM, validate the final rendered `commands` payload in addition to the
+source files. Preserve the terminal command status, stdout, stderr, and return
+code as evidence.
 
 ## Validation
 
