@@ -1,235 +1,84 @@
-# A Ownership And Office Skill System
-
-Status: active
-Owner role: `A` agent
-Controller role: `Q`
-
-## Purpose
-
-This document defines how shared skills, shared context, and local web/report
-tools should move from the home host to office WSL without losing the rules we
-learned.
-
-The goal is not to copy everything blindly. The goal is to make office able to
-run the same controller/worker system from clean, deterministic sources.
-
-## Ownership Model
-
-`Q` owns decisions:
-
-- priorities
-- safety gates
-- final approval
-- repo merge decisions
-- whether a skill becomes global/default
-
-`A` owns the agent system:
-
-- `agent-skills` repo hygiene
-- skill bootstrap and validation
-- skill install profiles
-- `/opt/agent-share` context and communication contracts
-- `/opt/agent-web` report/app publishing rules
-- drift checks between home and office
-
-`B` and other workers consume the system:
-
-- read shared contracts
-- use installed skills
-- write messages through `/opt/agent-share/agents`
-- publish reports through deterministic wrappers
-- do not change shared rules unless Q or A asks
-
-## Canonical Sources
-
-Skills source repo:
-
-```text
-~/git/agent-skills/
-```
-
-Codex live discovery path:
-
-```text
-~/.codex/skills/
-```
-
-Shared cross-agent context:
-
-```text
-/opt/agent-share/
-```
-
-Local web apps and reports:
-
-```text
-/opt/crypto-web/fast/   fast reports
-/opt/crypto-web/demos/  visual reports and demos
-/opt/crypto-web/deep/   durable deep dashboards
-```
-
-`/opt/agent-web/AGENTS.md` is authoritative for publishing paths and URLs.
-
-## Default Install Rule
-
-Default install means:
-
-- all stable skills under `agent-skills/skills/`
-- symlinked into `~/.codex/skills/`
-- validated by:
-  - `scripts/check-skill-repo.sh`
-  - `scripts/check-promoted-skills.sh`
-
-Do not install rough drafts from:
-
-```text
-~/.AGENTS-temp/agent-skills/
-```
-
-Do not copy external/private skills into this repo unless Q approves promotion.
-
-## Optional Skill Rule
-
-Optional skills are allowed, but they must be explicit.
-
-Examples:
-
-- external curated skills installed by Codex plugins
-- user-local emergency skills
-- repo-specific nested skills
-- experimental A/B/Hermes drafts
-
-Optional skills should be documented in:
-
-```text
-docs/EXTERNAL_LOCAL_SKILLS.md
-```
-
-They should not be silently copied into office.
-
-## Office Bootstrap
-
-Run on office:
-
-```bash
-cd ~/git/agent-skills
-git pull --ff-only
-scripts/bootstrap-local-skills.sh
-```
-
-The bootstrap does three things:
-
-1. checks the repo skill shape;
-2. links stable skills into `~/.codex/skills`;
-3. if `/opt/agent-share` exists and is writable, links:
-
-```text
-/opt/agent-share/skills -> ~/git/agent-skills/skills
-```
-
-This matters because home used an absolute symlink to `/home/dev/...`; office
-must point at `/home/user/...`.
-
-## A Startup Checklist
-
-When A starts on office, read:
-
-1. `~/git/agent-skills/AGENTS.md`
-2. `~/git/agent-skills/README.md`
-3. this file
-4. `/opt/agent-share/agents/COMMUNICATION_CONTRACT.md`
-5. `/opt/agent-web/AGENTS.md`
-6. `/opt/agent-share/ai/opencode/OPENCODE.md`
-
-Then run:
-
-```bash
-cd ~/git/agent-skills
-scripts/bootstrap-local-skills.sh
-/opt/agent-share/bin/report-agent validate
-```
-
-If `/opt/agent-share` or `/opt/agent-web` is missing on office, A should report
-that as a migration gap. Do not recreate the full tree from memory.
-
-## Report/Web Contract
-
-Agents must not write reports directly under:
-
-```text
-/opt/agent-web/www/reports/
-```
-
-Use the surface documented by `/opt/agent-web/AGENTS.md`:
-
-```text
-/opt/crypto-web/fast/<slug>/index.html
-/opt/crypto-web/demos/<slug>/index.html
-/opt/crypto-web/deep/<slug>/index.html
-```
-
-## Communication Contract
-
-A/B/Hermes/Q messages use:
-
-```text
-/opt/agent-share/agents/COMMUNICATION_CONTRACT.md
-```
-
-Minimum body:
-
-```text
-ACT:
-WATCH:
-BLOCKED:
-NEXT:
-```
-
-Do not create ad hoc communication folders unless the contract is missing.
-
-## What Not To Migrate Automatically
-
-Do not automatically copy:
-
-- secrets
-- `.env`
-- auth JSON
-- SSH keys
-- cloud credentials
-- raw evidence folders
-- `.AGENTS-temp`
-- old report dumps
-- experimental skills
-
-Amit handles secrets manually.
-
-## Drift Check
-
-On any machine:
-
-```bash
-cd ~/git/agent-skills
-git status --short --branch
-scripts/bootstrap-local-skills.sh
-```
-
-Expected:
-
-- repo clean or only intentional edits;
-- all stable skills linked;
-- promoted-skill check passes;
-- `/opt/agent-share/skills` points to the local repo if `/opt/agent-share`
-  exists and is writable.
-
-## Completion Standard
-
-Office skill migration is complete only when:
-
-- `agent-skills` is pulled to latest `main`;
-- `scripts/bootstrap-local-skills.sh` passes on office;
-- Q-office can see shared skills in `~/.codex/skills`;
-- `/opt/agent-share/skills` points to the office local repo or is explicitly
-  recorded as unavailable;
-- report contract validation passes or the missing `/opt/agent-web` state is
-  recorded;
-- A has a clear next action and no hidden dependency on home-only paths.
+# Standing Maintainer and Skill-System Ownership
+
+This retained document describes roles, not current host/session bindings.
+Private paths, controller identity and deployment targets belong in the owning
+host profile or runtime registry, not this public repository.
+
+## Ownership
+
+- The user/controller owns priorities, approvals, acceptance, merge decisions
+  and whether a capability becomes globally available.
+- The standing maintainer owns reusable skills, their interfaces, install
+  profiles and repository validation. Implement changes in the owning repo.
+- Shared policy and its deployment belong to the selected policy repository;
+  the installed vendor-neutral layer is not another skill source.
+- Vendor adapters own runtime/model configuration. Execution repositories own
+  product code, tests, runbooks, workload gates and private evidence.
+- Agent OS owns sanitized reusable explanations. Its guidance cannot override
+  project approval or expose private source material.
+
+A neutral shared workspace is optional compatibility state, not a second
+implementation tree, policy archive or Codex inbox. A skills-only task must not
+require report publishing, a browser profile or a web service.
+
+## Sources and loading
+
+Read [repository guidance](../AGENTS.md), the current approved goal and only the
+relevant [README](../README.md) or skill entrypoint. The goal/private registry
+supplies exact runtime and evidence paths. Do not recreate a missing host tree
+from memory or load every provider's instructions on startup.
+
+`skills/` is the reusable source; native skill-discovery links are installed by
+existing repository helpers. Use [external skill records](EXTERNAL_LOCAL_SKILLS.md)
+for separately installed capability. Do not copy private or external skills here
+without explicit promotion/publication approval.
+
+## Communication
+
+Adopt the [native queue protocol](https://github.com/amitkarpe/agent-os/blob/535be4b923cb996d85613d970159d71499ad75ae/kb/playbooks/delegation/codex-native-controller-worker-protocol.md)
+for verified persistent Codex messages in all directions. Results and exact
+`Reply-To` remain durable/explicit; shared-directory inboxes and terminal keys
+are not an alternative transport. Non-Codex consumers require their own approved
+adapter. Do not remove an existing inbox, link or consumer without live evidence
+and a separate approved change.
+
+## Installation and validation
+
+Only an explicit installation goal authorizes running
+[bootstrap-local-skills.sh](../scripts/bootstrap-local-skills.sh) or changing
+discovery links. A normal review does not reinstall every skill.
+
+Use existing checks appropriate to the change:
+
+- [check-skill-repo.sh](../scripts/check-skill-repo.sh) for repository shape;
+- [check-promoted-skills.sh](../scripts/check-promoted-skills.sh) when promotion
+  or the installed/discovered contract changes;
+- focused existing skill checks for changed execution behavior.
+
+Preserve stable skill interfaces and explicit optional installs. Do not promote
+rough drafts or change discovery merely because a new machine is available.
+Optional compatibility links created by the existing bootstrap are not proof
+that a shared workspace or report service is required for ordinary skills work.
+
+## Reports and retention
+
+When reporting is explicitly requested, use the selected report skill and the
+host-owned publishing contract. Validate the actual artifact and approved
+output destination. Do not store generated reports or operational logs here.
+
+Keep only necessary compatibility pointers in a neutral workspace. Its state
+follows the approved goal's acceptance/disposition lifecycle, not a permanent
+archive or an independent cleanup timer. Preserve active, dirty, held and unknown
+work; do not delete directories or stop services from these instructions.
+
+Never automatically migrate credentials, auth JSON, keys, cloud tokens, raw
+evidence, temporary-state roots, report dumps or experimental skills. Required
+backups and source/connector approval remain the owning environment's controls.
+
+## Completion
+
+Report the skill/interface changed, existing checks actually run, approved
+promotion state and remaining blocker. Verify host links/discovery only when
+that installation was in scope. Missing optional report/shared-workspace state
+is not a blocker for a skills-only change; a required missing dependency is.
+Do not claim migration, service health or cleanup from a documentation merge.
