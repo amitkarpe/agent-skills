@@ -27,18 +27,24 @@ Purpose:
 - expose only stable, proven skills globally
 - keep repo-specific policy in the owning repo, not in shared skills
 
-## tmux prompt submission
+## Policy and transport ownership
 
-- If a pasted prompt is still visible in the composer, it was not submitted:
-  `u forgot to press enter.`
-- When sending a prompt to another tmux Codex worker, paste the complete prompt
-  or `@/absolute/path/to/goal.md`, then always send `Enter`.
-- Wait 3-4 seconds after `Enter`, then run one `tmux capture-pane` check.
-- Success means the target changed to `Working` or visibly accepted the prompt.
-- If the prompt remains in the composer, send `Enter` once more, wait 3-4
-  seconds, and confirm again.
-- After confirmed submission, stop polling. The worker must write its
-  `RESULT.md` and `.done` marker and wake the controller when finished.
+Skills own reusable workflow interfaces and deterministic helpers, not general
+policy, concrete model defaults, private lane bindings or controller history.
+Read the owning repository's approval/goal first; use the selected shared policy
+for testing and temporary-state lifecycle and the vendor adapter for model choice.
+
+For verified persistent Codex sessions, adopt the
+[native queue protocol](https://github.com/amitkarpe/agent-os/blob/535be4b923cb996d85613d970159d71499ad75ae/kb/playbooks/delegation/codex-native-controller-worker-protocol.md).
+Use queue for controller-to-worker, worker-to-worker and result messages. A
+receipt is transport admission only, never permission to send another copy.
+Tmux is lifecycle/observation, not composer, Enter/F12 or supervisor delivery.
+The protocol owns blocked-transport reconciliation and the one-redispatch bound.
+
+GitHub reviews and edits follow the owning repository's collaboration authority
+or the adopted [public collaboration protocol](https://github.com/amitkarpe/agent-os/blob/535be4b923cb996d85613d970159d71499ad75ae/kb/playbooks/integrations/chatgpt-codex-collaboration-protocol.md).
+Do not use browser-oracle for this workflow. Reuse the owning Issue/PR and retain
+explicit EDIT/no-merge limits; no skill can widen them.
 
 ## Promotion path
 
@@ -80,10 +86,10 @@ Purpose:
 
 ## Compact rule
 
-- for low-context restart, prefer:
-  1. `~/.AGENTS-temp/agent-skills/COMPACT_RESUME_CURRENT.md`
-  2. `README.md`
-  3. `PLANS.md` only if directly relevant
+Read this `AGENTS.md` first, then the named active goal/result and `README.md`
+only as needed. Read `PLANS.md` only for relevant current work. A historical
+resume file is context, never authority or proof of a running service. Do not
+create a lane or mandatory artifact set for a tiny direct task.
 
 ## Safety
 

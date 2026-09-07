@@ -23,6 +23,9 @@ git mutation, supervisor status, or a clean restart packet.
 ## Core rules
 
 - Keep output short, practical, and current-state only.
+- The owning repository's authority and adopted shared policy override router
+  defaults. Shortcuts never grant a new mutation, merge, cleanup or handoff.
+  Preserve explicit approval, backup, retention and no-go requirements.
 - Prefer repo truth over chat memory: `AGENTS.md`, `CONTEXT.md`, optional
   `HANDOFF.md`, branch/MR/PR text, and current goal files when available.
 - For old evidence or broad context questions, read `INDEX.md` / `MANIFEST.tsv`
@@ -31,7 +34,7 @@ git mutation, supervisor status, or a clean restart packet.
 - Preserve local-only context. Do not stage secrets, `AGENTS.override.md`, raw evidence bundles, `.codex-local/`, or unrelated local files.
 - Save durable task evidence under `~/.AGENTS-temp/<repo>/`.
 - Before deleting or archiving context/rule files, create a backup under `~/back/`.
-- For AWS cleanup, start read-only and load `~/.codex/AWS.md` before inventory or deletion.
+- For AWS cleanup, start read-only and load `~/.agent/AWS.md` before inventory or deletion.
 
 ## Shared context contract
 
@@ -74,78 +77,77 @@ follow the global rule and avoid loading more old evidence than needed.
 
 ### Short worker commands
 
-Use this section before the broader command handlers when Amit gives a short
-worker phrase.
+Keep Amit's shortcuts, but resolve facts before choosing an action. A lane
+nickname is a lookup key, not a recipe for constructing a path or choosing the
+latest goal.
 
-Source order for worker decisions:
+Source order and resolution gate:
 
-1. Current repo `CONTEXT.md`
-2. Latest `~/.AGENTS-temp/work/inbox/<repo>.done`
-3. Latest worker `RESULT.md`
-4. Active tmux pane only to confirm live state or stale markers
-5. Prepared goal files under `~/.AGENTS-temp/<repo>/goals/`
-6. Branch/MR/issue state when repo work is involved
-7. `HANDOFF.md` only for restart/resume or stale `CONTEXT.md`
+1. Read the owning repository's `AGENTS.md`, applicable SPEC and current request.
+2. For preparation or execution, resolve one exact approved goal ID/revision,
+   goal path, repository/workspace, worker role and verified thread mapping.
+3. Read only its named context, result and marker; confirm current branch/PR
+   state when relevant. Use the approved private registry, not guessed paths.
+4. Confirm the selected authority mode, allowed action and explicit `Reply-To`.
+   A dated context, pane label, filename order or `safe_to_continue=yes` cannot
+   supply missing approval or identity.
 
-Do not use broad chat history as the source of truth.
+If a required fact is missing, ambiguous or stale, stop and name that fact.
+Do not create a lane, goal, prompt copy, worker or replacement mapping to fill
+it. Status-only reads need a verified target, not an execution grant. Creating
+a first goal needs an explicit preparation request defining its target and
+output path; a bare `prep` is not that request.
 
-Alias routing:
+Alias routing after this gate:
 
-- `check <lane>`, `status <lane>`, `<lane>?`, `update <lane>`:
-  status-only check; no edits, no new goals, no AWS mutation.
-- `check cc`, `check aa`, `check td`, `check pat`,
-  `check workers`, `are all workers active?`:
-  status-only check; inspect markers/results first, then tmux only to confirm
-  stale or live state.
-- `ss status`, `did ss call?`, `is ss working?`:
-  inspect supervisor last-run files and latest summary before assuming a wake
-  failure. Report timestamp, decision, target state, and whether a wake was
-  expected.
-- `next?`, `next`, `what next`:
-  inspect current truth and recommend one next action plus up to two options.
+- `check <lane>`, `status <lane>`, `<lane>?`, `update <lane>`,
+  `check cc`, `check aa`, `check td`, `check pat`, `check workers`,
+  `are all workers active?`: status only; read identified markers/results and
+  use bounded observation when needed. No edits, new goals or AWS mutation.
+- `ss status`, `did ss call?`, `is ss working?`: inspect identified last-run
+  evidence; report its timestamp and unknown live state without assuming a
+  wake failure or claiming a historical service is running.
+- `next?`, `next`, `what next`: recommend one next action, without dispatch.
 - `prep <lane>`, `prepare <lane>`, `goal <lane>`,
-  `$prepare-worker-goal <lane>`:
-  use `prepare-worker-goal`; write or refresh a goal, do not run it.
+  `$prepare-worker-goal <goal>`: invoke
+  [prepare-worker-goal](../prepare-worker-goal/SKILL.md) only for the resolved
+  approved preparation/revision scope. Do not run the goal or overwrite active
+  work. Preparation approval is not execution approval.
 - `go <lane>`, `run <lane>`, `continue <lane>`, `give goal <lane>`,
-  `$run-worker-goal <lane>`:
-  use `run-worker-goal`; run only an approved prepared goal.
-- `approved`:
-  run only when the target prepared goal is unambiguous. If multiple current
-  goals or lanes are plausible, stop and ask for the lane/path.
+  `$run-worker-goal <goal>`: invoke
+  [run-worker-goal](../run-worker-goal/SKILL.md) only for the exact approved
+  prepared goal and verified mapping. `go` preserves REVIEW/EDIT/COMPLETE and
+  explicit no-merge/no-mutation limits; it never upgrades authority.
+- `approved`, `approve and run <lane>`: proceed only when that approval binds
+  unambiguously to the resolved goal and requested action. Otherwise stop.
 - `approved for all`, `take any approval from me`, `approved - upgrade SPEC`:
-  treat as approval only inside already-known specs/goals. Do not invent new
-  mutation scope. If multiple prepared goals are plausible, ask for the target
-  lane or goal path.
-- `approve and run <lane>`:
-  run only when the approval target, no-go gates, and prepared goal are clear.
-
-Preferred output shape for these short commands:
-
-- `State`
-- `Recommended`
-- `Needs approval`
-- `Next command`
+  do not infer new goals, permission changes or a bulk dispatch. Resolve each
+  intended goal and existing safety boundary before acting.
 
 Worker-state routing:
 
-- If worker is `Working`, do not prepare or submit another goal unless Amit
-  explicitly asks for side work. Report current result path and next check.
-- If latest marker is `blocked`, summarize the blocker and recommend either
-  `prepare-worker-goal` or the exact approval/Ops ask needed.
-- If latest marker is `done` and `safe_to_continue=yes`, use `next_action` to
-  recommend the next goal or wait state.
-- If marker/result is stale, inspect tmux once and say it is stale.
-- If there is no active worker and no prepared goal, recommend
-  `prepare-worker-goal`.
+- An active or uncertain goal must not be overwritten or submitted again.
+  `Working`/`Ready` is an observation, not dispatch or completion proof.
+- A blocked result needs the blocker resolved and a permitted continuation;
+  a done marker needs its matching result and controller acceptance checked.
+- Missing goal or mapping means report the missing fact, not automatically
+  prepare a replacement. Separately requested side work must not conflict.
+- Persistent Codex delivery follows the
+  [native queue protocol](https://github.com/amitkarpe/agent-os/blob/535be4b923cb996d85613d970159d71499ad75ae/kb/playbooks/delegation/codex-native-controller-worker-protocol.md):
+  a valid receipt ends that attempt; uncertain admission stays blocked pending
+  reconciliation. Never use tmux/composer/SS as fallback or duplicate delivery.
 
 Examples:
 
-- `check td` -> status-only TD marker/result/tmux check.
-- `next?` -> one recommended next action and up to two options.
-- `prep td` -> prepare a TD goal, do not run.
-- `go td` -> run an approved TD goal only if unambiguous.
-- `approved` -> run the latest prepared goal only if exactly one target is
-  clear.
+- `check td` -> status of the verified mapping, or report that it is missing.
+- `prep td` -> prepare the specifically approved goal, or report missing scope.
+- `go td` -> dispatch the exact approved goal only after the resolution gate.
+- `continue td` -> reconcile that goal's state; never select the newest file.
+- Bare `go` or `approved` -> continue only the one explicit resolved target and
+  its current mode; otherwise stop and report the missing target/approval.
+
+Return `State`, `Recommended`, `Needs approval`, and `Next command` only when a
+safe next command is actually known. Never invent a command from a nickname.
 
 ### `clear context`
 
@@ -371,11 +373,14 @@ Workflow:
 3. Inventory candidate generated files: temp scripts, raw JSON/log dumps, one-off reports, stale compact files, caches, and local scratch.
 4. Keep curated docs, final reports, tracked status files, repo truth, closeout
    packets, decision packets, cleanup proof, MR/Jira references, and scan summaries.
-5. Archive/compress raw evidence before deletion when retention is unclear.
+5. Stop with `blocked_cleanup` when retention or ownership is unclear; do not
+   archive/compress or delete merely to resolve uncertainty.
 6. Back up before deleting anything that might contain context.
 7. Do not delete tracked files unless Amit explicitly asked for that tracked-file cleanup.
-8. Delete evidence only after closeout exists, no active lane references it, and
-   Amit approved deletion or a clear `delete_after` rule applies.
+8. Follow the adopted shared temporary-state lifecycle: controller acceptance,
+   verified durable evidence and exact-path cleanup approval are required.
+   Preserve active, dirty, held and unknown work. Age, TTL or `delete_after`
+   alone is not approval. Record disposition outside any removed path.
 
 Output:
 - `Removed`
@@ -388,7 +393,7 @@ Output:
 Goal: clean up expired or unwanted temporary AWS resources.
 
 Workflow:
-1. Load `~/.codex/AWS.md`.
+1. Load `~/.agent/AWS.md`.
 2. Start read-only: inventory resources with TTL/cleanup tags and repo resource records.
 3. Save inventory/evidence under `~/.AGENTS-temp/<repo>/`.
 4. Treat expired `ttl` + `cleanup=delete` resources as candidates, not automatic deletion, unless Amit explicitly asked to delete them.

@@ -1,295 +1,107 @@
 ---
 name: run-worker-goal
-description: Execute an already prepared Codex worker goal. Use when Amit asks to run, continue, or refresh a worker lane such as td, tdg, pat, boss, or localai from a goal file. Defaults to direct/goal execution and uses plan-first only when explicitly requested or safety is unclear.
+description: Dispatch or continue one identified, approved persistent Codex worker goal when the user explicitly requests execution. Require an exact goal and verified worker mapping. Do not trigger for generic go/continue, status-only reads, goal preparation, or non-Codex browser/terminal workflows.
 ---
 
 # Run Worker Goal
 
-Use this skill when the worker goal is already prepared and Amit wants it
-executed or continued.
-
-Examples:
-
-- `$run-worker-goal tdg`
-- `give goal to TD`
-- `run MongoDB goal for TD`
-- `continue the worker goal`
-
-## Core Rule
-
-Do not run `/plan` by default.
-
-The controller should already have done deep thinking with
-`prepare-worker-goal`. This skill is for execution.
-
-Before sending anything, run a worker status gate:
-
-- If the target worker is already `Working`, do not submit another goal. Report
-  the current expected result path and next check.
-- If the latest marker is `blocked`, run only when a newer prepared goal exists
-  and Amit's approval clearly covers it.
-- If the latest marker is `done safe_to_continue=yes`, run only when the
-  marker `next_action` maps to the selected prepared goal.
-- If the user says only `approved`, run only when exactly one prepared goal is
-  the obvious approval target. Otherwise ask for lane/path.
-- If multiple current goals are plausible, stop instead of guessing.
-
-Choose the fastest safe mode:
-
-1. `direct`: tiny bounded task or result/status packet; no `/plan`, no `/goal`.
-2. `goal`: complete approved goal file; send `/goal` directly.
-3. `plan-first`: broad/risky/unclear goal, or Amit explicitly asked for plan
-   first.
-
-## Default Truth Files
-
-Use:
-
-```text
-AGENTS.md
-CONTEXT.md
-```
-
-Do not recreate or rely on `PLANS.md` / `STATUS.md` unless the repo has an
-explicit exception.
-
-Goal files live under:
-
-```text
-~/.AGENTS-temp/<repo>/goals/
-```
-
-Results live under:
-
-```text
-~/.AGENTS-temp/<repo>/<run>/RESULT.md
-~/.AGENTS-temp/work/inbox/<repo>.done
-```
-
-## Lane Mapping
-
-- `td`, `trustdev`: repo `/home/dev/git/trustdev`, temp `/home/dev/.AGENTS-temp/trustdev`, tmux `trustdev`.
-- `tdg`, `td-gitlab`, `trustdev-gitlab`: repo `/home/dev/git/trustdev-gitlab`, temp `/home/dev/.AGENTS-temp/trustdev-gitlab`, tmux `td-gitlab`.
-- `pat`, `patching`: repo `/home/dev/git/patching`, temp `/home/dev/.AGENTS-temp/patching`, tmux `patching`.
-- `boss`: repo `/home/dev/git/boss`, temp `/home/dev/.AGENTS-temp/boss`, tmux `boss`.
-- `localai`: repo `/home/dev/git/localai`, temp `/home/dev/.AGENTS-temp/localai-lab/repos/localai`, tmux `localai`.
-- Generic fallback: repo `/home/dev/git/<lane>`, temp `/home/dev/.AGENTS-temp/<lane>`, tmux `<lane>`.
-
-## Worker Runtime Gate
-
-Choose runtime by risk, not by habit.
-
-Use Luna low/medium for repetitive support work and approved operator-mode
-execution:
-
-- read-only repo inventory
-- summaries and first-pass reports
-- static file review
-- simple local checks
-- personal learning / side projects
-- bounded local docs/skill edits
-- proven DEV/QA repo-owned commands when Q or the SPEC already decided the
-  action and the exact command/account/env/resource is named
-- previously validated DEV/QA Terraform/Terragrunt stack commands when the
-  plan/action is already approved and evidence output is defined
-- repo-owned AMI Factory cleanup commands with exact allowlist gates
-- approved DEV validation SSM/Patch commands with clear stop conditions
-
-Use Terra medium for normal repo work that needs interpretation or
-implementation:
-
-- ordinary TD/PAT/AA/A investigation
-- bounded script, test, documentation, and report implementation
-- read-only AWS analysis where results require interpretation
-- routine feature work with clear success criteria
-
-Use Sol high for decision-mode and serious office execution:
-
-- deciding whether AWS mutation is safe
-- PROD or production-like validation
-- first-time SSM Patch Manager / Run Command changes
-- first-time Terraform apply/destroy, unclear plans, or state-sensitive plans
-- Terraform import/state surgery
-- IAM, VPC, networking, ASG, ECS, AMI promotion, or cleanup when the decision,
-  plan, rollback, or ownership boundary is unclear
-- recovery after a failed or confused worker loop
-- final judgment before Amit approval
-
-Luna operator-mode rule:
-
-- Luna may execute proven code, but it must not decide risky changes.
-- Luna stops and escalates to Terra/Sol when output differs from the expected
-  plan, a command asks for unapproved IAM/network/state changes, PROD appears,
-  cleanup fails halfway, or stale/current truth conflicts.
-
-Recommended defaults:
-
-```text
-controller/work: gpt-5.6-sol medium
-planning/risk review: gpt-5.6-sol high
-office mutation worker: gpt-5.6-sol high
-normal repo worker: gpt-5.6-terra medium
-proven DEV/QA operator worker: gpt-5.6-luna medium
-repetitive read-only helper: gpt-5.6-luna low/medium
-```
-
-If a running worker is on Luna and the goal changes from approved
-operator-mode into decision-mode, stop and ask the controller to restart or
-reassign the worker before continuing.
-
-Controller restart examples:
-
-```bash
-# Read-only helper
-codex resume --last -m gpt-5.6-luna -c 'model_reasoning_effort="medium"'
-
-# Normal repo worker
-codex resume --last -m gpt-5.6-terra -c 'model_reasoning_effort="medium"'
-
-# Serious office execution
-codex resume --last -m gpt-5.6-sol -c 'model_reasoning_effort="high"'
-```
-
-Codex 0.137 multi-agent v2 note:
-
-- spawned subagents can keep runtime choices per thread more cleanly
-- use subagents for short parallel R&D/review
-- keep tmux workers for durable repo/AWS execution lanes
-- do not replace TD/TDG/PAT tmux lanes with subagents for long work
-
-## Mode Selection
-
-### Direct
-
-Use direct mode for narrow tasks:
-
-- inspect a result packet
-- update a done marker
-- write a short closeout summary
-- run local validation only
-- no AWS mutation, no broad repo mutation
-
-Prompt:
-
-```text
-Read and execute this bounded task file only: <absolute-goal-file>. Stop after writing the requested result packet.
-```
-
-### Goal
-
-Use goal mode when the goal file is complete and approved.
-
-Goal quality gate:
-
-- one bounded mission
-- outcome and verification surface
-- allowed mutation and no-go boundaries
-- read-first files
-- Phase 0 Probe / MVP Proof / Full Lane only if / Closeout
-- expected result packet and done marker
-- blocked stop condition
-- private-only guardrails for GCC/GovTech/AWS private lanes
-- Inspector/CIS/HCR read-first rule when relevant
-
-Prompt:
-
-```text
-/goal <lane> execution. Read <goal-file> first. Use AGENTS.md and CONTEXT.md as repo truth. Start with Phase 0 Probe, run MVP Proof next, enter Full Lane only if gates pass, then write Closeout. Stop on one clean result packet or a real blocker. Update the done marker.
-```
-
-### Plan-First
-
-Use plan-first only when:
-
-- Amit explicitly asked for plan first
-- PROD mutation is new or broad
-- IAM, VPC, networking, public exposure, rollback, or cleanup is unclear
-- repo truth conflicts with live state
-- required approval is ambiguous
-- the goal may touch stable services
-- the goal is missing any quality-gate field
-
-Prompt:
-
-```text
-/plan Use <goal-file> as source of truth. Produce a bounded Probe -> MVP Proof -> Full Lane -> Closeout plan for <lane> only. Do not mutate AWS or repo files during plan mode. Ask only if a hard no-go boundary is unclear.
-```
-
-After `/plan`, implement only if:
-
-- Amit asked to execute, not plan-only
-- plan stays inside the goal boundaries
-- no unresolved no-go question remains
-
-If Codex asks `Implement this plan?`:
-
-- choose `1. Yes, implement this plan` when context is below `30%`
-- choose `2. Yes, clear context and implement` when context is `30%` or higher
-- choose `3. No, stay in Plan mode` for unresolved or unapproved boundaries
-
-## Workflow
-
-1. Confirm target tmux session/window is Codex, not shell.
-2. Read smallest useful truth:
-   - repo `AGENTS.md`
-   - repo or lane `CONTEXT.md`
-   - goal file
-   - latest done marker/result only if needed
-3. Run the worker status gate from the Core Rule section.
-4. Resolve truth conflicts before execution.
-5. Select mode: `direct`, `goal`, or `plan-first`.
-6. Create a small prompt file under `~/.AGENTS-temp/work/prompts/` when the
-   goal is more than one line.
-7. Submit only `@/absolute/path/to/prompt.md` or `@/absolute/path/to/goal.md`;
-   do not paste a raw path without `@`.
-8. Verify prompt is accepted and worker is `Working`.
-9. For Claude Code tmux workers, `/goal ... @file` is the start command. After
-   submitting it, wait about 5 seconds and capture the pane before deciding
-   whether anything else is needed. Do not send `go` or another follow-up prompt
-   just because the first capture says "Goal set".
-10. If the raw path lands in the input line, press `Enter` once, capture again,
-   and verify. Do not keep pasting duplicates.
-11. Prefer hooks/done markers over live polling.
-
-## Short Command Routing
-
-- `go <lane>`: run the current approved prepared goal for that lane.
-- `run goal <lane>` / `give goal <lane>`: same as `go <lane>`.
-- `approved`: run only if one prepared goal is clearly awaiting this approval.
-- `continue <lane>`: if worker is `Working`, report status only; otherwise run
-  the prepared continuation goal if it is clear.
-
-If approval is missing or ambiguous, output:
-
-- `State`
-- `Recommended`
-- `Needs approval`
-- `Next command`
-
-## Done Marker Contract
-
-Ask workers to update:
-
-```text
-result: <done|blocked|next_ready|failed>
-result_path: <absolute path>
-safe_to_continue: <yes|no>
-next_action: <one line>
-blocked_reason: <empty or reason>
-resource_ids: <AMI/instance/pipeline ids when relevant>
-public_exposure: <none|null|details>
-```
-
-Controller can start the next loop without live polling only when
-`safe_to_continue: yes` and the result packet proves the next action is inside
-the current no-go gates.
-
-## Completion Summary
-
-Report:
-
-- mode used
-- goal path
-- worker session/window
-- result packet or expected result packet
-- current status and next check
+Execute the approved contract, not another round of architecture planning.
+Use [prepare-worker-goal](../prepare-worker-goal/SKILL.md) only when the goal is
+missing, ambiguous or needs a scoped revision. Tiny direct tasks need no lane.
+
+## Required inputs and authority
+
+Read the owning repository's `AGENTS.md`, applicable SPEC, current context and
+the exact approved goal. The goal or private registry must supply:
+
+- repository/workspace and allowed files or systems;
+- goal ID/revision, one outcome and exact approved mutations;
+- worker role and verified thread UUID, with exact controller `Reply-To`;
+- result/evidence/marker paths and success/stop conditions;
+- cleanup owner, approved durable destination and retention decision.
+
+Do not infer a machine path, worker identity, model or target from a lane name.
+Preserve existing paths and marker schemas; parallel goals must not share a
+writable marker or root context. Missing or conflicting mapping is a blocker,
+not permission to start a replacement worker.
+
+The repository's SPEC and current approval govern action. A skill, model choice,
+`safe_to_continue=yes`, queue receipt or plan UI cannot grant authority. Preserve
+REVIEW/EDIT/COMPLETE and explicit no-merge/no-mutation limits when applicable.
+
+## Pre-dispatch gate
+
+1. Read the smallest current goal/result/marker evidence required to determine
+   whether this exact goal is active, accepted, blocked or undispatched.
+2. Do not dispatch a duplicate or overwrite active work. `Working`/`Ready` is
+   only an observation; stale or uncertain evidence must be reconciled.
+3. For a blocked goal, require a resolved blocker and an approved continuation
+   or revision. For a completed goal, verify the controller decision and that
+   any next action stays inside the approved SPEC.
+4. Resolve `approved` or `go` only when exactly one goal is the clear target.
+   Ambiguity means ask for that target, not guess or broaden the task.
+5. Verify installed queue support and the goal's configured model/effort through
+   the native adapter. Model selection belongs there, not in this skill. A
+   queue message does not reconfigure the receiving session.
+
+Use cheaper operators only for decided, proven work. Escalate unexpected output,
+new PROD/IAM/network/state scope, partial cleanup, auth failure or conflicting
+truth to the controller. Do not automatically restart or change a worker model.
+
+## Execution mode
+
+- **Direct bypass:** tiny result/status or local-validation work belongs to
+  the controller, outside this dispatch skill. Do not create a lane, prompt
+  copy or worker dispatch merely to handle it.
+- **Goal:** execute the complete approved goal and its existing Probe/MVP/Full
+  Lane gates. Require private-network, workload/security and rollback evidence
+  when the owning policy calls for them.
+- **Plan-only:** use when explicitly requested or when new PROD/stable-service,
+  IAM/network, exposure, rollback, cleanup or approval questions remain. Do not
+  mutate AWS or implementation files. Preparation is not execution permission.
+
+A plan may proceed to execution only when the user authorized execution, the
+plan stays inside the goal, and no unresolved gate remains. Do not choose plan
+UI buttons or clear context according to an arbitrary percentage.
+
+## Native dispatch
+
+Follow the [Codex Native Controller-Worker Protocol](https://github.com/amitkarpe/agent-os/blob/535be4b923cb996d85613d970159d71499ad75ae/kb/playbooks/delegation/codex-native-controller-worker-protocol.md)
+for controller-to-worker, worker-to-worker and result notifications.
+
+Send one short queue message pointing to the complete goal, with provenance and
+exact `Reply-To`. Do not create another prompt copy merely to send a path.
+A valid receipt means `notification_queued` / transport admission only; it ends
+that send attempt. Never send a second copy through queue, tmux, composer,
+supervisor, Enter, Tab, F12 or a file mention.
+
+Without a valid receipt, record `BLOCKED_TRANSPORT`; reconcile possible original
+admission/execution. Follow the canonical stop-and-repair rule: at most one
+redispatch after authorized repair, only when the original was not admitted or
+executed. Unknown outcomes or another failure stay blocked. Do not create a
+retry loop. Tmux remains lifecycle/observation only.
+
+## Result and acceptance
+
+The worker owns the operation until terminal evidence or an explicit blocked
+handback. Use existing deterministic commands/waiters and required validation;
+never infer completion from a returned prompt or leave a live process unowned.
+Write `RESULT.md` before the existing marker and one native result notification
+to `Reply-To`. Preserve the result if notification is blocked.
+
+Use the owning marker schema and paths rather than a second schema in this
+skill. Preserve result status/path, next action, blocker, `safe_to_continue`, and
+required resource/exposure evidence. `safe_to_continue=yes` is not a new goal or
+cleanup approval. Reports do not replace required evidence.
+
+The controller reviews evidence and required fresh state before acceptance.
+Cleanup/retention follows the adopted shared lifecycle and exact goal approval;
+worker completion alone must not delete the lane. Leave an unresolved cleanup
+obligation in the owning work record, not another handoff packet.
+
+## Completion summary
+
+Return execution mode, goal ID/revision, verified target, result or expected
+result path, admission/work/acceptance states separately, blocker and one next
+action. Do not claim execution from queue admission or local runtime from old
+repository notes. Non-Codex workers use their separately approved adapter.

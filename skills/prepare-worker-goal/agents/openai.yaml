@@ -1,7 +1,7 @@
 interface:
   display_name: "Prepare Worker Goal"
-  short_description: "Prepare safe controller-to-worker goals"
-  default_prompt: "Use $prepare-worker-goal to think, review risk, and write a bounded worker goal before execution."
+  short_description: "Prepare an explicitly requested, identified worker goal"
+  default_prompt: "Use $prepare-worker-goal only for an explicit preparation request with an exact goal ID/path and verified worker mapping. Read the owning approval and scope; prepare or revise that goal only, never dispatch it. Stop and report missing or ambiguous inputs."
 
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false

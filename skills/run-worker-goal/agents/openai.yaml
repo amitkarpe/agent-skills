@@ -1,7 +1,7 @@
 interface:
   display_name: "Run Worker Goal"
-  short_description: "Execute prepared worker goals with plan-first only when needed"
-  default_prompt: "Use $run-worker-goal to run an approved goal file from ~/.AGENTS-temp/<repo>/goals/ using the fastest safe mode."
+  short_description: "Dispatch an exact approved goal to a verified worker"
+  default_prompt: "Use $run-worker-goal only when execution of one exact approved goal is explicitly requested and its worker thread/workspace mapping is verified. Preserve the selected authority mode, reconcile current goal state and follow native queue. Stop on missing approval, ambiguous mapping or uncertain prior dispatch; never infer a path or target."
 
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false

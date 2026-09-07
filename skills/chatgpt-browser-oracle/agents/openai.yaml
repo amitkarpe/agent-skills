@@ -1,22 +1,22 @@
 name: chatgpt-browser-oracle
 description: >
-  Submit prompts through Amit's authenticated ChatGPT browser profile, select
-  Instant/Thinking/Pro when needed, download generated files, and validate
-  artifact paths for other agents.
+  Legacy artifact-only browser workflow requiring explicit task-specific approval.
+  Not for GitHub collaboration, repository review, generic Pro requests, or
+  ordinary generated-file requests.
 
 triggers:
-  - ask chatgpt through the oracle browser profile
-  - ask chatgpt pro
-  - use chatgpt to create a generated file
-  - download a generated pdf docx pptx xlsx zip html image artifact
-  - run an instant thinking or pro chatgpt browser test
+  - explicitly approved legacy browser artifact workflow
+
+policy:
+  allow_implicit_invocation: false
 
 instructions: |
-  Use the Oracle Chrome profile through DevTools on 127.0.0.1:9222.
-  Prefer project-browser runs for generated files so the chat remains visible in
-  Amit's disposable ChatGPT project. Save evidence under
-  ~/.AGENTS-temp/codex/oracle-pro/out and copy final review artifacts to
-  /tmp/dell.
+  Read SKILL.md and the owning repository authority first. Require explicit
+  approval for this browser task and owner-supplied profile, project, endpoint
+  and output locations. Inspect existing script defaults before use; do not
+  assume they match the approved target. GitHub collaboration must use its
+  repository-owned protocol, not this browser path. No service or credential
+  changes are authorized by invoking this skill.
 
 scripts:
   - path: scripts/chatgpt_focus_control_tab.sh
