@@ -18,51 +18,36 @@ Canonical local repo for reusable Codex/OpenAI-style skills.
 
 ## Promotion path
 
-Default fast path for reusable skills:
+Source promotion and installed discovery are separate decisions:
 
-1. create or update under:
-   - `~/git/agent-skills/skills/<skill>/`
-   - use this for small, clear, or already-proven skills
-2. expose globally through:
-   - `~/.codex/skills/<skill>`
-   - this is the path Codex actually discovers across repos
+1. Create or refine reusable source under `skills/<skill>/`; incubate rough
+   work outside the repository when necessary.
+2. Validate the source, then separately approve where it should be discoverable.
+3. Follow [Skill Exposure Profiles](docs/SKILL_EXPOSURE_PROFILES.md) for the
+   source/discovery/invocation distinction, protected skills and reversible
+   single-skill trials. Do not install everything merely because source exists.
 
-Optional scratch path for uncertain work:
+Existing helpers remain available, not automatic startup steps:
 
-1. incubate under:
-   - `~/.AGENTS-temp/agent-skills/`
-   - use this for rough testing, scratch notes, autoresearch, and unstable drafts
-2. promote into:
-   - `~/git/agent-skills/skills/<skill>/`
-   - use this once the skill shape is useful and worth keeping
-3. expose globally through:
-   - `~/.codex/skills/<skill>`
-   - this is the path Codex actually discovers across repos
+- `scripts/link-skill.sh`: link one selected skill after target verification.
+- `scripts/link-all-skills.sh` and `scripts/bootstrap-local-skills.sh`: bulk
+  installation; not a lean-discovery or review default.
+- `scripts/skill-inventory.py`: source/filesystem inventory, not runtime proof.
+- `scripts/check-skill-repo.sh`: source shape validation.
+- `scripts/run-smoke-tests.sh`: existing complete source smoke checks.
+- `scripts/check-promoted-skills.sh`: checks an all-source-skills-linked
+  installation, not a selectively enabled runtime.
 
-Important:
+Helpers default to `~/.codex/skills/`; verify the installed Codex loader rather
+than treating that historical path as universal. Do not migrate directories or
+change discovery links as part of a documentation review. Remote Git merge is
+not deployment; pulling a clone already behind live symlinks can change what
+agents load, so even that update needs the host's approved adoption scope.
 
-- repos do not auto-discover skills directly from `~/git/agent-skills/`
-- the live discovery path is `~/.codex/skills/`
-- the simplest install method is a symlink:
-  - `~/.codex/skills/<skill> -> ~/git/agent-skills/skills/<skill>`
-- install one skill:
-  - `scripts/link-skill.sh <skill-name>`
-- bulk install helper:
-  - `scripts/link-all-skills.sh`
-- local machine bootstrap helper:
-  - `scripts/bootstrap-local-skills.sh`
-- repo sanity check:
-  - `scripts/check-skill-repo.sh`
-- full smoke check:
-  - `scripts/run-smoke-tests.sh`
-- promotion check:
-  - `scripts/check-promoted-skills.sh`
-- only expose stable and actually useful skills globally
-- keep repo-specific policy in the owning repo, not in shared skills
-
-For office WSL migration and re-linking, see `docs/OFFICE_MIGRATION.md`.
-For A's ownership of shared skills, `/opt/agent-share`, and `/opt/agent-web`,
-see `docs/A_OWNERSHIP_AND_OFFICE_SKILL_SYSTEM.md`.
+For an explicitly approved migration, inspect `docs/OFFICE_MIGRATION.md` and
+current helper behavior. Maintainer responsibilities are in
+`docs/A_OWNERSHIP_AND_OFFICE_SKILL_SYSTEM.md`; a normal skills task does not
+require Agent Share or a report service.
 
 ## When To Promote
 
@@ -87,7 +72,7 @@ Promote a temp draft into `agent-skills` when:
 - the inputs/outputs are stable enough to describe
 - the logic is reusable across repos
 
-Expose a skill through `~/.codex/skills` when:
+Expose a skill through a verified Codex discovery root when:
 
 - the skill already proved useful in real work
 - the interface is stable enough for reuse

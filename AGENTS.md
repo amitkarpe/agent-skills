@@ -10,8 +10,9 @@ Purpose:
 - durable reusable skills live here
 - unstable drafts, raw logs, and autoresearch artifacts stay under:
   - `~/.AGENTS-temp/agent-skills/`
-- skill discovery for Codex happens through:
-  - `~/.codex/skills/`
+- skill source, installed discovery and implicit invocation are separate:
+  - follow [Skill Exposure Profiles](docs/SKILL_EXPOSURE_PROFILES.md)
+  - verify actual loader roots; `~/.codex/skills/` is the helpers' recorded default
 - this repo is the durable source, not the direct discovery path
 - external/direct installed skills that are not source-owned here are tracked in:
   - `docs/EXTERNAL_LOCAL_SKILLS.md`
@@ -50,12 +51,15 @@ explicit EDIT/no-merge limits; no skill can widen them.
 
 1. create or refine the skill in:
    - `skills/<skill>/`
-2. expose it through:
-   - `~/.codex/skills/<skill>`
+2. choose exposure separately under the approved host/task scope; source
+   promotion does not imply global installation
 3. keep one-off evidence and generated outputs out of the repo
-4. for a new machine such as office WSL:
-   - run `scripts/bootstrap-local-skills.sh`
-   - read `docs/OFFICE_MIGRATION.md`
+4. use installation/bootstrap helpers only for an explicit deployment goal;
+   review their current behavior and target before following migration notes
+
+Do not bulk relink skills to satisfy an all-installed check after intentional
+curation. Preserve operational/safety skills and useful source; this phase's
+exposure guide authorizes neither deletion nor deployment.
 
 ## Git sharing model
 
