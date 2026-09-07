@@ -1,6 +1,6 @@
 ---
 name: prepare-worker-goal
-description: Prepare a high-quality worker goal before execution. Use when Amit wants the controller to think, review risk, inspect current repo/live truth, write or refresh a worker goal file, and optionally ask approval before handing it to a worker.
+description: Prepare or revise one bounded persistent-worker goal when the user explicitly requests a delegation plan or goal file. Do not trigger for generic planning, tiny direct tasks, status checks, or execution of an already approved goal; use run-worker-goal for dispatch.
 ---
 
 # Prepare Worker Goal
@@ -8,20 +8,23 @@ description: Prepare a high-quality worker goal before execution. Use when Amit 
 Use this skill when the task is not “execute now,” but “prepare the best worker
 goal first.”
 
-This is the controller thinking skill.
+This skill prepares scope; [run-worker-goal](../run-worker-goal/SKILL.md) handles
+approved dispatch. Read the repository's instructions and applicable SPEC first.
+Shared policy owns approval, test and lifecycle rules; the vendor adapter owns
+model selection. Do not reproduce those policies in every goal.
 
 ## Core Behavior
 
 - Think before delegation.
 - Read only the minimum repo/live truth needed.
-- Write a clear goal file under `~/.AGENTS-temp/<repo>/goals/`.
+- Use the exact approved lane/goal path; do not create another prompt copy.
 - Review the goal critically before it is sent.
-- Ask Amit for approval when the next step mutates AWS, stable services, IAM,
-  networking, or production-like state.
+- Cite exact existing approval for AWS, stable services, IAM, networking or
+  production-like state; ask only when that approval is missing or ambiguous.
 - Do not execute the worker unless Amit explicitly asks to run it.
-- Do not prepare a child/next goal while the target worker is still `Working`,
-  unless Amit explicitly asks for sidecar preparation. If the current worker
-  result is missing, check status and wait.
+- Do not replace or dispatch over an active goal. Prepare a non-conflicting
+  sidecar only when explicitly authorized. Treat UI state as a hint; reconcile
+  the current goal/result before selecting a continuation.
 
 ## Default Truth Files
 
@@ -62,14 +65,15 @@ Before sending a worker goal, confirm:
 - cleanup/rollback expectation
 - worker model/session expectation when relevant
 - whether the worker should use internal subagents
-- context threshold stop rule for long lanes
+- exact goal ID/revision and `Reply-To`
+- cleanup owner, approved durable destination and retention decision
 
 ## Worker Status Gate
 
 Before writing or refreshing a worker goal:
 
 1. Read `CONTEXT.md`.
-2. Read the latest `~/.AGENTS-temp/work/inbox/<repo>.done` marker if present.
+2. Read the exact current marker path named by the goal or private registry.
 3. Read the referenced `RESULT.md` only when the marker exists or the context
    points to it.
 4. Inspect tmux only if the marker/result is stale or the worker may still be
@@ -77,15 +81,17 @@ Before writing or refreshing a worker goal:
 
 Rules:
 
-- Worker `Working`: do not prepare a child goal. You may prepare a sidecar doc
-  or checklist only if Amit explicitly asked for work that can run while
-  waiting.
+- Active or uncertain goal: do not overwrite or duplicate it. A separate
+  preparation task needs explicit non-conflicting scope.
 - Marker `blocked`: prepare a follow-up goal only after the blocker is
   understood and the needed approval/Ops ask is explicit.
-- Marker `done safe_to_continue=yes`: prepare the next goal from `next_action`
-  if it stays inside no-go gates.
+- Marker `done safe_to_continue=yes`: reconcile the matching result and
+  controller decision before proposing a SPEC-covered next action. The marker
+  does not grant new scope or cleanup authority.
 - Multiple possible goals: stop and ask for lane/path instead of guessing.
-- AWS mutation goal: include the exact approval sentence needed in the output.
+- AWS mutation goal: name the exact applicable approval or the missing decision.
+- Do not dispatch here. Use the [native queue protocol](https://github.com/amitkarpe/agent-os/blob/535be4b923cb996d85613d970159d71499ad75ae/kb/playbooks/delegation/codex-native-controller-worker-protocol.md)
+  only in an authorized execution step; no composer fallback.
 
 ## Goal File Shape
 
@@ -93,9 +99,13 @@ Rules:
 # <lane> goal - <short name>
 
 Controller timestamp:
-Worker:
+Goal ID/revision:
+Worker role and verified thread:
+Reply-To:
 Repo:
-Temp root:
+Exact lane/result/marker paths:
+Cleanup owner / durable destination / retention decision:
+SPEC and exact approval reference:
 
 Objective:
 - <one bounded objective>
@@ -129,7 +139,8 @@ Success condition:
 Closeout:
 - write RESULT.md
 - update done marker
-- include next safe action and cleanup
+- include next safe action and retention obligation
+- wait for controller acceptance; cleanup requires separate exact-path authority
 ```
 
 ## Output Contract
@@ -163,5 +174,5 @@ Needs approval:
 - <yes/no and why>
 
 Next command:
-- <for example: $run-worker-goal td>
+- <for example: $run-worker-goal <approved-goal>>
 ```
