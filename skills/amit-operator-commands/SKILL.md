@@ -108,16 +108,14 @@ Alias routing after this gate:
   evidence; report its timestamp and unknown live state without assuming a
   wake failure or claiming a historical service is running.
 - `next?`, `next`, `what next`: recommend one next action, without dispatch.
-- `prep <lane>`, `prepare <lane>`, `goal <lane>`,
-  `$prepare-worker-goal <goal>`: invoke
-  [prepare-worker-goal](../prepare-worker-goal/SKILL.md) only for the resolved
-  approved preparation/revision scope. Do not run the goal or overwrite active
-  work. Preparation approval is not execution approval.
-- `go <lane>`, `run <lane>`, `continue <lane>`, `give goal <lane>`,
-  `$run-worker-goal <goal>`: invoke
-  [run-worker-goal](../run-worker-goal/SKILL.md) only for the exact approved
-  prepared goal and verified mapping. `go` preserves REVIEW/EDIT/COMPLETE and
-  explicit no-merge/no-mutation limits; it never upgrades authority.
+- `prep <lane>`, `prepare <lane>`, `goal <lane>`: write or revise only the
+  resolved approved goal. Do not dispatch it or overwrite active work.
+  Preparation approval is not execution approval.
+- `go <lane>`, `run <lane>`, `continue <lane>`, `give goal <lane>`: submit
+  only the exact approved goal and verified mapping using native
+  `/goal @/absolute/path/to/goal.md`; for a verified persistent worker, send
+  one native queue pointer with its `Reply-To`. Preserve REVIEW/EDIT/COMPLETE
+  and explicit no-merge/no-mutation limits; never upgrade authority.
 - `approved`, `approve and run <lane>`: proceed only when that approval binds
   unambiguously to the resolved goal and requested action. Otherwise stop.
 - `approved for all`, `take any approval from me`, `approved - upgrade SPEC`:
