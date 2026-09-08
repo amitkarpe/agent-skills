@@ -13,12 +13,9 @@ from pathlib import Path
 DEFAULT_TIERS = {
     "safe-shell-ops": "global-core",
     "amit-operator-commands": "global-core",
-    "prepare-worker-goal": "global-core",
-    "run-worker-goal": "global-core",
     "web-html-page": "global-core",
     "visual-explainer": "global-core",
     "deep-work": "global-core",
-    "repo-summary-and-relation-mapping": "global-core",
     "aws-private-network-preflight": "aws-daily",
     "aws-ssm-run-command": "aws-daily",
     "ssm-command-evidence": "aws-daily",

@@ -2,9 +2,6 @@
 # One skill name per line. Lines starting with # are ignored.
 safe-shell-ops
 amit-operator-commands
-prepare-worker-goal
-run-worker-goal
 web-html-page
 visual-explainer
 deep-work
-repo-summary-and-relation-mapping
