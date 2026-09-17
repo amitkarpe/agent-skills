@@ -17,6 +17,12 @@ Purpose:
 - external/direct installed skills that are not source-owned here are tracked in:
   - `docs/EXTERNAL_LOCAL_SKILLS.md`
 
+## Context Loading
+
+For normal continuation, use the owning Issue/PR or named goal, its latest relevant authorized delta, and current HEAD. Reload broader repository context only for cold start, changed governing guidance, ambiguous identity/objective, stale/incomplete/contradictory state, or a new authority/safety domain.
+
+This does not change the repository's existing direct-main exception for small additive validated skill/docs work. The current user instruction and owning repository authority remain binding.
+
 ## Working rules
 
 - prefer workflow generalization and stable interfaces over repo-specific
