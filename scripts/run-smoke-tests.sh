@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="${1:-$HOME/git/agent-skills}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="${1:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 
 if [[ ! -d "$ROOT/skills" ]]; then
   echo "skills directory not found: $ROOT/skills" >&2
@@ -19,6 +20,10 @@ find scripts skills -type f -name '*.sh' -print0 \
   | sort -z \
   | xargs -0 -r -n1 bash -n
 echo "shell syntax ok"
+
+echo
+echo "== repository helper tests =="
+python3 scripts/tests/test_apply_skill_profile.py
 
 echo
 echo "== yaml parse =="

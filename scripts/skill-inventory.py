@@ -13,25 +13,26 @@ from pathlib import Path
 DEFAULT_TIERS = {
     "safe-shell-ops": "global-core",
     "amit-operator-commands": "global-core",
-    "web-html-page": "global-core",
-    "visual-explainer": "global-core",
-    "deep-work": "global-core",
+    "web-html-page": "html-reporting",
+    "visual-explainer": "html-reporting",
+    "deep-work": "html-reporting",
+    "aws-architecture-diagram": "situational",
     "aws-private-network-preflight": "aws-daily",
     "aws-ssm-run-command": "aws-daily",
-    "ssm-command-evidence": "aws-daily",
+    "ssm-command-evidence": "situational",
     "ami-validation-ssm": "situational",
     "imagebuilder-component-publish": "explicit-guarded",
-    "imagebuilder-bake-validate": "aws-daily",
+    "imagebuilder-bake-validate": "situational",
     "s3-artifact-stage-verify": "situational",
-    "cis-inspector-scan": "aws-daily",
+    "cis-inspector-scan": "situational",
     "cis-ssm-apply-validate": "explicit-guarded",
     "ssm-patch-quicksetup-prod": "explicit-guarded",
-    "ec2-quick-create": "aws-daily",
+    "ec2-quick-create": "situational",
     "ec2-ttl-alert": "situational",
     "ecs-cluster-health-review": "situational",
     "ecs-mixed-ami-canary": "situational",
-    "ecs-monitoring": "aws-daily",
-    "ecs-recovery": "aws-daily",
+    "ecs-monitoring": "situational",
+    "ecs-recovery": "situational",
     "awslogs-investigation": "situational",
     "gitlab-triage": "repo-scoped",
     "nessus-cis-csv-analysis": "repo-scoped",
@@ -107,6 +108,8 @@ def recommendation(name: str, tier: str, active: bool, desc_len: int) -> str:
         return "keep globally active" if active else "consider linking globally"
     if tier == "aws-daily":
         return "keep for normal AWS profile"
+    if tier == "html-reporting":
+        return "enable only for an explicit reporting task"
     if tier == "situational":
         return "enable only for matching lane"
     if tier == "explicit-guarded":
