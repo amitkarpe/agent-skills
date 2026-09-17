@@ -24,14 +24,19 @@ Source promotion and installed discovery are separate decisions:
    work outside the repository when necessary.
 2. Validate the source, then separately approve where it should be discoverable.
 3. Follow [Skill Exposure Profiles](docs/SKILL_EXPOSURE_PROFILES.md) for the
-   source/discovery/invocation distinction, protected skills and reversible
-   single-skill trials. Do not install everything merely because source exists.
+   two-skill default core, the two-skill routine AWS addition, exact specialist
+   enablement, and reversible application. Do not enable everything merely
+   because source exists.
 
-Existing helpers remain available, not automatic startup steps:
+Exposure helpers:
 
 - `scripts/link-skill.sh`: link one selected skill after target verification.
-- `scripts/link-all-skills.sh` and `scripts/bootstrap-local-skills.sh`: bulk
-  installation; not a lean-discovery or review default.
+- `scripts/apply-skill-profile.py`: dry-run-first enablement controller with a
+  private backup and restore record.
+- `scripts/bootstrap-local-skills.sh`: apply `global-core`, or explicitly named
+  profile combinations, without Agent Share or Agent Web setup.
+- `scripts/link-all-skills.sh`: legacy bulk discovery linking; not the default
+  bootstrap or a lean-exposure mechanism.
 - `scripts/skill-inventory.py`: source/filesystem inventory, not runtime proof.
 - `scripts/check-skill-repo.sh`: source shape validation.
 - `scripts/run-smoke-tests.sh`: existing complete source smoke checks.
