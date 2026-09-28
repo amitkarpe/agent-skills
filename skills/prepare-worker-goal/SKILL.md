@@ -54,6 +54,10 @@ Do not use subagents for tiny linear tasks.
 Before sending a worker goal, confirm:
 
 - one bounded objective
+- one verifiable outcome and the shortest existing path to prove it
+- which repo-owned workflow is reused, and why any new runner or file is needed
+- for code changes, the base revision, intended files, approximate change
+  budget and the condition that would require re-scoping
 - explicit repo and lane
 - explicit read-first files
 - allowed mutation
@@ -67,6 +71,12 @@ Before sending a worker goal, confirm:
 - whether the worker should use internal subagents
 - exact goal ID/revision and `Reply-To`
 - cleanup owner, approved durable destination and retention decision
+
+For a POC or MVP, keep the goal and change budget small enough to review as one
+proof. If the work needs a new dependency, service, cloud resource, parallel
+runner or unrelated UI, reconcile that scope with the owning SPEC and approval
+before adding it. Passing tests alone does not justify a new runner when an
+existing path can provide the requested proof.
 
 ## Worker Status Gate
 
@@ -106,6 +116,7 @@ Repo:
 Exact lane/result/marker paths:
 Cleanup owner / durable destination / retention decision:
 SPEC and exact approval reference:
+Base revision and change budget (for code changes):
 
 Objective:
 - <one bounded objective>
@@ -139,6 +150,7 @@ Success condition:
 Closeout:
 - write RESULT.md
 - update done marker
+- notify the exact Reply-To using the adopted native queue protocol
 - include next safe action and retention obligation
 - wait for controller acceptance; cleanup requires separate exact-path authority
 ```
