@@ -8,6 +8,8 @@
 #
 # Outputs:
 #   scan.json                 raw scan row
+#   aggregated-targets.json   raw target aggregation on invalid scans, when available
+#   target-status.json        concise per-target diagnosis on invalid scans
 #   aggregated-checks.json    full aggregated check results
 set -euo pipefail
 
@@ -16,7 +18,7 @@ command -v python3 >/dev/null 2>&1 || { echo "ERROR: python3 not found (required
 valid_profile() { [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*$ ]]; }
 valid_region() { [[ "$1" =~ ^[a-z]{2}(-gov)?-[a-z0-9-]+-[0-9]+$ ]]; }
 valid_scan_config_arn() {
-  [[ "$1" =~ ^arn:aws[a-zA-Z0-9-]*:inspector2:[a-z0-9-]+:[0-9]{12}:cis-scan-configuration/[A-Za-z0-9-]+$ ]]
+  [[ "$1" =~ ^arn:aws(-us-gov|-cn)?:inspector2:[a-z]{2}(-gov)?-[a-z]+-[0-9]:[0-9]{12}:owner/([0-9]{12}|o-[a-z0-9]{10,32})/cis-configuration/[0-9a-fA-F-]+$ ]]
 }
 valid_positive_integer() { [[ "$1" =~ ^[1-9][0-9]*$ ]]; }
 
@@ -51,10 +53,54 @@ AWS=(aws --profile "$PROFILE" --region "$REGION")
 mkdir -p "$OUTPUT_DIR"
 log() { echo "[fetch-results] $*"; }
 
+save_target_aggregation() {
+  [[ -n "$SCAN_ARN" ]] || return 0
+
+  local target_json
+  if target_json=$("${AWS[@]}" inspector2 list-cis-scan-results-aggregated-by-target-resource \
+      --scan-arn "$SCAN_ARN" --output json 2>"$OUTPUT_DIR/aggregated-targets.stderr"); then
+    printf '%s\n' "$target_json" > "$OUTPUT_DIR/aggregated-targets.json"
+    if python3 - "$OUTPUT_DIR/aggregated-targets.json" "$OUTPUT_DIR/target-status.json" \
+        2>"$OUTPUT_DIR/aggregated-targets.parse.stderr" <<'PY'
+import json
+import sys
+
+source, destination = sys.argv[1:3]
+with open(source) as handle:
+    payload = json.load(handle)
+rows = payload["targetResourceAggregations"]
+if not isinstance(rows, list):
+    raise ValueError("targetResourceAggregations must be a list")
+statuses = [
+    {
+        "targetResourceId": row.get("targetResourceId"),
+        "targetStatus": row.get("targetStatus", "UNKNOWN"),
+        "targetStatusReason": row.get("targetStatusReason", "UNKNOWN"),
+    }
+    for row in rows
+]
+with open(destination, "w") as handle:
+    json.dump({"targets": statuses}, handle)
+    handle.write("\n")
+PY
+    then
+      log "Target aggregation saved to $OUTPUT_DIR/aggregated-targets.json"
+    else
+      printf '%s\n' '{"targets":[],"diagnosticError":"TARGET_AGGREGATION_INVALID_RESPONSE"}' > "$OUTPUT_DIR/target-status.json"
+      log "Target aggregation could not be parsed; raw response and error saved."
+    fi
+  else
+    printf '%s\n' '{"targets":[],"diagnosticError":"TARGET_AGGREGATION_UNAVAILABLE"}' > "$OUTPUT_DIR/target-status.json"
+    log "Target aggregation unavailable; error saved to $OUTPUT_DIR/aggregated-targets.stderr"
+  fi
+}
+
 # --- poll loop ---
 SCAN_ARN=""
 FINAL_STATUS=""
 ATTEMPT=0
+STATUS="UNKNOWN"
+TOTAL=0
 while [[ $ATTEMPT -lt $MAX_POLLS ]]; do
   ATTEMPT=$((ATTEMPT + 1))
   log "Poll $ATTEMPT/$MAX_POLLS — querying scan rows..."
@@ -82,6 +128,7 @@ print(json.dumps(match[0]) if match else "")
 
   if [[ "$STATUS" == "FAILED" ]]; then
     echo "$SCAN_ROW" > "$OUTPUT_DIR/scan.json"
+    save_target_aggregation
     log "Scan FAILED — raw row saved to $OUTPUT_DIR/scan.json"
     log "Check /var/log/amazon/inspector/scitor.log.* on the instance for plugin errors."
     exit 1
@@ -90,6 +137,7 @@ print(json.dumps(match[0]) if match else "")
   if [[ "$STATUS" == "COMPLETED" ]]; then
     if [[ "$TOTAL" -eq 0 ]]; then
       echo "$SCAN_ROW" > "$OUTPUT_DIR/scan.json"
+      save_target_aggregation
       log "Scan COMPLETED but totalChecks=0 — result is not valid."
       log "Check: InstanceMetadataTags, IAM (AmazonInspector2ManagedCisPolicy), endpoints, accountIds."
       log "Raw row saved to $OUTPUT_DIR/scan.json"
@@ -108,6 +156,10 @@ done
 
 # Validate we exited with a valid completed scan
 if [[ "$FINAL_STATUS" != "COMPLETED" ]]; then
+  if [[ -n "$SCAN_ROW" ]]; then
+    echo "$SCAN_ROW" > "$OUTPUT_DIR/scan.json"
+    save_target_aggregation
+  fi
   log "ERROR: Polling timed out or scan did not reach COMPLETED status."
   if [[ -n "$SCAN_ARN" ]]; then
     log "Last known status: $STATUS"
