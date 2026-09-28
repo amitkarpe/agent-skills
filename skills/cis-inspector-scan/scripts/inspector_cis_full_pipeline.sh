@@ -104,7 +104,7 @@ with open(sys.argv[1]) as handle:
     scan = json.load(handle)
 with open(sys.argv[2]) as handle:
     failed = json.load(handle)
-print(f"[pipeline] DONE: {scan[\"totalChecks\"]} total / {scan[\"failedChecks\"]} failed")
+print("[pipeline] DONE: {} total / {} failed".format(scan["totalChecks"], scan["failedChecks"]))
 for item in failed:
-    print(f"  FAIL  {item[\"checkId\"]}  {item[\"title\"]}")
+    print("  FAIL  {}  {}".format(item["checkId"], item["title"]))
 ' "$OUTPUT_DIR/scan.json" "$OUTPUT_DIR/failed-controls.json"
