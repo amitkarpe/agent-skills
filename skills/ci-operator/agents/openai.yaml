@@ -1,0 +1,4 @@
+interface:
+  display_name: "CI Operator"
+  short_description: "Run long CI/CD work with adaptive waits and safe retries"
+  default_prompt: "Use $ci-operator to operate this CI/CD run asynchronously: reconcile any prior execution, trigger at most once if needed, persist the exact run/build ID, wait with adaptive backoff, query compact status, inspect logs only on failure, and record sparse durable evidence."
