@@ -18,7 +18,7 @@ valid_region() { [[ "$1" =~ ^[a-z]{2}(-gov)?-[a-z0-9-]+-[0-9]+$ ]]; }
 valid_instance_id() { [[ "$1" =~ ^i-[0-9a-f]{8,17}$ ]]; }
 valid_scan_name() { [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$ ]]; }
 valid_scan_config_arn() {
-  [[ "$1" =~ ^arn:aws[a-zA-Z0-9-]*:inspector2:[a-z0-9-]+:[0-9]{12}:cis-scan-configuration/[A-Za-z0-9-]+$ ]]
+  [[ "$1" =~ ^arn:aws(-us-gov|-cn)?:inspector2:[a-z]{2}(-gov)?-[a-z]+-[0-9]:[0-9]{12}:owner/([0-9]{12}|o-[a-z0-9]{10,32})/cis-configuration/[0-9a-fA-F-]+$ ]]
 }
 config_by_arn() {
   python3 -c '

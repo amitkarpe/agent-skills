@@ -134,6 +134,8 @@ Note: `inspector_cis_reduce_failed_controls.sh` only requires `--output-dir`.
 | `preflight.json` | Preflight check results |
 | `scan-config.json` | Raw scan configuration from Inspector |
 | `scan.json` | Raw scan row (status, counts, ARNs) |
+| `aggregated-targets.json` | Raw target aggregation for invalid scans when the diagnostic query succeeds |
+| `target-status.json` | Concise status and reason for each target, or a diagnostic error when the query fails |
 | `aggregated-checks.json` | Full aggregated check results |
 | `failed-controls.json` | Reduced: only checks with failed count > 0 |
 
