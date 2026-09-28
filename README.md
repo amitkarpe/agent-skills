@@ -108,6 +108,7 @@ Expose a skill through a verified Codex discovery root when:
 - `skills/amit-operator-commands/`
 - `skills/linux-backup-to-s3/`
 - `skills/plan-decision-form/`
+- `skills/ci-operator/` — adaptive async GitHub Actions/CodeBuild/CodePipeline/GitLab CI operation
 
 ## Skill shape
 
