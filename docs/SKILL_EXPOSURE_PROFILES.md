@@ -7,10 +7,10 @@ needed by the current Codex workflow. Disabling exposure never deletes source.
 
 | Profile | Enabled source-owned skills |
 | --- | --- |
-| `global-core` | `safe-shell-ops`, `amit-operator-commands` |
+| `global-core` | `safe-shell-ops`, `amit-operator-commands`, `ci-operator` |
 | `aws-daily` | `aws-private-network-preflight`, `aws-ssm-run-command` |
 
-Use `global-core` alone for ordinary work. Combine it with `aws-daily` for
+Use `global-core` alone for ordinary work, including asynchronous CI/CD observation through `ci-operator`. Combine it with `aws-daily` for
 routine AWS work. `web-html-page`, `visual-explainer`,
 `aws-architecture-diagram`, and `deep-work` are disabled by default and remain
 available for an exact task.
