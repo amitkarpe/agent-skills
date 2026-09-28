@@ -133,30 +133,58 @@ log "validating target instance $INSTANCE_ID"
   > "$OUTPUT_DIR/instance-information.json"
 
 PING=$(jq -r '.InstanceInformationList[0].PingStatus // empty' "$OUTPUT_DIR/instance-information.json")
-[[ "$PING" == "Online" ]] || {
+[[ "$PING" == "Online" || -e "$OUTPUT_DIR/command-id.txt" ]] || {
   echo "SSM instance is not Online: ${PING:-missing}" >&2
   exit 1
 }
 
 if [[ -n "$COMMANDS_FILE" ]]; then
   [[ -f "$COMMANDS_FILE" ]] || { echo "commands file not found: $COMMANDS_FILE" >&2; exit 1; }
-  cp "$COMMANDS_FILE" "$OUTPUT_DIR/input-commands.sh"
+  if [[ -e "$OUTPUT_DIR/command-id.txt" ]]; then
+    [[ ! -f "$OUTPUT_DIR/input-commands.sh" ]] || cmp -s "$COMMANDS_FILE" "$OUTPUT_DIR/input-commands.sh" || {
+      echo "Prior command input differs; use its exact CommandId, not a new send" >&2
+      exit 2
+    }
+  else
+    cp "$COMMANDS_FILE" "$OUTPUT_DIR/input-commands.sh"
+  fi
   DOC="AWS-RunShellScript"
   COMMENT="ssm-command-evidence $(basename "$OUTPUT_DIR")"
 else
   [[ -f "$PARAMETERS_FILE" ]] || { echo "parameters file not found: $PARAMETERS_FILE" >&2; exit 1; }
-  cp "$PARAMETERS_FILE" "$OUTPUT_DIR/input-parameters.json"
+  if [[ -e "$OUTPUT_DIR/command-id.txt" ]]; then
+    [[ ! -f "$OUTPUT_DIR/input-parameters.json" ]] || cmp -s "$PARAMETERS_FILE" "$OUTPUT_DIR/input-parameters.json" || {
+      echo "Prior document input differs; use its exact CommandId, not a new send" >&2
+      exit 2
+    }
+  else
+    cp "$PARAMETERS_FILE" "$OUTPUT_DIR/input-parameters.json"
+  fi
   PARAMS_JSON="$PARAMETERS_FILE"
   DOC="$DOCUMENT_NAME"
 fi
 
-log "sending command document=$DOC"
+if [[ -e "$OUTPUT_DIR/command-id.txt" ]]; then
+  [[ ! -f "$OUTPUT_DIR/instance-id.txt" || "$(<"$OUTPUT_DIR/instance-id.txt")" == "$INSTANCE_ID" ]] &&
+  [[ ! -f "$OUTPUT_DIR/region.txt" || "$(<"$OUTPUT_DIR/region.txt")" == "$EFFECTIVE_REGION" ]] &&
+  [[ ! -f "$OUTPUT_DIR/document-name.txt" || "$(<"$OUTPUT_DIR/document-name.txt")" == "$DOC" ]] || {
+    echo "Prior SSM execution identity differs; stop before another send" >&2
+    exit 2
+  }
+else
+  printf '%s\n' "$INSTANCE_ID" > "$OUTPUT_DIR/instance-id.txt"
+  printf '%s\n' "$EFFECTIVE_REGION" > "$OUTPUT_DIR/region.txt"
+  printf '%s\n' "$DOC" > "$OUTPUT_DIR/document-name.txt"
+fi
+
+log "send or exact-ID readback document=$DOC"
 if [[ -n "$COMMANDS_FILE" ]]; then
   CORE_RUN_ARGS=(
     --region "$EFFECTIVE_REGION"
     --instance-id "$INSTANCE_ID"
     --comment "$COMMENT"
     --commands-file "$COMMANDS_FILE"
+    --command-id-file "$OUTPUT_DIR/command-id.txt"
     --poll-seconds "$POLL"
     --max-wait-seconds "$WAIT_TIMEOUT"
   )
@@ -177,7 +205,9 @@ if [[ -n "$COMMANDS_FILE" ]]; then
   printf '%s\n' "$EFFECTIVE_REGION" > "$OUTPUT_DIR/region.txt"
   [[ -n "$PROFILE" ]] && printf '%s\n' "$PROFILE" > "$OUTPUT_DIR/profile.txt"
 
-  jq -r '.CommandId // ""' "$OUTPUT_DIR/core-run.json" > "$OUTPUT_DIR/command-id.txt"
+  if [[ "$(jq -r '.CommandId // ""' "$OUTPUT_DIR/core-run.json")" != "" ]]; then
+    jq -r '.CommandId' "$OUTPUT_DIR/core-run.json" > "$OUTPUT_DIR/command-id.txt"
+  fi
   jq '.Output' "$OUTPUT_DIR/core-run.json" > "$OUTPUT_DIR/invocation.json"
   jq -r '.Output.StdOut // ""' "$OUTPUT_DIR/core-run.json" > "$OUTPUT_DIR/stdout.txt"
   jq -r '.Output.StdErr // ""' "$OUTPUT_DIR/core-run.json" > "$OUTPUT_DIR/stderr.txt"
@@ -192,12 +222,24 @@ if [[ -n "$COMMANDS_FILE" ]]; then
   exit 0
 fi
 
-CMD_ID=$("${AWS[@]}" ssm send-command \
-  --document-name "$DOC" \
-  --instance-ids "$INSTANCE_ID" \
-  --parameters "file://${PARAMS_JSON}" \
-  --query 'Command.CommandId' \
-  --output text)
+if [[ -e "$OUTPUT_DIR/command-id.txt" ]]; then
+  CMD_ID="$(<"$OUTPUT_DIR/command-id.txt")"
+  [[ "$CMD_ID" =~ ^[0-9a-fA-F-]{36}$ ]] || {
+    echo "Prior SSM send outcome is unknown; reconcile provider state before another send" >&2
+    exit 2
+  }
+else
+  (umask 077; set -C; printf 'PENDING\n' > "$OUTPUT_DIR/command-id.txt") || {
+    echo "Could not reserve CommandId file; stop before another send" >&2
+    exit 2
+  }
+  CMD_ID=$("${AWS[@]}" ssm send-command \
+    --document-name "$DOC" \
+    --instance-ids "$INSTANCE_ID" \
+    --parameters "file://${PARAMS_JSON}" \
+    --query 'Command.CommandId' \
+    --output text)
+fi
 
 printf '%s\n' "$CMD_ID" > "$OUTPUT_DIR/command-id.txt"
 printf '%s\n' "$DOC" > "$OUTPUT_DIR/document-name.txt"

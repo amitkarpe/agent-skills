@@ -20,7 +20,9 @@ durable local evidence bundle, not just a command result.
 ## Preferred workflow
 
 1. Confirm target instance is SSM online.
-2. Save the exact command or document input.
+2. Save the exact command or document input in a dedicated output directory.
+   Reuse that directory to reconcile the same intent; use a new directory only
+   for a separately authorized new intent.
 3. For `AWS-RunShellScript`, use `aws-ssm-run-command` as the core send/wait/get-output engine.
 4. For an existing SSM document, keep the same durable evidence flow and use the shared wait/get-output helpers.
 5. Save:
@@ -30,10 +32,14 @@ durable local evidence bundle, not just a command result.
    - stderr
    - target instance id
    - profile / region
-6. Record the next action:
-   - success
-   - retry
-   - rollback
+6. Record the next action: success, exact-ID readback/wait, stop for unknown
+   outcome, or an explicitly authorized rollback/new attempt. A failed or
+   interrupted wrapper is not permission to resend.
+
+`scripts/run.sh` retains `command-id.txt`. An existing ID is read back, not
+resent; a `PENDING`/empty marker means the send outcome is unknown and blocks a
+repeat until provider reconciliation. See the five-case decision examples in
+[`aws-ssm-run-command`](../aws-ssm-run-command/references/examples.md).
 
 ## Patch Manager pilot pattern
 

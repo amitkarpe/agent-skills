@@ -43,6 +43,7 @@ DEFAULT_TIERS = {
 
 TEST_CONTRACTS = {
     "ami-validation-ssm/tests/smoke-test.sh": "launcher syntax and help contract",
+    "aws-ssm-run-command/tests/test-reconcile.sh": "fake-AWS exact-ID readback and no duplicate send across prior/running/completed/unknown states",
     "aws-architecture-diagram/scripts/self_test.sh": "end-to-end diagram build, validation, render, and review",
     "aws-architecture-diagram/scripts/test_v24.py": "accessible metadata and non-mutating clearance validation",
     "cis-inspector-scan/tests/test-command-construction.sh": "fake-AWS command construction, input rejection, and interceptor isolation",
