@@ -10,6 +10,7 @@ Usage:
     --instance-id i-xxx \
     --comment "text" \
     --commands-file /path/to/commands.txt \
+    --command-id-file /path/to/command-id.txt \
     [--job short|long] \
     [--execution-timeout-seconds N] \
     [--poll-seconds N] \
@@ -31,6 +32,7 @@ PROFILE=""
 INSTANCE_ID=""
 COMMENT=""
 COMMANDS_FILE=""
+COMMAND_ID_FILE=""
 JOB="short"
 EXEC_TIMEOUT=""
 POLL_SECONDS=""
@@ -44,6 +46,7 @@ while [[ $# -gt 0 ]]; do
     --instance-id) INSTANCE_ID="$2"; shift 2 ;;
     --comment) COMMENT="$2"; shift 2 ;;
     --commands-file) COMMANDS_FILE="$2"; shift 2 ;;
+    --command-id-file) COMMAND_ID_FILE="$2"; shift 2 ;;
     --job) JOB="$2"; shift 2 ;;
     --execution-timeout-seconds) EXEC_TIMEOUT="$2"; shift 2 ;;
     --poll-seconds) POLL_SECONDS="$2"; shift 2 ;;
@@ -56,7 +59,7 @@ done
 
 need jq
 
-[[ -n "$REGION" && -n "$INSTANCE_ID" && -n "$COMMENT" && -n "$COMMANDS_FILE" ]] || {
+[[ -n "$REGION" && -n "$INSTANCE_ID" && -n "$COMMENT" && -n "$COMMANDS_FILE" && -n "$COMMAND_ID_FILE" ]] || {
   echo "Missing required args" >&2
   usage
   exit 1
@@ -97,7 +100,25 @@ if [[ -n "$PROFILE" ]]; then
   send_args+=(--profile "$PROFILE")
 fi
 
-command_id="$($base_dir/ssm_send.sh "${send_args[@]}")"
+command_id=""
+if [[ -e "$COMMAND_ID_FILE" ]]; then
+  command_id="$(<"$COMMAND_ID_FILE")"
+  [[ "$command_id" =~ ^[0-9a-fA-F-]{36}$ ]] || {
+    echo "Prior SSM send outcome is unknown; reconcile provider state before another send: $COMMAND_ID_FILE" >&2
+    exit 2
+  }
+else
+  # A pending marker survives a send failure or process interruption. Do not retry blindly.
+  (umask 077; set -C; printf 'PENDING\n' > "$COMMAND_ID_FILE") || {
+    echo "Could not reserve command ID file; reconcile before another send: $COMMAND_ID_FILE" >&2
+    exit 2
+  }
+fi
+
+if [[ -z "$command_id" ]]; then
+  command_id="$($base_dir/ssm_send.sh "${send_args[@]}")"
+  printf '%s\n' "$command_id" > "$COMMAND_ID_FILE"
+fi
 
 echo "SSM_COMMAND_ID=$command_id" >&2
 
