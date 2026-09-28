@@ -13,6 +13,7 @@ from pathlib import Path
 DEFAULT_TIERS = {
     "safe-shell-ops": "global-core",
     "amit-operator-commands": "global-core",
+    "ci-operator": "global-core",
     "web-html-page": "html-reporting",
     "visual-explainer": "html-reporting",
     "deep-work": "html-reporting",
