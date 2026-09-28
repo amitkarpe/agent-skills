@@ -394,7 +394,7 @@ Workflow:
 1. Load `~/.agent/AWS.md`.
 2. Start read-only: inventory resources with TTL/cleanup tags and repo resource records.
 3. Save inventory/evidence under `~/.AGENTS-temp/<repo>/`.
-4. Treat expired `ttl` + `cleanup=delete` resources as candidates, not automatic deletion, unless Amit explicitly asked to delete them.
+4. Treat expired `TTL` + `cleanup=delete` resources as candidates, not automatic deletion, unless Amit explicitly asked to delete them.
 5. Before deleting, report resource type, ID, name, region/account/profile, TTL, cleanup tag, and planned command.
 6. Delete only resources matching the approved candidate set.
 7. Verify deletion and save final evidence.
