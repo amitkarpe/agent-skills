@@ -26,8 +26,13 @@ git mutation, supervisor status, or a clean restart packet.
 - The owning repository's authority and adopted shared policy override router
   defaults. Shortcuts never grant a new mutation, merge, cleanup or handoff.
   Preserve explicit approval, backup, retention and no-go requirements.
-- Prefer repo truth over chat memory: `AGENTS.md`, `CONTEXT.md`, optional
-  `HANDOFF.md`, branch/MR/PR text, and current goal files when available.
+- Prefer current repo truth over chat memory. Resolve the owning Issue/PR (or
+  named goal) and current branch/HEAD, then read only the latest relevant delta
+  and exact files needed for the next action. Reuse already-loaded context on
+  warm continuation; read `AGENTS.md` once on cold start or when its
+  fingerprint changes. Read `CONTEXT.md`, `SPEC.md`, or optional `HANDOFF.md`
+  only when referenced, changed, needed for the next action, or required for
+  recovery.
 - For old evidence or broad context questions, read `INDEX.md` / `MANIFEST.tsv`
   first when present, then use `qmd-agent-search` or targeted `rg` before raw
   evidence scans.
@@ -83,7 +88,10 @@ latest goal.
 
 Source order and resolution gate:
 
-1. Read the owning repository's `AGENTS.md`, applicable SPEC and current request.
+1. Resolve the owning Issue/PR (or goal) and current branch/HEAD. On cold start,
+   read the owning repository's `AGENTS.md` once; on warm continuation, reuse
+   its loaded fingerprint. Read applicable SPEC/CONTEXT only when referenced,
+   changed, required by the next action, or needed for recovery.
 2. For preparation or execution, resolve one exact approved goal ID/revision,
    goal path, repository/workspace, worker role and verified thread mapping.
 3. Read only its named context, result and marker; confirm current branch/PR

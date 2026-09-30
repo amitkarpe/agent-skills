@@ -9,9 +9,22 @@ Use this skill when the task is not “execute now,” but “prepare the best w
 goal first.”
 
 This skill prepares scope; [run-worker-goal](../run-worker-goal/SKILL.md) handles
-approved dispatch. Read the repository's instructions and applicable SPEC first.
-Shared policy owns approval, test and lifecycle rules; the vendor adapter owns
-model selection. Do not reproduce those policies in every goal.
+approved dispatch. Shared policy owns approval, test and lifecycle rules; the
+vendor adapter owns model selection. Do not reproduce those policies in every
+goal.
+
+## Context Loading
+
+Always resolve the owning Issue/PR (or named goal) and current branch/HEAD.
+On a **cold start** (first repo entry or untrusted cached state), read the
+repository's `AGENTS.md` once and the exact files required for the task. On a
+**warm continuation**, reuse loaded rules and fingerprints; read only the
+latest relevant authorized Issue/PR/goal delta, current state needed for the
+next action, and exact required files. Read `CONTEXT.md`, `SPEC.md`, or
+`ROADMAP.md` only when referenced, changed, required for the next action, or
+needed to recover stale/missing/contradictory state. Reload broader history for
+a repo switch, context mismatch, material rule change, new safety/authority
+domain, or explicit request.
 
 ## Core Behavior
 
@@ -25,18 +38,6 @@ model selection. Do not reproduce those policies in every goal.
 - Do not replace or dispatch over an active goal. Prepare a non-conflicting
   sidecar only when explicitly authorized. Treat UI state as a hint; reconcile
   the current goal/result before selecting a continuation.
-
-## Default Truth Files
-
-Use:
-
-```text
-AGENTS.md
-CONTEXT.md
-```
-
-Avoid `PLANS.md`, `STATUS.md`, and repo-root `GOAL.md` unless the repo has an
-explicit exception.
 
 ## When To Use Subagents
 
@@ -82,11 +83,13 @@ existing path can provide the requested proof.
 
 Before writing or refreshing a worker goal:
 
-1. Read `CONTEXT.md`.
-2. Read the exact current marker path named by the goal or private registry.
-3. Read the referenced `RESULT.md` only when the marker exists or the context
+1. Resolve the exact owning Issue/PR, approved goal, and current branch/HEAD.
+2. Read `CONTEXT.md` only if the Issue/goal references it, its fingerprint
+   changed, or it is needed to resolve stale or uncertain state.
+3. Read the exact current marker path named by the goal or private registry.
+4. Read the referenced `RESULT.md` only when the marker exists or the context
    points to it.
-4. Inspect tmux only if the marker/result is stale or the worker may still be
+5. Inspect tmux only if the marker/result is stale or the worker may still be
    running.
 
 Rules:
@@ -122,9 +125,11 @@ Objective:
 - <one bounded objective>
 
 Read first:
-1. AGENTS.md
-2. CONTEXT.md
-3. <this goal file>
+1. Owning Issue/PR and current branch/HEAD
+2. <this goal file>
+3. AGENTS.md on cold start or when its fingerprint changed; CONTEXT.md/SPEC.md
+   only when referenced, changed, required for the next action, or needed for
+   recovery
 
 Allowed mutation:
 - <read-only / exact files / one host / one AWS action>

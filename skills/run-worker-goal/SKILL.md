@@ -11,8 +11,12 @@ missing, ambiguous or needs a scoped revision. Tiny direct tasks need no lane.
 
 ## Required inputs and authority
 
-Read the owning repository's `AGENTS.md`, applicable SPEC, current context and
-the exact approved goal. The goal or private registry must supply:
+Always resolve the owning Issue/PR (or named goal), current branch/HEAD, and
+exact approved goal. On a cold start, read the owning repository's `AGENTS.md`
+once. On warm continuation, reuse loaded rules and fingerprints. Read
+`CONTEXT.md`, `SPEC.md`, or `ROADMAP.md` only when the Issue/goal references
+them, their fingerprint changed, the next action requires them, or recovery
+needs them. The goal or private registry must supply:
 
 - repository/workspace and allowed files or systems;
 - goal ID/revision, one outcome and exact approved mutations;

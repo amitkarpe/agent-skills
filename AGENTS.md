@@ -19,7 +19,21 @@ Purpose:
 
 ## Context Loading
 
-For normal continuation, use the owning Issue/PR or named goal, its latest relevant authorized delta, and current HEAD. Reload broader repository context only for cold start, changed governing guidance, ambiguous identity/objective, stale/incomplete/contradictory state, or a new authority/safety domain.
+Always resolve the owning Issue/PR (or named goal) and current branch/HEAD before acting.
+
+- **Cold start:** On first entry to a repository, or when cached context cannot
+  be trusted, read `AGENTS.md` once and the exact files required for the
+  objective. Read `CONTEXT.md`, `SPEC.md`, or `ROADMAP.md` only when the active
+  Issue/PR/goal references them, their fingerprint changed, the next action
+  requires their contents, or stale/missing state must be recovered.
+- **Warm continuation:** Reuse already-loaded rules and fingerprints. Read the
+  latest relevant authorized Issue/PR/goal delta and current branch/HEAD/status
+  or diff needed for the next action, then only the exact changed or required
+  files. Do not repeat broad bootstrap reads just because a turn, session, or
+  handoff resumed.
+- **Broader reload:** Read history or bootstrap files again for repository
+  switch, context mismatch, material rule/spec change, uncertain or
+  contradictory state, a new authority/safety domain, or an explicit request.
 
 This does not change the repository's existing direct-main exception for small additive validated skill/docs work. The current user instruction and owning repository authority remain binding.
 
