@@ -98,6 +98,38 @@ For SSM, validate the final rendered `commands` payload in addition to the
 source files. Preserve the terminal command status, stdout, stderr, and return
 code as evidence.
 
+## Prove the Assembled Execution Boundary
+
+For changed remote commands, generated wrappers or shared helpers:
+
+1. Inspect the **final rendered command** as the receiving shell will parse it,
+   including line joins, quoting, exported environment and helper/prologue
+   order. Syntax-check the exact outer and inner scripts with their real
+   interpreters, then exercise the assembled boundary once with harmless
+   fixture data. Syntax success alone misses runtime collisions.
+2. Do not assume `HOME` exists in a non-login, SSM, CI or `sudo` environment.
+   Resolve the effective user's home only when necessary; use a task-specific
+   variable such as `effective_user_home`. Do not change login, credentials
+   or global shell configuration to make the check pass.
+3. Inspect `readonly` or globally assigned names across sourced helpers.
+   A `local id` or `local name` may fail if the caller declared that name
+   readonly. Prefer uniquely named immutable constants, and exercise the
+   real shared-helper call path before declaring the correction proven.
+4. When another process initializes state, wait for its documented **done**
+   condition and absence of a still-running initializer, with a bounded
+   timeout and first-failure evidence. A successful connection or `SELECT 1`
+   may be too early for a dependent restore.
+5. On failure, report the first failing operation and a fixed, sanitized
+   error category with bounded context; keep raw secret-bearing output private.
+   Bound diagnostic input, execution time and output. Do not impose a memory
+   limit smaller than the already loaded interpreter's address space;
+   classifier `MemoryError` is not workload evidence.
+
+Follow the [shared testing policy](https://github.com/amitkarpe/dotfiles/blob/main/agent/.agent/TESTING.md):
+zero new tests by default, one focused actual-boundary check for a concrete
+defect, and stop after sufficient proof. No AWS calls or new orchestration
+framework merely to check a generated shell command.
+
 ## Validation
 
 Save time and tokens. Do not run validation/check commands for low-risk local
