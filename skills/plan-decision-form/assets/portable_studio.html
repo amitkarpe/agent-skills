@@ -34,15 +34,15 @@ const data=JSON.parse(document.getElementById('initial-data').textContent);
 const choices=data.decisions;
 const byId=new Map(choices.map(d=>[d.id,d]));
 const el=id=>document.getElementById(id);
-const storageKey='decision-studio:'+data.source+':'+choices.map(x=>x.id).join(',');
+const storageKey='decision-studio:'+data.source+':'+choices.map(x=>x.id).join(','); // Old packets are checked against all immutable fields before restoring.
 function loadSaved(){try{const x=JSON.parse(localStorage.getItem(storageKey)||'null');if(x)applyPacket(x,false)}catch(_){}}
 function save(){try{localStorage.setItem(storageKey,JSON.stringify(packet()))}catch(_){}}
 function packet(){return{schema_version:'decision-packet/1',source:data.source,title:data.title,confirmation_mode:'proposal_first',exported_at:new Date().toISOString(),decisions:choices.map(d=>({id:d.id,title:d.title,choices:d.choices,recommended:d.recommended,selected:d.selected,state:d.state,frozen:d.frozen===true,rationale:d.rationale}))}}
 function validatePacket(p){
- if(!p||p.schema_version!=='decision-packet/1'||p.source!==data.source||!Array.isArray(p.decisions)||p.decisions.length!==choices.length)throw Error('Packet source/schema/count mismatch');
+ if(!p||p.schema_version!=='decision-packet/1'||p.source!==data.source||p.title!==data.title||p.confirmation_mode!=='proposal_first'||!Array.isArray(p.decisions)||p.decisions.length!==choices.length)throw Error('Packet source/schema/title/count mismatch');
  const ids=new Set();
  for(const x of p.decisions){const base=byId.get(x.id);if(!base||ids.has(x.id))throw Error('Unknown or duplicate decision ID');ids.add(x.id);
- if(!Array.isArray(x.choices)||JSON.stringify(x.choices)!==JSON.stringify(base.choices)||!base.choices.includes(x.selected))throw Error('Invalid choice for '+x.id);
+ if(x.title!==base.title||x.rationale!==base.rationale||x.recommended!==base.recommended||!Array.isArray(x.choices)||JSON.stringify(x.choices)!==JSON.stringify(base.choices)||!base.choices.includes(x.selected))throw Error('Decision text/options changed for '+x.id);
  if(typeof x.frozen!=='boolean'||!['accepted','proposed'].includes(x.state)||x.frozen!==(x.state==='accepted'))throw Error('Invalid confirmation for '+x.id);
  }
 }
