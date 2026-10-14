@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Controller"
+  short_description: "Coordinate existing Factory or Manager Codex workers"
+  default_prompt: "Use $codex-controller to advance the existing controller-owned Codex work without bypassing its worker sequencing."
