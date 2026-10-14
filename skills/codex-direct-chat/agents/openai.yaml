@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Direct Chat"
+  short_description: "Talk to one exact existing Codex worker"
+  default_prompt: "Use $codex-direct-chat to ask the verified Codex worker one bounded question and report a fresh reply, without a new mission."
