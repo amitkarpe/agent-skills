@@ -24,7 +24,7 @@ Do not copy secrets into this repo. Do not copy per-run evidence into this repo.
 For A's long-term ownership of skills, `/opt/agent-share`, and
 `/opt/agent-web`, read `docs/A_OWNERSHIP_AND_OFFICE_SKILL_SYSTEM.md`.
 
-## Office Bootstrap
+## Office Bootstrap (mutating; approval required)
 
 Run on office:
 
@@ -37,10 +37,9 @@ scripts/bootstrap-local-skills.sh
 Expected result:
 
 - repo skill check passes
-- all stable skills are linked into `~/.codex/skills`
-- promoted-skill check passes
-- if `/opt/agent-share` exists and is writable, `/opt/agent-share/skills`
-  points to this machine's local `agent-skills/skills` directory
+- only the selected `default` profile (core + AWS daily) is enabled, and its missing discovery links may be created
+- disabled source remains in Git; it is not deleted or automatically unlinked
+- other vendor/system skills and Agent Share are not modified
 
 ## If The Repo Is Missing On Office
 
@@ -61,8 +60,8 @@ Use the existing remote from home; do not create a new upstream just for office.
 The bootstrap is intended to be re-runnable:
 
 - already-correct symlinks are skipped
-- wrong symlinks are replaced
-- non-symlink destination directories are skipped and reported
+- wrong symlinks and non-symlink destinations are refused (never overwritten)
+- a private config backup and action record are written before changes
 
 If a non-symlink exists under `~/.codex/skills/<skill>`, review it manually
 before replacing it.
