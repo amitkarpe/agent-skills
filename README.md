@@ -108,7 +108,7 @@ Expose a skill through a verified Codex discovery root when:
 - `skills/skill-autoresearch-loop/`
 - `skills/amit-operator-commands/`
 - `skills/linux-backup-to-s3/`
-- `skills/plan-decision-form/`
+- `skills/plan-decision-form/` — portable offline **Decision Studio** (existing skill ID retained; legacy Agent Web optional)
 - `skills/ci-operator/` — adaptive async GitHub Actions/CodeBuild/CodePipeline/GitLab CI operation
 
 ## Skill shape
