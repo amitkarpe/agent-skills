@@ -48,15 +48,49 @@ def validate(data):
     return raw.replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
 
 
+def validate_packet(spec, packet):
+    if not isinstance(packet, dict) or packet.get('schema_version') != 'decision-packet/1':
+        raise ValueError('invalid decision packet schema')
+    if packet.get('source') != spec['source'] or packet.get('confirmation_mode') != 'proposal_first':
+        raise ValueError('source or confirmation mode mismatch')
+    rows = packet.get('decisions')
+    if not isinstance(rows, list) or len(rows) != len(spec['decisions']):
+        raise ValueError('missing or extra decisions')
+    originals = {d['id']: d for d in spec['decisions']}
+    seen = set()
+    for row in rows:
+        if not isinstance(row, dict) or not isinstance(row.get('id'), str):
+            raise ValueError('invalid decision')
+        base = originals.get(row['id'])
+        if base is None or row['id'] in seen:
+            raise ValueError('unknown or repeated decision id')
+        seen.add(row['id'])
+        if row.get('choices') != base['choices'] or row.get('selected') not in base['choices']:
+            raise ValueError('invalid choices')
+        if row.get('state') not in ('proposed', 'accepted') or type(row.get('frozen')) is not bool or row['frozen'] != (row['state'] == 'accepted'):
+            raise ValueError('invalid confirmation')
+    if SENSITIVE.search(json.dumps(packet, ensure_ascii=True)):
+        raise ValueError('potential secret in exported packet')
+    print(f"valid_decisions={len(rows)} accepted={sum(bool(x['frozen']) for x in rows)}")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--spec', required=True, type=Path)
-    p.add_argument('--out', required=True, type=Path)
+    p.add_argument('--out', type=Path)
+    p.add_argument('--check-packet', type=Path, help='validate an exported packet against its source spec')
     a = p.parse_args()
     if not a.spec.is_file() or a.spec.stat().st_size > 256000:
         p.error('spec missing or too large')
     data = json.loads(a.spec.read_text(encoding='utf-8'))
     encoded = validate(data)
+    if a.check_packet:
+        if not a.check_packet.is_file() or a.check_packet.stat().st_size > 256000:
+            p.error('packet missing or too large')
+        validate_packet(data, json.loads(a.check_packet.read_text(encoding='utf-8')))
+        return
+    if not a.out:
+        p.error('--out is required for HTML rendering')
     template = (Path(__file__).resolve().parent.parent / 'assets' / 'portable_studio.html').read_text(encoding='utf-8')
     if template.count('__DECISION_PACKET_JSON__') != 1:
         p.error('template placeholder missing or duplicated')
