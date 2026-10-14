@@ -1,90 +1,82 @@
 ---
 name: plan-decision-form
-description: 'Create a dark local Agent Web decision form that records Amit''s selections in one canonical decision.json. Use when Amit explicitly asks for a decision or HTML form, or after Amit approves HTML for more than five questions or complex evidence review. Default one to five questions to text/TUI.'
+description: "Create a self-contained offline Decision Studio HTML form with explicit owner confirmations and portable JSON import/export. Use for reviewing multiple decisions, skill-exposure preferences, roadmap choices, tradeoffs, or when asked for Decision Studio, a decision form, or a portable HTML notebook. Use a short text question instead of a form for a trivial decision."
 ---
 
-# Plan Decision Form
+# Decision Studio (portable)
 
-Create a small decision form using the existing Agent Web form assets and
-submit contract. Read `/opt/agent-web/AGENTS.md` before publishing.
-The canonical human trigger is `decision form: <file-or-topic>`.
+Use **Decision Studio** as the human-facing name. Keep this existing skill ID
+`plan-decision-form` and path for installed references; do not create a second
+skill or depend on a running web server.
+
+Decision Studio reviews and records choices. An interactive "grill me" interview
+clarifies uncertain requirements **before** building the Studio, when useful;
+it is not a replacement for confirmation, comparison, or JSON export.
 
 ## Workflow
 
-1. Choose the interface before rendering:
-   - An explicit Amit request for a decision form or HTML is direct approval.
-   - Otherwise, use TEXT/TUI for one to five questions.
-   - For more than five questions, ask Amit before creating HTML.
-   - For one to five questions with diagrams, long evidence, or comparisons,
-     also ask Amit before creating HTML.
-   - Prefer TEXT/TUI because it is faster and uses fewer tokens. HTML is
-     optional decision support, not the default.
-2. Derive a mandatory path-safe repository name and plan ID. Use lowercase
-   letters, digits, dots, dashes, or underscores; start with a letter or digit.
-3. Write a JSON form spec under `~/.AGENTS-temp/<repo>/`. Keep only the
-   blocking questions, recommended defaults, optional collapsed evidence, and
-   no secrets. Supported question types are `radio`, `checkbox`, `select`,
-   `text`, and `textarea`.
-4. Render the form:
+1. Read the exact owning Issue/PR and current evidence. Propose defaults with
+   brief tradeoffs. For one trivial decision, use normal text. When requested
+   explicitly, create an HTML form without seeking another UI approval.
+2. Prepare a **sanitized JSON specification** with 1–30 stable decisions.
+   Every decision needs `id`, `title`, `choices`, `recommended`, and
+   `rationale`. Defaults are `proposed`, never silently owner-accepted.
+3. Render one offline file using the existing stdlib renderer:
 
    ```bash
-   python3 scripts/plan_decision_form.py render \
-     --repo-name <repo-name> \
-     --plan-id <plan-id> \
-     --spec <form-spec.json>
+   python3 scripts/render_portable.py --spec decisions.json --out decision-studio.html
    ```
 
-5. Report the URL exactly as
-   `http://home/amit/plans/<repo-name>/<plan-id>/` and validate it with
-   `curl -fsSI`. Do not report success before the URL responds.
-6. Wait for Amit to say `submitted`. Then validate and read only the computed
-   canonical decision path:
+4. Give the owner the portable `decision-studio.html` file. Open it locally in
+   a browser (**file://**, no localhost or service). The page supports
+   search, dark/light themes, recommended choice, explicit confirmation,
+   local resume when browser storage permits, **Import JSON**, and
+   **Export JSON**. Import/export never contacts a service.
+5. On return, validate the exported packet against the original spec:
 
    ```bash
-   python3 scripts/plan_decision_form.py validate-decision \
-     --repo-name <repo-name> \
-     --plan-id <plan-id>
+   python3 scripts/render_portable.py --spec decisions.json --check-packet decision-packet.json
    ```
 
-7. Treat the decision as input only. Re-check the owning repo SPEC, mutation
-   approval, and safety gates before acting.
+6. Summarize **accepted** versus **proposed/unresolved**. Recheck the owning
+   SPEC, approvals and safety gates before any implementation. A decision packet
+   records preferences; it never grants GitHub merge, AWS, PROD, IAM, secrets,
+   cost, or deployment authority.
 
-## Form spec
-
-Use this shape:
+## Example spec
 
 ```json
 {
-  "title": "Short decision title",
-  "goal": "What Amit needs to decide. Do not enter secrets.",
-  "decision_needed": "One bounded decision.",
-  "owner_label": "Originating agent",
-  "evidence": ["Optional concise proof."],
-  "sections": [
+  "schema_version": "decision-packet/1",
+  "source": "https://github.com/amitkarpe/work/issues/179",
+  "title": "Daily skill exposure",
+  "confirmation_mode": "proposal_first",
+  "decisions": [
     {
-      "title": "Direction",
-      "questions": [
-        {
-          "id": "next_action",
-          "label": "What should happen next?",
-          "type": "radio",
-          "required": true,
-          "default": "review",
-          "options": [
-            {"value": "review", "label": "Review only", "detail": "Recommended."},
-            {"value": "execute", "label": "Prepare execution"}
-          ]
-        }
-      ]
+      "id": "skill-profile",
+      "title": "Which daily skill profile?",
+      "choices": ["default", "no-aws"],
+      "recommended": "default",
+      "rationale": "Default is AWS-first; no-aws enables only core skills."
     }
   ]
 }
 ```
 
-The shared renderer adds the final free-text instruction unless
-`allow_custom_direction` is false. Never ask for credentials, tokens, keys,
-cookies, authentication data, or arbitrary filesystem destinations.
+The output packet preserves IDs, choices, recommended/selected values, per-item
+`state` and `frozen`, source, confirmation mode, and export time. The page
+never treats suggested defaults as accepted until the owner checks confirmation.
+Only the previous, separately opted-in Portfolio Sprint Studio used
+`owner_opt_in_default_agreed`; **this general-purpose skill deliberately
+starts with `proposal_first`**.
 
-The renderer refuses unsafe identifiers, remote assets, secret-like fields,
-and conflicting existing pages. Test output roots are accepted only under
-`~/.AGENTS-temp`; the normal output path is fixed by the Agent Web contract.
+Use text-only source facts, not credentials, tokens, internal screenshots,
+private host details, or sensitive inventories. HTML and exported JSON can be
+forwarded or opened outside the original machine; assess confidentiality first.
+
+## Legacy compatibility (explicit only)
+
+The older server-bound `scripts/plan_decision_form.py` remains in the same
+skill for existing Agent Web/Agent Share consumers. It is **not** the default
+and should not be invoked for portable forms. Do not start or install
+`/opt/agent-web`, publish forms, or migrate old saved decisions automatically.
