@@ -51,7 +51,8 @@ def validate(data):
 def validate_packet(spec, packet):
     if not isinstance(packet, dict) or packet.get('schema_version') != 'decision-packet/1':
         raise ValueError('invalid decision packet schema')
-    if packet.get('source') != spec['source'] or packet.get('confirmation_mode') != 'proposal_first':
+    if (packet.get('source') != spec['source'] or packet.get('title') != spec['title']
+            or packet.get('confirmation_mode') != 'proposal_first'):
         raise ValueError('source or confirmation mode mismatch')
     rows = packet.get('decisions')
     if not isinstance(rows, list) or len(rows) != len(spec['decisions']):
@@ -65,7 +66,10 @@ def validate_packet(spec, packet):
         if base is None or row['id'] in seen:
             raise ValueError('unknown or repeated decision id')
         seen.add(row['id'])
-        if row.get('choices') != base['choices'] or row.get('selected') not in base['choices']:
+        if (row.get('title') != base['title'] or row.get('rationale') != base['rationale']
+                or row.get('recommended') != base['recommended']
+                or row.get('choices') != base['choices']
+                or row.get('selected') not in base['choices']):
             raise ValueError('invalid choices')
         if row.get('state') not in ('proposed', 'accepted') or type(row.get('frozen')) is not bool or row['frozen'] != (row['state'] == 'accepted'):
             raise ValueError('invalid confirmation')
