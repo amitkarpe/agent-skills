@@ -3,15 +3,14 @@
 Keep reusable skill source in this repository and expose only the smallest set
 needed by the current Codex workflow. Disabling exposure never deletes source.
 
-## Approved defaults
+## Two user-facing presets (source-only until explicitly applied)
 
-| Profile | Enabled source-owned skills |
-| --- | --- |
-| `global-core` | `safe-shell-ops`, `amit-operator-commands`, `ci-operator` |
-| `aws-daily` | `aws-private-network-preflight`, `aws-ssm-run-command` |
+| Selection | Resolved existing profiles | Enabled source-owned skills |
+| --- | --- | --- |
+| `default` (AWS-first) | `global-core` + `aws-daily` | `safe-shell-ops`, `amit-operator-commands`, `ci-operator`, `aws-private-network-preflight`, `aws-ssm-run-command` |
+| `no-aws` | `global-core` | `safe-shell-ops`, `amit-operator-commands`, `ci-operator` |
 
-Use `global-core` alone for ordinary work, including asynchronous CI/CD observation through `ci-operator`. Combine it with `aws-daily` for
-routine AWS work. `web-html-page`, `visual-explainer`,
+These are **aliases**, not duplicated profile files. The existing `global-core` and `aws-daily` lists remain authoritative. Default AWS skill **discovery is not AWS execution approval**; repository and account safety gates still apply. `web-html-page`, `visual-explainer`,
 `aws-architecture-diagram`, and `deep-work` are disabled by default and remain
 available for an exact task.
 
@@ -41,30 +40,27 @@ only at an approved idle boundary.
 
 ## Preview and apply
 
-Preview the minimal core:
+Preview AWS-first default (no changes):
 
 ```bash
-scripts/apply-skill-profile.py --profile global-core
+scripts/apply-skill-profile.py --profile default
 ```
 
-Apply it:
+Preview non-AWS core (no changes):
 
 ```bash
-scripts/apply-skill-profile.py --profile global-core --apply
+scripts/apply-skill-profile.py --profile no-aws
 ```
 
-Preview or apply routine AWS exposure:
+Apply only at an approved idle/adoption boundary:
 
 ```bash
-scripts/apply-skill-profile.py \
-  --profile global-core \
-  --profile aws-daily
-
-scripts/apply-skill-profile.py \
-  --profile global-core \
-  --profile aws-daily \
-  --apply
+scripts/apply-skill-profile.py --profile default --apply
+# or
+scripts/apply-skill-profile.py --profile no-aws --apply
 ```
+
+Legacy explicit `--profile global-core --profile aws-daily` remains supported.
 
 Enable one specialist while retaining the selected base profile:
 
@@ -103,17 +99,19 @@ the backup checksum before changing anything.
 
 ## Bootstrap
 
-The bootstrap helper applies `global-core` by default:
+The bootstrap helper **applies AWS-first `default`** when run with no arguments:
 
 ```bash
 scripts/bootstrap-local-skills.sh
 ```
 
-Pass profile names to combine them:
+For core-only non-AWS mode, select `no-aws` explicitly:
 
 ```bash
-scripts/bootstrap-local-skills.sh global-core aws-daily
+scripts/bootstrap-local-skills.sh no-aws
 ```
+
+Both commands mutate local Codex config/links; neither is a harmless review. Existing explicit profile combinations continue to work.
 
 The bootstrap does not link every source skill and does not create or update
 Agent Share or Agent Web directories.
