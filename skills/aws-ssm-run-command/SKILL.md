@@ -86,6 +86,54 @@ identity gate. A terminal failure alone does not authorize a new send.
 - `scripts/ssm_get_output.sh`: fetch final invocation output
 - `scripts/ssm_run.sh`: orchestration wrapper returning normalized JSON
 
+## MCP route (`aws_sigv4` `run_script` in Codex)
+
+Use this when the thread sends SSM commands through `aws_sigv4` instead of the
+wrapper scripts. Same contract: one send, exact-ID readback, no resend on an
+unknown outcome. Evidence for the rules below: work#183 (gg sent 87 commands
+and made 494 `GetCommandInvocation` calls, 477 of them one model turn per poll).
+
+- **Send:** one `SendCommand` per approved run, with a unique `Comment`. Put
+  the identity assert in the same script. Return only `CommandId`, `Status`
+  and `Comment`, and record the `CommandId` before waiting. The proxy timeout
+  is 60 s: if the send call fails or times out, reconcile with
+  `ListCommands` filtered by that `Comment` before any new send.
+- **Wait inside one exec**, never one model turn per poll. Print only the
+  terminal fields; return output tails, not full output.
+- Keep each `run_script` short (one readback per call); do the waiting in the
+  exec loop, not inside the sandbox script.
+
+```js
+// One Codex exec: wait for an existing CommandId and print only the terminal state.
+const profile = "pro", region = "ap-southeast-1";
+const commandId = "<COMMAND_ID>", instanceId = "<INSTANCE_ID>";
+const code = `
+r = await call_boto3(service_name='ssm', operation_name='GetCommandInvocation',
+    region_name='${region}', params={'CommandId': '${commandId}', 'InstanceId': '${instanceId}'})
+result = {k: r.get(k) for k in ('Status', 'StatusDetails', 'ResponseCode')}
+result['stdout_tail'] = (r.get('StandardOutputContent') or '')[-2000:]
+result['stderr_tail'] = (r.get('StandardErrorContent') or '')[-1000:]
+result`;
+const RUNNING = ["Pending", "InProgress", "Delayed"];
+const deadline = Date.now() + 15 * 60 * 1000;   // set from the command's own timeout
+let last = null, readErrors = 0;
+while (true) {
+  const res = await tools.mcp__aws_sigv4__aws___run_script({ aws_profile: profile, code });
+  const rv = res?.structuredContent?.return_value;
+  if (rv) { last = rv; if (!RUNNING.includes(rv.Status)) break; }
+  else if (++readErrors > 5) { last = { Status: "READBACK_UNAVAILABLE", last }; break; } // read failure: never resend
+  if (Date.now() > deadline) { last = { Status: "WAIT_DEADLINE", last }; break; }
+  await new Promise(r => setTimeout(r, 30000));
+}
+text(JSON.stringify(last));
+```
+
+- `READBACK_UNAVAILABLE` or `WAIT_DEADLINE` means the outcome is unknown. Read
+  that exact `CommandId` again later; it never authorizes another send.
+- When full stdout/stderr is required evidence, fetch it once at terminal
+  state into the run's private evidence file. Keep it out of the model-visible
+  print.
+
 ## References
 
 Load only what is needed:
