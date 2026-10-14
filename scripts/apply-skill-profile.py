@@ -14,6 +14,11 @@ from pathlib import Path
 
 BEGIN = "# BEGIN agent-skills managed exposure"
 END = "# END agent-skills managed exposure"
+# User-facing presets; keep the existing profile files as the sole skill lists.
+PROFILE_ALIASES = {
+    "default": ("global-core", "aws-daily"),
+    "no-aws": ("global-core",),
+}
 
 
 def fail(message: str) -> None:
@@ -279,13 +284,15 @@ def main() -> int:
     enabled_order: list[str] = []
     profile_names: list[str] = []
     for item in args.profile:
-        path = Path(item).expanduser()
-        if not path.exists():
-            path = profiles_root / f"{item}.txt"
-        profile_names.append(path.stem)
-        for name in read_profile(path):
-            if name not in enabled_order:
-                enabled_order.append(name)
+        for expanded in PROFILE_ALIASES.get(item, (item,)):
+            path = Path(expanded).expanduser()
+            if not path.exists():
+                path = profiles_root / f"{expanded}.txt"
+            if path.stem not in profile_names:
+                profile_names.append(path.stem)
+            for name in read_profile(path):
+                if name not in enabled_order:
+                    enabled_order.append(name)
     requested = set(enabled_order) | set(args.enable) | set(args.disable)
     unknown = sorted(requested - set(skills))
     if unknown:

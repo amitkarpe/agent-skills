@@ -6,7 +6,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 profiles=("$@")
 if [[ "${#profiles[@]}" -eq 0 ]]; then
-  profiles=(global-core)
+  # AWS-first default; users can select "no-aws" to expose core skills only.
+  profiles=(default)
 fi
 
 profile_args=()

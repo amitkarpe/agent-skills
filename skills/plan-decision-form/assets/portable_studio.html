@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Decision Studio · Offline</title>
+<style>
+:root{font:16px system-ui,sans-serif;color-scheme:dark;--bg:#111821;--fg:#e6edf7;--card:#1b2532;--line:#41546b;--muted:#b1c1d5;--focus:#7bb7ff}
+:root.light{color-scheme:light;--bg:#f6f8fb;--fg:#172335;--card:#fff;--line:#bdc8d5;--muted:#48596c;--focus:#155ab4}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);line-height:1.45}
+main{max-width:1000px;margin:auto;padding:1.5rem}.top,.toolbar,.actions,.meta{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap}
+.top{justify-content:space-between}h1{font-size:1.65rem;margin:.35rem 0}h2{font-size:1.05rem;margin:0 0 .5rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:1rem 0;padding:1rem}
+button,input,select,input[type="search"]{font:inherit;padding:.55rem .7rem;border-radius:7px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+button{cursor:pointer}button:hover{border-color:var(--focus)}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+label{display:block;margin:.55rem 0}.muted,small{color:var(--muted)}.hidden{display:none}.choice{min-width:210px;max-width:100%}
+.confirm{display:flex;gap:.6rem;align-items:center}.confirm input{width:1.15rem;height:1.15rem}
+#summary{margin:.6rem 0}#search{min-width:230px;flex:1}.error{color:#ffb6b6}#message{min-height:1.4rem}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><div><h1 id="title">Decision Studio</h1><p class="muted" id="source"></p></div><button type="button" id="theme">Light theme</button></div>
+<p id="warning" class="muted">Preferences only. Exporting a selection never authorizes code, cloud, credentials, deployment or production changes.</p>
+<div class="toolbar"><label for="search">Find decisions</label><input id="search" type="search" placeholder="Search titles and reasons"><span id="summary" role="status"></span></div>
+<section id="cards" aria-label="Decisions"></section>
+<div class="actions"><button type="button" id="export">Export JSON</button><button type="button" id="import">Import JSON</button><input id="importFile" type="file" accept=".json,application/json" class="hidden" aria-label="Select saved JSON"></div>
+<p class="muted" id="message" role="status"></p>
+</main>
+<script id="initial-data" type="application/json">__DECISION_PACKET_JSON__</script>
+<script>
+'use strict';
+(function(){
+const data=JSON.parse(document.getElementById('initial-data').textContent);
+const choices=data.decisions;
+const byId=new Map(choices.map(d=>[d.id,d]));
+const el=id=>document.getElementById(id);
+const storageKey='decision-studio:'+data.source+':'+choices.map(x=>x.id).join(',');
+function loadSaved(){try{const x=JSON.parse(localStorage.getItem(storageKey)||'null');if(x)applyPacket(x,false)}catch(_){}}
+function save(){try{localStorage.setItem(storageKey,JSON.stringify(packet()))}catch(_){}}
+function packet(){return{schema_version:'decision-packet/1',source:data.source,title:data.title,confirmation_mode:'proposal_first',exported_at:new Date().toISOString(),decisions:choices.map(d=>({id:d.id,title:d.title,choices:d.choices,recommended:d.recommended,selected:d.selected,state:d.state,frozen:d.frozen===true,rationale:d.rationale}))}}
+function validatePacket(p){
+ if(!p||p.schema_version!=='decision-packet/1'||p.source!==data.source||!Array.isArray(p.decisions)||p.decisions.length!==choices.length)throw Error('Packet source/schema/count mismatch');
+ const ids=new Set();
+ for(const x of p.decisions){const base=byId.get(x.id);if(!base||ids.has(x.id))throw Error('Unknown or duplicate decision ID');ids.add(x.id);
+ if(!Array.isArray(x.choices)||JSON.stringify(x.choices)!==JSON.stringify(base.choices)||!base.choices.includes(x.selected))throw Error('Invalid choice for '+x.id);
+ if(typeof x.frozen!=='boolean'||!['accepted','proposed'].includes(x.state)||x.frozen!==(x.state==='accepted'))throw Error('Invalid confirmation for '+x.id);
+ }
+}
+function applyPacket(p,render=true){validatePacket(p);for(const x of p.decisions){const d=byId.get(x.id);d.selected=x.selected;d.frozen=x.frozen;d.state=x.state}if(render){draw();save()}}
+function make(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e}
+function summary(){const accepted=choices.filter(x=>x.frozen).length;el('summary').textContent=accepted+' accepted / '+(choices.length-accepted)+' pending'}
+function draw(){const root=el('cards');root.replaceChildren();const search=el('search').value.toLowerCase();for(const d of choices){if(!(d.title+' '+d.rationale+' '+d.id).toLowerCase().includes(search))continue;
+const card=make('article',undefined,'card');const heading=make('h2',d.title);card.append(heading);
+card.append(make('small',d.id+' · Recommended: '+d.recommended));
+const label=make('label','Select an option');const select=make('select',undefined,'choice');select.setAttribute('aria-label',d.title);
+for(const option of d.choices){const node=make('option',option);node.value=option;select.append(node)}select.value=d.selected;
+select.addEventListener('change',()=>{d.selected=select.value;d.frozen=false;d.state='proposed';draw();save()});label.append(select);card.append(label);
+card.append(make('p',d.rationale,'muted'));
+const c=make('label',undefined,'confirm');const checkbox=make('input');checkbox.type='checkbox';checkbox.checked=d.frozen===true;checkbox.setAttribute('aria-label','Confirm '+d.title);
+checkbox.addEventListener('change',()=>{d.frozen=checkbox.checked;d.state=d.frozen?'accepted':'proposed';summary();save()});c.append(checkbox,make('span','Confirm this selection'));card.append(c);root.append(card)}summary()}
+el('title').textContent=data.title;el('source').textContent='Source: '+data.source+' · Offline · JSON import/export';
+el('search').addEventListener('input',draw);
+el('theme').addEventListener('click',()=>{document.documentElement.classList.toggle('light');el('theme').textContent=document.documentElement.classList.contains('light')?'Dark theme':'Light theme'});
+el('export').addEventListener('click',()=>{const file=new Blob([JSON.stringify(packet(),null,2)+'\n'],{type:'application/json'});const url=URL.createObjectURL(file);const a=make('a');a.href=url;a.download='decision-packet.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);el('message').textContent='JSON saved locally. No server contacted.'});
+el('import').addEventListener('click',()=>el('importFile').click());
+el('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>256000)throw Error('JSON file too large');const obj=JSON.parse(await f.text());applyPacket(obj);el('message').textContent='Imported '+choices.length+' decisions'}catch(err){el('message').textContent='Import rejected: '+err.message}e.target.value=''});
+loadSaved();draw();
+})();
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
 interface:
-  display_name: "Plan Decision Form"
-  short_description: "Create safe local decision forms"
-  default_prompt: "Use $plan-decision-form to create a dark local decision form for this topic."
+  display_name: "Decision Studio"
+  short_description: "Offline decisions with portable JSON"
+  default_prompt: "Use $plan-decision-form to create an offline Decision Studio HTML form and reviewable decision JSON."

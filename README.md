@@ -24,17 +24,18 @@ Source promotion and installed discovery are separate decisions:
    work outside the repository when necessary.
 2. Validate the source, then separately approve where it should be discoverable.
 3. Follow [Skill Exposure Profiles](docs/SKILL_EXPOSURE_PROFILES.md) for the
-   two-skill default core, the two-skill routine AWS addition, exact specialist
-   enablement, and reversible application. Do not enable everything merely
-   because source exists.
+   AWS-first `default` (three core + two AWS daily) or `no-aws` (core only),
+   exact specialist enablement, and reversible application. Do not enable
+   everything merely because source exists.
 
 Exposure helpers:
 
 - `scripts/link-skill.sh`: link one selected skill after target verification.
 - `scripts/apply-skill-profile.py`: dry-run-first enablement controller with a
   private backup and restore record.
-- `scripts/bootstrap-local-skills.sh`: apply `global-core`, or explicitly named
-  profile combinations, without Agent Share or Agent Web setup.
+- `scripts/bootstrap-local-skills.sh`: apply AWS-first `default` or explicit
+  `no-aws` (and still accept legacy profile combinations); this is a
+  **mutating install**, not a read-only check.
 - `scripts/link-all-skills.sh`: legacy bulk discovery linking; not the default
   bootstrap or a lean-exposure mechanism.
 - `scripts/skill-inventory.py`: source/filesystem inventory, not runtime proof.
@@ -107,7 +108,7 @@ Expose a skill through a verified Codex discovery root when:
 - `skills/skill-autoresearch-loop/`
 - `skills/amit-operator-commands/`
 - `skills/linux-backup-to-s3/`
-- `skills/plan-decision-form/`
+- `skills/plan-decision-form/` — portable offline **Decision Studio** (existing skill ID retained; legacy Agent Web optional)
 - `skills/ci-operator/` — adaptive async GitHub Actions/CodeBuild/CodePipeline/GitLab CI operation
 
 ## Skill shape
