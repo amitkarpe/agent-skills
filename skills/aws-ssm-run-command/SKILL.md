@@ -90,46 +90,116 @@ identity gate. A terminal failure alone does not authorize a new send.
 
 Use this when the thread sends SSM commands through `aws_sigv4` instead of the
 wrapper scripts. Same contract: one send, exact-ID readback, no resend on an
-unknown outcome. Evidence for the rules below: work#183 (gg sent 87 commands
-and made 494 `GetCommandInvocation` calls, 477 of them one model turn per poll).
+unknown outcome. Routing and identity rules: `~/.agent/AWS.md` and
+`docs/AWS_SIGV4_PRO_GUIDE.md` in dotfiles. Evidence: work#183 (gg made 494
+`GetCommandInvocation` calls for 87 sends, 477 of them one model turn per poll).
 
-- **Send:** one `SendCommand` per approved run, with a unique `Comment`. Put
-  the identity assert in the same script. Return only `CommandId`, `Status`
-  and `Comment`, and record the `CommandId` before waiting. The proxy timeout
-  is 60 s: if the send call fails or times out, reconcile with
-  `ListCommands` filtered by that `Comment` before any new send.
-- **Wait inside one exec**, never one model turn per poll. Print only the
-  terminal fields; return output tails, not full output.
-- Keep each `run_script` short (one readback per call); do the waiting in the
-  exec loop, not inside the sandbox script.
+All inputs below (profile, region, account, document, targets, IDs) are
+**required verified values** from the approved task and the recorded send. The
+snippets refuse to run with placeholders. Never infer an account, or switch
+profile/role/tool, after a denial.
 
-```js
-// One Codex exec: wait for an existing CommandId and print only the terminal state.
-const profile = "pro", region = "ap-southeast-1";
-const commandId = "<COMMAND_ID>", instanceId = "<INSTANCE_ID>";
-const code = `
-r = await call_boto3(service_name='ssm', operation_name='GetCommandInvocation',
-    region_name='${region}', params={'CommandId': '${commandId}', 'InstanceId': '${instanceId}'})
-result = {k: r.get(k) for k in ('Status', 'StatusDetails', 'ResponseCode')}
-result['stdout_tail'] = (r.get('StandardOutputContent') or '')[-2000:]
-result['stderr_tail'] = (r.get('StandardErrorContent') or '')[-1000:]
-result`;
-const RUNNING = ["Pending", "InProgress", "Delayed"];
-const deadline = Date.now() + 15 * 60 * 1000;   // set from the command's own timeout
-let last = null, readErrors = 0;
-while (true) {
-  const res = await tools.mcp__aws_sigv4__aws___run_script({ aws_profile: profile, code });
-  const rv = res?.structuredContent?.return_value;
-  if (rv) { last = rv; if (!RUNNING.includes(rv.Status)) break; }
-  else if (++readErrors > 5) { last = { Status: "READBACK_UNAVAILABLE", last }; break; } // read failure: never resend
-  if (Date.now() > deadline) { last = { Status: "WAIT_DEADLINE", last }; break; }
-  await new Promise(r => setTimeout(r, 30000));
-}
-text(JSON.stringify(last));
+- **Send:** first record the send intent (unique `Comment`, document, targets,
+  region, time), as in Workflow step 1. Then one `SendCommand` with the identity assert
+  in the same script. Return only `CommandId`/`Status`/`Comment`, and record
+  the `CommandId` before waiting.
+- **Send outcome unknown** (proxy 60 s timeout, error, no `CommandId`):
+  reconcile only, never send.
+  - `ListCommands` has **no server-side `Comment` filter**. Its filter keys are
+    `InvokedAfter`, `InvokedBefore`, `Status`, `ExecutionStage` and
+    `DocumentName`
+    ([reference](https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_CommandFilter.html)).
+  - List within a bounded window from the recorded send time, plus
+    `DocumentName`, with bounded pagination.
+  - Client-side, require the exact `Comment` plus the expected document and
+    targets (and parameters, if recorded). The account is the asserted
+    identity; the region is the call's region.
+  - `MATCH` (a complete scan and exactly one match) resumes readback of that
+    `CommandId`. `NOT_FOUND`, `AMBIGUOUS` or `INCOMPLETE` mean **UNKNOWN / NO
+    RESEND**: report and stop.
+
+```python
+# run_script code: reconcile an unknown send. Read-only; never sends.
+EXPECT = {'account': '<ACCOUNT_ID>', 'region': '<REGION>',
+          'comment': '<UNIQUE_COMMENT>', 'document': '<DOCUMENT_NAME>',
+          'instance_ids': ['<INSTANCE_ID>'], 'invoked_after': '<SEND_TIME_ISO8601_MINUS_MARGIN>'}
+MAX_PAGES = 5
+assert not any('<' in str(v) for v in EXPECT.values()), 'set verified inputs'
+ident = await call_boto3(service_name='sts', operation_name='GetCallerIdentity',
+                         region_name=EXPECT['region'], params={})
+assert ident['Account'] == EXPECT['account'], 'identity mismatch'
+seen, token, complete = [], None, False
+for _ in range(MAX_PAGES):
+    p = {'Filters': [{'key': 'InvokedAfter', 'value': EXPECT['invoked_after']},
+                     {'key': 'DocumentName', 'value': EXPECT['document']}], 'MaxResults': 50}
+    if token:
+        p['NextToken'] = token
+    r = await call_boto3(service_name='ssm', operation_name='ListCommands',
+                         region_name=EXPECT['region'], params=p)
+    seen += r.get('Commands') or []
+    token = r.get('NextToken')
+    if not token:
+        complete = True
+        break
+m = [c['CommandId'] for c in seen
+     if c.get('Comment') == EXPECT['comment'] and c.get('DocumentName') == EXPECT['document']
+     and sorted(c.get('InstanceIds') or []) == sorted(EXPECT['instance_ids'])]
+decision = ('MATCH' if complete and len(m) == 1 else 'AMBIGUOUS' if len(m) > 1
+            else 'INCOMPLETE' if not complete else 'NOT_FOUND')
+result = {'decision': decision, 'command_id': m[0] if decision == 'MATCH' else None,
+          'matches': len(m), 'scanned': len(seen), 'complete': complete}
+result
 ```
 
-- `READBACK_UNAVAILABLE` or `WAIT_DEADLINE` means the outcome is unknown. Read
-  that exact `CommandId` again later; it never authorizes another send.
+- **Wait** inside one bounded exec, never one model turn per poll:
+  - `Pending`, `InProgress`, `Delayed` and `Cancelling` are not terminal.
+  - Only `Success`, `Failed`, `Cancelled` and `TimedOut` end the wait. A
+    missing or unrecognised `Status` never counts as terminal.
+  - A thrown tool call, a missing `return_value`, or a brief
+    `InvocationDoesNotExist` right after the send is transient readback,
+    retried within the budget.
+  - Exits are `READBACK_UNAVAILABLE` or `WAIT_DEADLINE`, both carrying the
+    original `CommandId`. Both mean **UNKNOWN**: read that ID again later; it
+    never authorizes another send.
+  - If the runtime cannot hold the wait, report the `CommandId` and resume
+    later.
+
+```js
+// One Codex exec: wait for an existing CommandId; print only the terminal state.
+const IN = { profile: "<VERIFIED_PROFILE>", region: "<VERIFIED_REGION>",
+             commandId: "<COMMAND_ID>", instanceId: "<INSTANCE_ID>",
+             deadlineMs: 15 * 60 * 1000 };   // from the command's own timeout
+for (const [k, v] of Object.entries(IN)) if (!v || String(v).includes("<")) throw new Error(`set verified ${k}`);
+const code = `
+try:
+    r = await call_boto3(service_name='ssm', operation_name='GetCommandInvocation',
+        region_name=${JSON.stringify(IN.region)},
+        params={'CommandId': ${JSON.stringify(IN.commandId)}, 'InstanceId': ${JSON.stringify(IN.instanceId)}})
+    result = {k: r.get(k) for k in ('Status', 'StatusDetails', 'ResponseCode')}
+    result['stdout_tail'] = (r.get('StandardOutputContent') or '')[-2000:]
+    result['stderr_tail'] = (r.get('StandardErrorContent') or '')[-1000:]
+except Exception as e:
+    result = {'readback_error': (type(e).__name__ + ': ' + str(e))[:200]}
+result`;
+const TERMINAL = ["Success", "Failed", "Cancelled", "TimedOut"];
+const end = Date.now() + IN.deadlineMs;
+let last = null, readErrors = 0, out;
+while (true) {
+  let rv;
+  try {
+    const res = await tools.mcp__aws_sigv4__aws___run_script({ aws_profile: IN.profile, code });
+    rv = res?.isError ? undefined : res?.structuredContent?.return_value;
+  } catch (e) { rv = undefined; }
+  if (rv && typeof rv.Status === "string" && !rv.readback_error) {
+    readErrors = 0; last = rv;
+    if (TERMINAL.includes(rv.Status)) { out = { outcome: "TERMINAL", ...rv }; break; }
+  } else if (++readErrors > 10) { out = { outcome: "READBACK_UNAVAILABLE", last }; break; }
+  if (Date.now() >= end) { out = { outcome: "WAIT_DEADLINE", last }; break; }
+  await new Promise(r => setTimeout(r, 30000));
+}
+text(JSON.stringify({ commandId: IN.commandId, ...out }));   // never send again from here
+```
+
 - When full stdout/stderr is required evidence, fetch it once at terminal
   state into the run's private evidence file. Keep it out of the model-visible
   print.
