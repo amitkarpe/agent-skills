@@ -171,7 +171,7 @@ result
     later.
 
 ```js
-// One Codex exec: wait for an existing CommandId; print only the terminal state.
+// One Codex exec: wait for an existing CommandId; print only bounded status metadata.
 const IN = { profile: "<VERIFIED_PROFILE>", region: "<VERIFIED_REGION>",
              commandId: "<COMMAND_ID>", instanceId: "<INSTANCE_ID>",
              deadlineMs: 15 * 60 * 1000 };   // from the command's own timeout
@@ -182,10 +182,8 @@ try:
         region_name=${JSON.stringify(IN.region)},
         params={'CommandId': ${JSON.stringify(IN.commandId)}, 'InstanceId': ${JSON.stringify(IN.instanceId)}})
     result = {k: r.get(k) for k in ('Status', 'StatusDetails', 'ResponseCode')}
-    result['stdout_tail'] = (r.get('StandardOutputContent') or '')[-2000:]
-    result['stderr_tail'] = (r.get('StandardErrorContent') or '')[-1000:]
 except Exception as e:
-    result = {'readback_error': (type(e).__name__ + ': ' + str(e))[:200]}
+    result = {'readback_error': type(e).__name__}  # Never return exception text.
 result`;
 const TERMINAL = ["Success", "Failed", "Cancelled", "TimedOut"];
 const end = Date.now() + IN.deadlineMs;
@@ -197,8 +195,10 @@ while (true) {
     rv = res?.isError ? undefined : res?.structuredContent?.return_value;
   } catch (e) { rv = undefined; }
   if (rv && typeof rv.Status === "string" && !rv.readback_error) {
-    readErrors = 0; last = rv;
-    if (TERMINAL.includes(rv.Status)) { out = { outcome: "TERMINAL", ...rv }; break; }
+    readErrors = 0;
+    last = { Status: rv.Status, StatusDetails: typeof rv.StatusDetails === "string" ? rv.StatusDetails.slice(0, 120) : null,
+             ResponseCode: typeof rv.ResponseCode === "number" ? rv.ResponseCode : null };
+    if (TERMINAL.includes(rv.Status)) { out = { outcome: "TERMINAL", ...last }; break; }
   } else if (++readErrors > 10) { out = { outcome: "READBACK_UNAVAILABLE", last }; break; }
   if (Date.now() >= end) { out = { outcome: "WAIT_DEADLINE", last }; break; }
   await new Promise(r => setTimeout(r, 30000));
@@ -206,9 +206,12 @@ while (true) {
 text(JSON.stringify({ commandId: IN.commandId, ...out }));   // never send again from here
 ```
 
+- **Privacy by default:** return only bounded status metadata and the original
+  `CommandId`. Never print stdout/stderr tails, unknown tool fields or raw
+  exception text. The JS waiter projects an explicit allowlist before printing.
 - When full stdout/stderr is required evidence, fetch it once at terminal
-  state into the run's private evidence file. Keep it out of the model-visible
-  print.
+  state into the run's approved private evidence file. Keep it out of the
+  model-visible print. Never fetch raw output for routine polling.
 
 ## References
 
