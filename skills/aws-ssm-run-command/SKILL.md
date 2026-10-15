@@ -111,9 +111,14 @@ profile/role/tool, after a denial.
     ([reference](https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_CommandFilter.html)).
   - List within a bounded window from the recorded send time, plus
     `DocumentName`, with bounded pagination.
-  - Client-side, require the exact `Comment` plus the expected document and
-    targets (and parameters, if recorded). The account is the asserted
-    identity; the region is the call's region.
+  - Client-side, require the exact `Comment`, `DocumentName` and explicit
+    `InstanceIds`, with no `Targets`. The account is the asserted identity;
+    the region is the call's region.
+  - **Supported scope:** the example covers only a `SendCommand` that used
+    approved explicit `InstanceIds`. It does not compare `Targets`
+    (tag/resource-group) or `Parameters`. For tag/resource-group sends, or
+    when parameter equality matters, a match is not proven: treat it as
+    **UNKNOWN / NO RESEND** unless it is reconciled separately.
   - `MATCH` (a complete scan and exactly one match) resumes readback of that
     `CommandId`. `NOT_FOUND`, `AMBIGUOUS` or `INCOMPLETE` mean **UNKNOWN / NO
     RESEND**: report and stop.
@@ -143,7 +148,8 @@ for _ in range(MAX_PAGES):
         break
 m = [c['CommandId'] for c in seen
      if c.get('Comment') == EXPECT['comment'] and c.get('DocumentName') == EXPECT['document']
-     and sorted(c.get('InstanceIds') or []) == sorted(EXPECT['instance_ids'])]
+     and sorted(c.get('InstanceIds') or []) == sorted(EXPECT['instance_ids'])
+     and not c.get('Targets')]
 decision = ('MATCH' if complete and len(m) == 1 else 'AMBIGUOUS' if len(m) > 1
             else 'INCOMPLETE' if not complete else 'NOT_FOUND')
 result = {'decision': decision, 'command_id': m[0] if decision == 'MATCH' else None,
