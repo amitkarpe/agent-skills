@@ -1,6 +1,6 @@
 ---
 name: codex-controller
-description: Use FAST for optional G -> Manager/Factory -> X delegation through an existing designated controller. Use for coordinated work across one or more approved Codex workers where a Manager improves sequencing or acceptance. Reuse verified workers, normal message_send/read chat, native Codex queue behind the controller, and tracked execution safeguards only when needed.
+description: Use FAST for optional G → Manager/Factory → X delegation through an existing designated controller. Use for coordinated work across one or more approved Codex workers where a Manager improves sequencing or acceptance. Reuse verified workers, normal message_send/read chat, native Codex queue behind the controller, and tracked execution safeguards only when needed.
 ---
 
 # FAST — Manager G → M → X (optional)
