@@ -1,14 +1,14 @@
 ---
 name: codex-direct-chat
-description: Communicate with an exact existing repository-bound Codex worker via a connected message_send and message_read tool. Use when the user asks to talk to, interview, check, or ask one Codex X, including a read-only advisory question to an X coordinated by Factory or Manager. Keep ordinary conversation free of tracked missions and duplicate worker creation.
+description: Use FAST for direct G -> X communication with an exact existing repository-bound Codex worker via connected message_send and message_read. Use for an approved Issue/PR delta, status, question, or read-only advisory to a Factory/Manager-owned X. No routine mission IDs, result files, or replacement workers; preserve execution authority and fresh-reply checks.
 ---
 
-# Codex Direct Chat (1:1)
+# FAST — Direct G → X (1:1)
 
 Treat this as a **conversation workflow**, never an independent source of execution authority. Follow the owning repository's current Issue/PR, governing rules and approval before any mutations.
 
 1. Identify the *existing* repository and named Codex thread/workspace through the connected app. Reuse known exact bindings. If uncertain, use read-only `workspace_list`; do not assume same workspace ID across Factory, DEV and Home means the same X. Verify the exact thread when the connector requires it.
-2. Send one small `message_send` to the verified workspace; ordinary messages need **no mission ID, new session, idle check or extra result file**. A busy X may reply later or defer. Include the relevant Issue/PR and one question; for advice, state **READ-ONLY QUESTION; NO WRITES**.
+2. Send one small `message_send` to the verified workspace; ordinary messages need **no mission ID, new session, idle check or extra result file**. A busy X may reply later or defer. Include the relevant Issue/PR and one question or already-approved task delta; for advice, state **READ-ONLY QUESTION; NO WRITES**.
 3. Use that app's `message_read` to inspect the worker response. A successful send means **queue admission**, not acceptance/execution. A read may return a *stale reply*; claim a fresh answer only if its content is demonstrably correlated with this request. Keep a cursor if supported.
 4. If still queued or uncertain, report `QUEUED; FRESH_REPLY_UNVERIFIED`; never infer completion, force-clear a queue, create a replacement X or blindly resend. Return a succinct outcome and one next action.
 
