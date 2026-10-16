@@ -1,4 +1,4 @@
 interface:
-  display_name: "Codex Controller"
-  short_description: "Coordinate existing Factory or Manager Codex workers"
-  default_prompt: "Use $codex-controller to advance the existing controller-owned Codex work without bypassing its worker sequencing."
+  display_name: "FAST — Manager G → M → X"
+  short_description: "FAST coordination via existing Factory or Manager"
+  default_prompt: "Use $codex-controller to send one bounded approved goal to the existing Manager/Factory, then review its result without bypassing worker ownership."
