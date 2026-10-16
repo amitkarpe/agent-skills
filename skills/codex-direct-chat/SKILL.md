@@ -1,6 +1,6 @@
 ---
 name: codex-direct-chat
-description: Use FAST for direct G -> X communication with an exact existing repository-bound Codex worker via connected message_send and message_read. Use for an approved Issue/PR delta, status, question, or read-only advisory to a Factory/Manager-owned X. No routine mission IDs, result files, or replacement workers; preserve execution authority and fresh-reply checks.
+description: Use FAST for direct G → X communication with an exact existing repository-bound Codex worker via connected message_send and message_read. Use for an approved Issue/PR delta, status, question, or read-only advisory to a Factory/Manager-owned X. No routine mission IDs, result files, or replacement workers; preserve execution authority and fresh-reply checks.
 ---
 
 # FAST — Direct G → X (1:1)
