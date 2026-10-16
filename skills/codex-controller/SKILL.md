@@ -1,9 +1,9 @@
 ---
 name: codex-controller
-description: Coordinate a bounded multiple-Codex-worker task through an existing designated Factory, Manager, or equivalent controller, without bypassing its sequencing or creating replacement workers. Use when the user asks to delegate, orchestrate, inspect, review, or advance 1:controller:N Codex work; ordinary G-to-controller chat uses message_send and message_read without tracked-mission ceremony.
+description: Use FAST for optional G → Manager/Factory → X delegation through an existing designated controller. Use for coordinated work across one or more approved Codex workers where a Manager improves sequencing or acceptance. Reuse verified workers, normal message_send/read chat, native Codex queue behind the controller, and tracked execution safeguards only when needed.
 ---
 
-# Codex Controller (1:Controller:N)
+# FAST — Manager G → M → X (optional)
 
 This is a **delegation workflow**, not a new control plane. The selected controller's current Issue/SPEC and repository adapter own the routing, provider restrictions, worker bindings and acceptance. No skill grants extra permission.
 
@@ -19,7 +19,7 @@ G can ask any verified X a **read-only question directly** via `codex-direct-cha
 
 ## Factory is a concrete adapter, not the generic contract
 
-For an already selected **Factory F** lane, read [Factory AGENTS](https://github.com/amitkarpe/work/blob/main/docs/factory/AGENTS.md) and, only when applicable, [FAST](https://github.com/amitkarpe/work/blob/main/docs/factory/FAST_PROTOCOL.md). Established F-to-gg practice uses a short native `codex queue` instruction and one useful completion, not routine old Direct missions or duplicate goal/result artifacts. These source rules are controller-specific and should not be copied into this skill or imposed on a future Manager.
+For an already selected **Factory F** lane, read [Factory AGENTS](https://github.com/amitkarpe/work/blob/main/docs/factory/AGENTS.md) and, only when applicable, [FAST](https://github.com/amitkarpe/work/blob/main/docs/factory/FAST_PROTOCOL.md). Established F-to-gg practice uses a short native `codex queue` instruction and one useful completion, not routine old Direct missions or duplicate goal/result artifacts. Factory's worker identity and endpoint remain controller-specific; the shared FAST send/reply practice also applies to other verified Managers without copying Factory's binding.
 
 Dot-managed tracked execution keeps its own adapter's `mission_start/status` semantics unless that adapter changes explicitly; normal chat does not erase its execution guards.
 
