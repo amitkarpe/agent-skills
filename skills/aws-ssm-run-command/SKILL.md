@@ -90,7 +90,8 @@ identity gate. A terminal failure alone does not authorize a new send.
 
 Use this when the thread sends SSM commands through `aws_sigv4` instead of the
 wrapper scripts. Same contract: one send, exact-ID readback, no resend on an
-unknown outcome. Routing and identity rules: `~/.agent/AWS.md` and
+unknown outcome. Local routing and identity rules:
+`~/.config/agent/AWS.md` and
 `docs/AWS_SIGV4_PRO_GUIDE.md` in dotfiles. Evidence: work#183 (gg made 494
 `GetCommandInvocation` calls for 87 sends, 477 of them one model turn per poll).
 

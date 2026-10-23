@@ -125,7 +125,7 @@ For changed remote commands, generated wrappers or shared helpers:
    limit smaller than the already loaded interpreter's address space;
    classifier `MemoryError` is not workload evidence.
 
-Follow the [shared testing policy](https://github.com/amitkarpe/dotfiles/blob/main/agent/.agent/TESTING.md):
+Follow the [canonical shared testing policy](https://github.com/amitkarpe/agents/blob/main/TESTING.md):
 zero new tests by default, one focused actual-boundary check for a concrete
 defect, and stop after sufficient proof. No AWS calls or new orchestration
 framework merely to check a generated shell command.
