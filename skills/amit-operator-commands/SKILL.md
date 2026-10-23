@@ -34,7 +34,8 @@ git mutation, supervisor status, or a clean restart packet.
 - Preserve local-only context. Do not stage secrets, `AGENTS.override.md`, raw evidence bundles, `.codex-local/`, or unrelated local files.
 - Save durable task evidence under `~/.AGENTS-temp/<repo>/`.
 - Before deleting or archiving context/rule files, create a backup under `~/back/`.
-- For AWS cleanup, start read-only and load `~/.agent/AWS.md` before inventory or deletion.
+- For AWS cleanup, start read-only and load local AWS policy from
+  `~/.config/agent/AWS.md` before inventory or deletion.
 
 ## Shared context contract
 
@@ -391,7 +392,7 @@ Output:
 Goal: clean up expired or unwanted temporary AWS resources.
 
 Workflow:
-1. Load `~/.agent/AWS.md`.
+1. Load local AWS policy from `~/.config/agent/AWS.md`.
 2. Start read-only: inventory resources with TTL/cleanup tags and repo resource records.
 3. Save inventory/evidence under `~/.AGENTS-temp/<repo>/`.
 4. Treat expired `TTL` + `cleanup=delete` resources as candidates, not automatic deletion, unless Amit explicitly asked to delete them.
