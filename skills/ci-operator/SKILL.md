@@ -32,6 +32,29 @@ This Skill does **not** grant repository, AWS, deployment, PROD, or retry author
 - PROD read-only observation: proceed only when repo policy allows it.
 - PROD deployment/mutation/destructive work: follow the repo's explicit approval gates.
 
+## Cross-provider continuity and acceptance
+
+A repository merge is not provider or runtime acceptance. Track applicable
+stages separately:
+
+```text
+REPO_MERGED -> PROVIDER_ADMITTED -> PROVIDER_RUNNING -> PROVIDER_TERMINAL
+-> ACCEPTANCE_PASS | ACCEPTANCE_FAIL | BLOCKED
+```
+
+For a multi-provider intent, keep a compact resumable checkpoint at meaningful
+transitions:
+
+```text
+owning repo/worktree/ref | source SHA | provider | execution ID (if present)
+| state | evidence pointer | next gate
+```
+
+Record only identifiers that exist in the active chain; do not keep poll
+transcripts. When post-merge acceptance remains, verify the owning Issue stays
+open until required evidence is terminal and acceptance criteria are satisfied.
+GitHub closing-keyword parsing belongs in collaboration policy, not this Skill.
+
 ## Reconcile before trigger or retry
 
 Before starting or repeating a workflow/build/pipeline:
@@ -44,6 +67,10 @@ Before starting or repeating a workflow/build/pipeline:
 6. if outcome is ambiguous, fail closed and reconcile provider state first.
 
 Loss of shell/session/runner/controller is not permission to replay a mutation.
+At every ambiguous cross-provider boundary, reconcile authoritative remote or
+child-execution state before replay. A provider API readback failure is not a
+workload result: use retained evidence only with its provenance and certainty;
+otherwise report `UNKNOWN`.
 
 ## Adaptive waiting
 
@@ -121,7 +148,7 @@ Keep the approved repository/worktree/controller lane sticky.
 After interruption:
 
 ```text
-reload owning Issue/PR
+reload owning Issue/PR and cross-provider checkpoint
 -> reload exact execution IDs
 -> read provider state
 -> continue
