@@ -1,0 +1,6 @@
+interface:
+  display_name: "Demo Pack"
+  short_description: "Build offline walkthrough pages plus PNG, MP4 and GIF captures"
+  default_prompt: "Use $demo-pack to build an offline demo pack from committed sample data, then run its check script."
+  icon: "🎬"
+  primary_color: "#0f172a"

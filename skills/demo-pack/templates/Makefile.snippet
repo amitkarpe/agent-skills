@@ -1,0 +1,11 @@
+# Paste into the project Makefile. D = demo dir with data/ walkthrough/ png/ video/
+D = docs/demo
+walkthrough:
+	python3 $(D)/walkthrough.py $(D)/steps.json $(D)/walkthrough
+demo-pack: walkthrough
+	node $(D)/record.js png $(D)/walkthrough $(D)/png
+	DWELL_MS=3000 node $(D)/record.js video $(D)/walkthrough $(D)/video
+	ffmpeg -y -i $(D)/video/demo.webm -c:v libx264 -pix_fmt yuv420p $(D)/video/demo.mp4
+	ffmpeg -y -i $(D)/video/demo.mp4 -vf "fps=8,scale=960:-1:flags=lanczos,palettegen" $(D)/video/p.png
+	ffmpeg -y -i $(D)/video/demo.mp4 -i $(D)/video/p.png -lavfi "fps=8,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse" $(D)/video/demo.gif
+	rm -f $(D)/video/p.png $(D)/video/demo.webm
