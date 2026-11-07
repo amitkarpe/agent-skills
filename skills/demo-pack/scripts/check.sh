@@ -6,11 +6,14 @@ fail=0
 bad() { echo "FAIL: $*" >&2; fail=1; }
 
 # 1. pages must exist, be static, offline and small
-pages=$(find "$d/walkthrough" -name '*.html' 2>/dev/null)
+[ -d "$d" ] || { echo "FAIL: $d is not a directory" >&2; exit 1; }
+pages=$(find "$d/walkthrough" -name '*.html' 2>/dev/null || true)
 [ -n "$pages" ] || bad "no HTML pages in $d/walkthrough"
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   grep -qi '<script' "$f" && bad "$f has <script>"
+  grep -Eqi "(@import|url\\()[^;)]*['\"]?[[:space:]]*(https?:)?//" "$f" && bad "$f has a CSS import or url() to the network"
+  grep -Eqi "(action|poster|data)[[:space:]]*=[[:space:]]*[\"']?[[:space:]]*(https?:)?//" "$f" && bad "$f has a network action/poster/data"
   grep -Eqi "(src|href)[[:space:]]*=[[:space:]]*[\"']?[[:space:]]*(https?:)?//" "$f" && bad "$f links to the network"
   [ "$(du -k "$f" | cut -f1)" -le 5120 ] || bad "$f over 5 MB"
 done <<< "$pages"
