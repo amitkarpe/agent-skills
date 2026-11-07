@@ -1,4 +1,4 @@
 interface:
   display_name: "Decision Studio"
-  short_description: "Offline decisions with portable JSON"
-  default_prompt: "Use $plan-decision-form to create an offline Decision Studio HTML form and reviewable decision JSON."
+  short_description: "Review defaults by exception; export JSON"
+  default_prompt: "Use $plan-decision-form for an offline Decision Studio with the owner-opted review-by-exception defaults, portable JSON, and a copyable agent handoff."
