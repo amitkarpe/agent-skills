@@ -16,8 +16,10 @@ pages, captioned screenshots, a short video and a GIF. Pattern taken from
    gives the same result.
 2. **Pages are static.** No scripts, no network, no external fonts. They must
    open from `file://` on a laptop with no internet.
-3. **Never touch the live system while capturing.** Do not start, stop or scan
-   the lab. Reuse the one VM and the existing tool logins. Do not reboot it.
+3. **Never touch the live system while capturing.** Build from recorded data
+   only. (In the pentest POC specifically, the owning repo's rule also applies:
+   reuse the one VM and existing logins, and do not reboot it or the lab. Other
+   projects follow their own rules.)
 4. **Captures are reproducible.** One `make` target rebuilds everything.
 5. **Keep sizes sane.** Check the totals before committing (see Budget).
 
