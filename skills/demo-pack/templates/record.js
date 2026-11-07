@@ -4,6 +4,7 @@ const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const [mode, dir, out] = process.argv.slice(2);
 const pages = fs.readdirSync(dir).filter(f => /^\d+\.html$/.test(f)).sort();
+const DWELL = Number(process.env.DWELL_MS || 3000);   // time to read each page in the video
 const HIDE_NAV = 'nav{display:none!important}';       // keeps nav links out of the shots
 const url = f => 'file://' + path.resolve(dir, f);
 
@@ -25,7 +26,7 @@ const url = f => 'file://' + path.resolve(dir, f);
     const page = await ctx.newPage();
     for (const f of pages) {
       await page.goto(url(f)); await page.addStyleTag({ content: HIDE_NAV });
-      await page.waitForTimeout(3000);                           // time to read
+      await page.waitForTimeout(DWELL);                          // time to read
     }
     const tmp = await page.video().path();
     await ctx.close();                                           // flushes the video file

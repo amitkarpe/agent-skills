@@ -7,7 +7,9 @@ import html, json, pathlib, sys
 CSS = ("body{margin:0;padding:48px;background:#0f172a;color:#e2e8f0;"
        "font:20px/1.5 system-ui,sans-serif}h1{margin-top:0}"
        "nav{margin-bottom:24px}nav a{color:#7dd3fc;margin-right:16px}"
-       "pre{background:#020617;padding:16px;border-radius:8px;overflow:auto}")
+       "pre{background:#020617;padding:16px;border-radius:8px;overflow:auto}"
+       "table{border-collapse:collapse;margin-top:16px;font-size:17px}th,td{border:1px solid #334155;padding:8px 14px;text-align:left}"
+       "th{background:#1e293b}code{background:#1e293b;padding:2px 6px;border-radius:4px}")
 
 def page(title, body, links):
     nav = "".join(f'<a href="{h}">{html.escape(t)}</a>' for h, t in links)

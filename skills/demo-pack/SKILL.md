@@ -39,7 +39,7 @@ screenshots, a short video and a GIF.
 4. **PNGs**: `node record.js png walkthrough png` gives 2x dark-mode shots.
    The capture hides the `<nav>` so links stay out of the images.
 5. **Video**: `node record.js video walkthrough video` records about 3 s per
-   page. Playwright names the file randomly, so the script renames it to
+   page (set `DWELL_MS=25000` for a talk-length video of long pages). Playwright names the file randomly, so the script renames it to
    `demo.webm`. Then `ffmpeg -i demo.webm -c:v libx264 -pix_fmt yuv420p demo.mp4`.
 6. **GIF** with a palette, not the default dither: `palettegen` then
    `paletteuse` at fps 8, width 960 (exact commands are in the snippet).
