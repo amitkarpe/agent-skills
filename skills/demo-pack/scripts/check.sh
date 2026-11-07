@@ -5,11 +5,15 @@ d="${1:?usage: check.sh <demo-dir>}"
 fail=0
 bad() { echo "FAIL: $*" >&2; fail=1; }
 
-# 1. pages must be static and offline
+# 1. pages must exist, be static, offline and small
+pages=$(find "$d/walkthrough" -name '*.html' 2>/dev/null)
+[ -n "$pages" ] || bad "no HTML pages in $d/walkthrough"
 while IFS= read -r f; do
+  [ -n "$f" ] || continue
   grep -qi '<script' "$f" && bad "$f has <script>"
-  grep -Eqi '(src|href)="https?://' "$f" && bad "$f links to the network"
-done < <(find "$d/walkthrough" -name '*.html' 2>/dev/null)
+  grep -Eqi "(src|href)[[:space:]]*=[[:space:]]*[\"']?[[:space:]]*(https?:)?//" "$f" && bad "$f links to the network"
+  [ "$(du -k "$f" | cut -f1)" -le 5120 ] || bad "$f over 5 MB"
+done <<< "$pages"
 
 # 2. artifacts must exist and be non-empty
 [ -n "$(find "$d/png" -name '*.png' -size +0 2>/dev/null | head -1)" ] || bad "no PNGs in $d/png"

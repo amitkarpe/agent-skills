@@ -55,9 +55,9 @@ pages, captioned screenshots, a short video and a GIF. Pattern taken from
 
 ## Check
 
-Run `bash scripts/check.sh docs/demo`. It fails on: a page with `<script`,
+Run `bash skills/demo-pack/scripts/check.sh docs/demo` from the repo root (adjust the first path to where the skill is installed). It fails on: a page with `<script`,
 `src`/`href` links to `http(s)://`, a missing or empty PNG, MP4 or GIF,
-and a total over budget.
+no HTML pages, a page over 5 MB, and a total over budget.
 
 ## Common mistakes
 
