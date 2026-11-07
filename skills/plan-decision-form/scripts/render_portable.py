@@ -12,8 +12,13 @@ SENSITIVE = re.compile(r'-----BEGIN .*PRIVATE KEY-----|\bAKIA[A-Z0-9]{16}\b|\bgh
 def validate(data):
     if not isinstance(data, dict) or data.get('schema_version') != 'decision-packet/1':
         raise ValueError('schema_version must be decision-packet/1')
-    if data.get('confirmation_mode', 'proposal_first') != 'proposal_first':
-        raise ValueError('unconfirmed defaults only; pre-agreed requires separate owner opt-in')
+    mode = data.get('confirmation_mode', 'proposal_first')
+    if mode not in ('proposal_first', 'owner_opt_in_default_agreed'):
+        raise ValueError('unsupported confirmation_mode')
+    opt_in = data.get('owner_opt_in', False)
+    if type(opt_in) is not bool or opt_in != (mode == 'owner_opt_in_default_agreed'):
+        raise ValueError('pre-agreed defaults require explicit owner_opt_in: true')
+    data['confirmation_mode'] = mode
     if not isinstance(data.get('source'), str) or not data['source'].strip():
         raise ValueError('source is required')
     if not isinstance(data.get('title'), str) or not data['title'].strip():
@@ -37,6 +42,8 @@ def validate(data):
             raise ValueError('recommended option must be in choices')
         if d.get('selected', d['recommended']) not in choices:
             raise ValueError('selected option must be in choices')
+        if mode == 'owner_opt_in_default_agreed' and d.get('selected', d['recommended']) != d['recommended']:
+            raise ValueError('pre-agreed default must start with the recommended option')
         if d.get('state', 'proposed') != 'proposed' or d.get('frozen', False) is not False:
             raise ValueError('specification cannot preconfirm owner decisions')
         d['selected'] = d.get('selected', d['recommended'])
@@ -52,7 +59,9 @@ def validate_packet(spec, packet):
     if not isinstance(packet, dict) or packet.get('schema_version') != 'decision-packet/1':
         raise ValueError('invalid decision packet schema')
     if (packet.get('source') != spec['source'] or packet.get('title') != spec['title']
-            or packet.get('confirmation_mode') != 'proposal_first'):
+            or packet.get('confirmation_mode') != spec['confirmation_mode']
+            or type(packet.get('owner_opt_in', False)) is not bool
+            or packet.get('owner_opt_in', False) != spec.get('owner_opt_in', False)):
         raise ValueError('source or confirmation mode mismatch')
     rows = packet.get('decisions')
     if not isinstance(rows, list) or len(rows) != len(spec['decisions']):
