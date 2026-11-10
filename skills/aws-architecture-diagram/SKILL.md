@@ -15,6 +15,11 @@ Bootstrap the pinned user-local environment once:
 bash scripts/bootstrap_python.sh
 ```
 
+On macOS, install `cairo` (`brew install cairo`) and make it findable for
+`dlopen` (for example `ln -s /opt/homebrew/lib/libcairo.2.dylib ~/lib/`):
+`/bin/bash` strips `DYLD_*` variables. Install draw.io Desktop with
+`brew install --cask drawio` for exact exports.
+
 Run Python entrypoints through `scripts/python.sh`. This keeps Pillow, CairoSVG,
 and their transitive dependencies isolated from system Python.
 

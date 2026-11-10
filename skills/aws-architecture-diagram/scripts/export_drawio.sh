@@ -6,8 +6,17 @@ if [[ $# -ne 2 ]]; then
   exit 2
 fi
 
-input="$(realpath "$1")"
-output_dir="$(realpath -m "$2")"
+# Portable across Linux and macOS (BSD realpath has no -m; macOS has no flock or timeout).
+abs_path() { python3 -c 'import os, sys; print(os.path.abspath(sys.argv[1]))' "$1"; }
+input="$(abs_path "$1")"
+output_dir="$(abs_path "$2")"
+if command -v timeout >/dev/null 2>&1; then
+  run_timeout() { timeout "$@"; }
+elif command -v gtimeout >/dev/null 2>&1; then
+  run_timeout() { gtimeout "$@"; }
+else
+  run_timeout() { local seconds="$1"; shift; perl -e 'alarm shift; exec @ARGV' "$seconds" "$@"; }
+fi
 mkdir -p "$output_dir"
 base="$(basename "$input" .drawio)"
 svg="$output_dir/$base.svg"
@@ -25,13 +34,26 @@ fi
 
 lock_file="${DRAWIO_EXPORT_LOCK_FILE:-${XDG_RUNTIME_DIR:-/tmp}/aws-architecture-diagram-drawio.lock}"
 mkdir -p "$(dirname "$lock_file")"
-exec 9>"$lock_file"
-flock -w "${DRAWIO_LOCK_TIMEOUT_SECONDS:-120}" 9 || {
-  printf 'FAIL timed out waiting for draw.io export lock: %s\n' "$lock_file" >&2
-  exit 3
-}
+if command -v flock >/dev/null 2>&1; then
+  exec 9>"$lock_file"
+  flock -w "${DRAWIO_LOCK_TIMEOUT_SECONDS:-120}" 9 || {
+    printf 'FAIL timed out waiting for draw.io export lock: %s\n' "$lock_file" >&2
+    exit 3
+  }
+else
+  lock_dir="$lock_file.d"
+  waited=0
+  until mkdir "$lock_dir" 2>/dev/null; do
+    (( waited++ >= ${DRAWIO_LOCK_TIMEOUT_SECONDS:-120} )) && {
+      printf 'FAIL timed out waiting for draw.io export lock: %s\n' "$lock_dir" >&2
+      exit 3
+    }
+    sleep 1
+  done
+  trap 'rmdir "$lock_dir" 2>/dev/null' EXIT
+fi
 
-actual_version="$(DRAWIO_DISABLE_UPDATE=true timeout 20 "$drawio_bin" --version 2>&1 | tr -d '\r' | awk 'NF {line=$0} END {print line}')"
+actual_version="$(DRAWIO_DISABLE_UPDATE=true run_timeout 20 "$drawio_bin" --version 2>&1 | tr -d '\r' | awk 'NF {line=$0} END {print line}')"
 if [[ -n "${EXPECTED_DRAWIO_VERSION:-}" && "$actual_version" != "$EXPECTED_DRAWIO_VERSION" && "${ALLOW_DRAWIO_VERSION_MISMATCH:-NO}" != YES ]]; then
   printf 'FAIL draw.io version expected=%s actual=%s\n' "$EXPECTED_DRAWIO_VERSION" "$actual_version" >&2
   exit 3
@@ -85,14 +107,14 @@ export_ok=NO
 for ((attempt = 1; attempt <= attempts; attempt++)); do
   rm -f "$svg" "$png"
   sleep "$settle_seconds"
-  if ! DRAWIO_DISABLE_UPDATE=true timeout "$timeout_seconds" "$drawio_bin" \
+  if ! DRAWIO_DISABLE_UPDATE=true run_timeout "$timeout_seconds" "$drawio_bin" \
       -x -f svg -e --embed-svg-images --svg-theme light -b 12 \
       -o "$svg_arg" "$input_arg"; then
     printf 'WARN draw.io SVG export failed attempt=%s/%s\n' "$attempt" "$attempts" >&2
     continue
   fi
   sleep "$settle_seconds"
-  if ! DRAWIO_DISABLE_UPDATE=true timeout "$timeout_seconds" "$drawio_bin" \
+  if ! DRAWIO_DISABLE_UPDATE=true run_timeout "$timeout_seconds" "$drawio_bin" \
       -x -f png -b 12 -s "${PNG_SCALE:-1.5}" -o "$png_arg" "$input_arg"; then
     printf 'WARN draw.io PNG export failed attempt=%s/%s\n' "$attempt" "$attempts" >&2
     continue

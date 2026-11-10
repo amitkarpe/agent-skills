@@ -62,6 +62,10 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--scope-reason", default="not part of this diagram's workload")
     parser.add_argument(
+        "--scope-types",
+        help="regex on resource type, also kept in scope (account-wide services such as AWS::GuardDuty::Detector)",
+    )
+    parser.add_argument(
         "--scope-follow",
         action="store_true",
         help="also pull in resources directly related to an in-scope resource (can pull in other projects through shared networking)",
@@ -143,7 +147,14 @@ def main() -> None:
     resources = discovery["resources"]
     if args.scope:
         pattern = re.compile(args.scope, re.IGNORECASE)
-        in_scope = {r["key"] for r in resources if pattern.search(r["name"]) or pattern.search(r["key"])}
+        type_pattern = re.compile(args.scope_types) if args.scope_types else None
+        in_scope = {
+            r["key"]
+            for r in resources
+            if pattern.search(r["name"])
+            or pattern.search(r["key"])
+            or (type_pattern and type_pattern.fullmatch(r["type"]))
+        }
         if args.scope_follow:
             related: set[str] = set()
             for r in resources:

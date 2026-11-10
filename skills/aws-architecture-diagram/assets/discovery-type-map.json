@@ -61,7 +61,8 @@
    "label": "Lambda function",
    "native_icon": "lambda",
    "tier": "compute",
-   "role": "show"
+   "role": "show",
+   "icon_key": "aws-lambda"
   },
   {
    "config": [
@@ -73,7 +74,8 @@
    "label": "ECS cluster",
    "native_icon": "ecs",
    "tier": "compute",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-elastic-container-service"
   },
   {
    "config": [
@@ -85,7 +87,8 @@
    "label": "ECS service",
    "native_icon": "ecs",
    "tier": "compute",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-elastic-container-service"
   },
   {
    "config": [
@@ -135,7 +138,8 @@
    "label": "API Gateway",
    "native_icon": "api_gateway",
    "tier": "edge",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-api-gateway"
   },
   {
    "config": [
@@ -145,7 +149,8 @@
    "label": "API Gateway",
    "native_icon": "api_gateway",
    "tier": "edge",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-api-gateway"
   },
   {
    "config": [
@@ -157,7 +162,8 @@
    "label": "SQS queue",
    "native_icon": "sqs",
    "tier": "integration",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-simple-queue-service"
   },
   {
    "config": [
@@ -169,7 +175,8 @@
    "label": "SNS topic",
    "native_icon": "sns",
    "tier": "integration",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-simple-notification-service"
   },
   {
    "config": [
@@ -182,7 +189,8 @@
    "label": "EventBridge rule",
    "native_icon": "eventbridge",
    "tier": "integration",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-eventbridge"
   },
   {
    "config": [
@@ -242,7 +250,8 @@
    "label": "DynamoDB table",
    "native_icon": "dynamodb",
    "tier": "data",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-dynamodb"
   },
   {
    "config": [
@@ -276,9 +285,10 @@
     "aws_imagebuilder_image_pipeline"
    ],
    "label": "Image Builder pipeline",
-   "icon_key": "ec2-image-builder",
+   "icon_key": "amazon-ec2-image-builder",
    "tier": "delivery",
-   "role": "show"
+   "role": "show",
+   "native_icon": "ec2_image_builder"
   },
   {
    "config": [
@@ -290,7 +300,8 @@
    "label": "ECR repository",
    "native_icon": "ecr",
    "tier": "delivery",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-elastic-container-registry"
   },
   {
    "config": [
@@ -327,7 +338,8 @@
    "label": "IAM role",
    "native_icon": "iam_role",
    "tier": "security",
-   "role": "show"
+   "role": "show",
+   "icon_key": "aws-identity-and-access-management"
   },
   {
    "config": [
@@ -339,7 +351,8 @@
    "label": "Secrets Manager secret",
    "native_icon": "secrets_manager",
    "tier": "security",
-   "role": "show"
+   "role": "show",
+   "icon_key": "aws-secrets-manager"
   },
   {
    "config": [
@@ -388,7 +401,8 @@
    "label": "SSM document",
    "native_icon": "systems_manager",
    "tier": "operations",
-   "role": "show"
+   "role": "show",
+   "icon_key": "aws-systems-manager"
   },
   {
    "config": [
@@ -714,7 +728,8 @@
    "label": "Backup plan",
    "native_icon": "backup",
    "tier": "operations",
-   "role": "show"
+   "role": "show",
+   "icon_key": "aws-backup"
   },
   {
    "config": [
@@ -726,7 +741,8 @@
    "label": "WAF web ACL",
    "native_icon": "waf",
    "tier": "edge",
-   "role": "show"
+   "role": "show",
+   "icon_key": "aws-waf"
   },
   {
    "config": [
@@ -738,7 +754,8 @@
    "label": "Firehose stream",
    "native_icon": "kinesis_data_firehose",
    "tier": "integration",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-data-firehose"
   },
   {
    "config": [
@@ -750,7 +767,8 @@
    "label": "AgentCore runtime",
    "native_icon": "bedrock_agentcore",
    "tier": "compute",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-bedrock-agentcore"
   },
   {
    "config": [
@@ -762,7 +780,8 @@
    "label": "Athena workgroup",
    "native_icon": "athena",
    "tier": "data",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-athena"
   },
   {
    "config": [
@@ -774,7 +793,8 @@
    "label": "Keyspaces keyspace",
    "native_icon": "keyspaces",
    "tier": "data",
-   "role": "show"
+   "role": "show",
+   "icon_key": "amazon-keyspaces"
   },
   {
    "config": [

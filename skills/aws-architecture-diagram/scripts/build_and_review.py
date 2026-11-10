@@ -36,6 +36,11 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="discovery.json; required when the spec has a coverage block (see references/discovery.md)",
     )
+    parser.add_argument(
+        "--allow-native-icons",
+        action="store_true",
+        help="let a discovery spec use draw.io native shapes instead of the official AWS icon package",
+    )
     return parser.parse_args()
 
 
@@ -124,6 +129,9 @@ def main() -> None:
         if completed.returncode:
             raise SystemExit(completed.returncode)
         coverage_report = read_report(coverage_json)
+        if not args.allow_native_icons:
+            # A discovery diagram is a deliverable: official AWS icons, never placeholder shapes.
+            args.require_official_aws_icons = True
 
     validate_spec_command = [sys.executable, str(scripts / "validate_spec.py"), str(spec)]
     if args.strict:

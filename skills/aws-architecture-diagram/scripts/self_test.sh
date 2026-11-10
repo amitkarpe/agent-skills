@@ -11,9 +11,10 @@ trap 'rm -rf "$tmp"' EXIT
 
 # 1. Validate the polished native-AWS example and preview renderer.
 "$python" "$root/scripts/validate_spec.py" "$root/assets/examples/aws-3-tier-demo.spec.json"
+mkdir -p "$tmp/no-official-icons"
 "$python" "$root/scripts/generate_drawio.py" \
   "$root/assets/examples/aws-3-tier-demo.spec.json" \
-  "$tmp/native-example.drawio"
+  "$tmp/native-example.drawio" --official-icons "$tmp/no-official-icons"
 "$python" "$root/scripts/validate_drawio.py" "$tmp/native-example.drawio"
 "$python" "$root/scripts/render_preview.py" \
   "$tmp/native-example.drawio" "$tmp/native-example.svg" "$tmp/native-example.png" --scale 0.5
@@ -56,9 +57,11 @@ if "$python" "$root/scripts/validate_drawio.py" "$tmp/deep.drawio" >/dev/null 2>
 fi
 
 # 2. Guard native AWS4 mapping, the vendor image URI, and deduplicated legend behavior.
+# Point at an empty icon cache: a locally prepared official cache must not change this native-shape guard.
+mkdir -p "$tmp/no-official-icons"
 "$python" "$root/scripts/generate_drawio.py" \
   "$root/assets/examples/ami-factory.spec.json" \
-  "$tmp/ami-factory.drawio"
+  "$tmp/ami-factory.drawio" --official-icons "$tmp/no-official-icons"
 "$python" "$root/scripts/validate_drawio.py" "$tmp/ami-factory.drawio"
 if grep -Fq ';base64,' "$tmp/ami-factory.drawio"; then
   printf 'FAIL semicolon-bearing data URI found\n' >&2
@@ -91,7 +94,17 @@ fi
 if [[ -n "${DRAWIO_BIN:-}" ]] || command -v draw.io.exe >/dev/null 2>&1 || \
   command -v drawio >/dev/null 2>&1 || command -v draw.io >/dev/null 2>&1; then
   "$root/scripts/export_drawio.sh" "$tmp/ami-factory.drawio" "$tmp"
-  embedded_count="$(grep -o '<image ' "$tmp/ami-factory.svg" | wc -l)"
+  # draw.io 32+ also writes a PNG fallback for each text label inside <switch>; count only real images.
+  embedded_count="$("$python" - "$tmp/ami-factory.svg" <<'PY2'
+import sys
+import xml.etree.ElementTree as ET
+
+SVG = "{http://www.w3.org/2000/svg}"
+root = ET.parse(sys.argv[1]).getroot()
+in_switch = {id(img) for sw in root.iter(SVG + "switch") for img in sw.iter(SVG + "image")}
+print(sum(1 for img in root.iter(SVG + "image") if id(img) not in in_switch))
+PY2
+)"
   if (( embedded_count != 1 )); then
     printf 'FAIL exact SVG expected one embedded vendor image, found %s\n' "$embedded_count" >&2
     exit 1

@@ -272,8 +272,11 @@ def make_report(args: argparse.Namespace) -> dict[str, Any]:
             expected_width = float(xml.get("page_width", 0))
             expected_height = float(xml.get("page_height", 0))
             expected_label = "page"
-        expected_ratio = expected_width / max(1.0, expected_height)
-        actual_ratio = png["width"] / max(1.0, png["height"])
+        # export_drawio.sh uses `-b 12`: draw.io adds that border in output pixels while the
+        # content is scaled (PNG_SCALE), so compare the ratios of the content without it.
+        border = 2 * 12 if expected_label == "SVG" else 0
+        expected_ratio = (expected_width - border) / max(1.0, expected_height - border)
+        actual_ratio = (png["width"] - border) / max(1.0, png["height"] - border)
         if abs(expected_ratio - actual_ratio) > 0.01:
             errors.append(
                 f"PNG aspect ratio {actual_ratio:.4f} does not match {expected_label} ratio {expected_ratio:.4f}"

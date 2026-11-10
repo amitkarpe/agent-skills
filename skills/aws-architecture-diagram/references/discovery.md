@@ -88,6 +88,23 @@ node `covers` list or in `coverage.omitted` with a reason. To drop a card,
 move its keys to `omitted` and say why ("out of scope: shared networking
 account").
 
+## Icons and renderer (required)
+
+A discovery diagram is a deliverable, so the build requires official AWS icons:
+`build_and_review.py --discovery` turns on `--require-official-aws-icons`. Pass
+`--allow-native-icons` only when the official package cannot be fetched, and say
+so. Prepare the cache once (about 24 MB, git-ignored):
+
+```bash
+scripts/python.sh scripts/prepare_aws_icons.py --output assets/aws-official/current
+```
+
+The type map's `icon_key` values are official catalogue keys (service icons such
+as `amazon-ec2`, `aws-codebuild`). Export with draw.io Desktop
+(`brew install --cask drawio` on macOS) for the exact render; the preview
+renderer draws native shapes as placeholder circles and is for layout only.
+`assets/examples/discovery/ami-factory-dev.*` is the reference result.
+
 ## 5. Build and finalize
 
 Pass `--discovery discovery.json` to both review passes:
@@ -115,8 +132,6 @@ the counts into the review summary.
   the agent's work, through the normal two-pass review.
 - Coverage proves completeness against the discovery file, not against AWS.
   Partial Config recording or a partial Terraform state gives a partial picture.
-- The preview renderer draws placeholder circles for native icons. Use draw.io
-  Desktop for the exact export.
 - Config does not record every type (for example SSM parameters in some
   accounts). A resource the flow needs but discovery lacks can be added as a
   node without `covers`; say in the footer that it is not from discovery.

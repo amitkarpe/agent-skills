@@ -824,7 +824,7 @@ def main() -> None:
                 line_color = color(item.get("color"), "#334155")
                 line_style = f"endArrow=block;endFill=1;endSize=8;strokeWidth=2.4;strokeColor={line_color};"
                 if item.get("dashed"):
-                    line_style += "dashed=1;dashPattern=8 6;"
+                    line_style += "dashed=1;dashPattern=4 4;"  # 36 px sample: a longer pattern reads as solid
                 edge_cell(
                     f"{item_id}-line",
                     None,
