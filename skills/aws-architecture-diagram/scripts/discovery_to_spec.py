@@ -56,11 +56,29 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--subtitle", default="")
     parser.add_argument("--audience", default="Operations engineers")
     parser.add_argument("--type-map", type=Path, default=ROOT / "assets/discovery-type-map.json")
-    parser.add_argument("--aggregate-at", type=int, default=3, help="draw N or more of one type in one group as one card")
+    parser.add_argument(
+        "--scope",
+        help="case-insensitive regex on resource name or key; resources outside it are omitted as out of scope",
+    )
+    parser.add_argument("--scope-reason", default="not part of this diagram's workload")
+    parser.add_argument(
+        "--scope-follow",
+        action="store_true",
+        help="also pull in resources directly related to an in-scope resource (can pull in other projects through shared networking)",
+    )
+    parser.add_argument(
+        "--max-cards",
+        type=int,
+        default=MAX_OVERVIEW_NODES,
+        help="merge the largest kinds into 'N x kind' cards until the draft fits this many cards",
+    )
     return parser.parse_args()
 
 
 def slug(text: str) -> str:
+    """Stable cell ID; scrubbed like labels because IDs are stored in the .drawio file."""
+    for pattern, _replacement in SECRET_LIKE:
+        text = pattern.sub("x", text)
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:48] or "item"
 
 
@@ -71,7 +89,12 @@ def safe_label(text: str, limit: int = 30) -> str:
     return text if len(text) <= limit else text[: limit - 1] + "…"
 
 
-def wrap_name(text: str, width: int = 22, max_lines: int = 2) -> str:
+def key_ref(key: str) -> str:
+    """Spec-side reference to a discovery key. Raw keys hold IDs and stay in the private discovery file."""
+    return "k:" + hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
+
+
+def wrap_name(text: str, width: int = 19, max_lines: int = 2) -> str:
     """Break a resource name at -, _, / or . so it never splits mid-word."""
     text = safe_label(text, 200)
     parts = re.split(r"(?<=[-_/.])", text)
@@ -100,8 +123,9 @@ def load_type_map(path: Path) -> tuple[dict[str, Any], dict[str, dict[str, Any]]
     data = json.loads(path.read_text(encoding="utf-8"))
     index: dict[str, dict[str, Any]] = {}
     for entry in data["types"]:
-        if entry.get("config"):
-            index[entry["config"]] = entry
+        config_types = entry.get("config") or []
+        for config_type in [config_types] if isinstance(config_types, str) else config_types:
+            index[config_type] = entry
         for tf_type in entry.get("terraform", []):
             index[tf_type] = entry
     return data, index
@@ -116,13 +140,33 @@ def main() -> None:
     tier_labels = dict(type_map["tier_labels"], unmapped="Unmapped types (choose an icon)")
 
     omitted: list[dict[str, str]] = []
+    resources = discovery["resources"]
+    if args.scope:
+        pattern = re.compile(args.scope, re.IGNORECASE)
+        in_scope = {r["key"] for r in resources if pattern.search(r["name"]) or pattern.search(r["key"])}
+        if args.scope_follow:
+            related: set[str] = set()
+            for r in resources:
+                targets = {rel["to"] for rel in r.get("relations", [])}
+                if r["key"] in in_scope:
+                    related |= targets
+                elif targets & in_scope:
+                    related.add(r["key"])
+            in_scope |= related & {r["key"] for r in resources}
+        for r in resources:
+            if r["key"] not in in_scope:
+                omitted.append({"key": key_ref(r["key"]), "type": r["type"], "reason": f"out of scope: {args.scope_reason}"})
+        resources = [r for r in resources if r["key"] in in_scope]
+    name_folds = [(re.compile(f["pattern"]), f["fold"]) for f in type_map.get("name_folds", [])]
     buckets: "OrderedDict[tuple[str, str, str], list[dict[str, Any]]]" = OrderedDict()
     unmapped_types: set[str] = set()
-    for resource in discovery["resources"]:
+    for resource in resources:
         entry = index.get(resource["type"])
-        if entry and entry.get("fold"):
-            reason = type_map["fold_reasons"][entry["fold"]]
-            omitted.append({"key": resource["key"], "reason": f"{entry['fold']}: {reason}"})
+        fold = next((f for rx, f in name_folds if rx.search(resource["name"])), None)
+        fold = fold or (entry.get("fold") if entry else None)
+        if fold:
+            reason = type_map["fold_reasons"][fold]
+            omitted.append({"key": key_ref(resource["key"]), "type": resource["type"], "reason": f"{fold}: {reason}"})
             continue
         if entry is None:
             unmapped_types.add(resource["type"])
@@ -131,22 +175,29 @@ def main() -> None:
             {"resource": resource, "entry": entry}
         )
 
-    def plan_nodes(threshold: int) -> list[dict[str, Any]]:
-        planned = []
-        for (group, tier, _label), members in buckets.items():
-            entry = members[0]["entry"]
-            if len(members) >= threshold:
-                planned.append({"group": group, "tier": tier, "entry": entry, "members": members, "count": len(members)})
-            else:
-                for member in members:
-                    planned.append({"group": group, "tier": tier, "entry": entry, "members": [member], "count": 1})
-        return planned
+    # Draw each resource alone, then merge the largest kinds until the draft fits.
+    merged: set[tuple[str, str, str]] = set()
 
-    planned = plan_nodes(max(2, args.aggregate_at))
-    if len(planned) > MAX_OVERVIEW_NODES:
-        planned = plan_nodes(2)
+    def card_count() -> int:
+        return sum(1 if key in merged else len(members) for key, members in buckets.items())
 
-    groups_seen = list(OrderedDict.fromkeys(r["group"] for r in discovery["resources"]))
+    while card_count() > args.max_cards:
+        candidates = [key for key, members in buckets.items() if key not in merged and len(members) > 1]
+        if not candidates:
+            break
+        merged.add(max(candidates, key=lambda key: len(buckets[key])))
+
+    planned = []
+    for key, members in buckets.items():
+        group, tier, _label = key
+        entry = members[0]["entry"]
+        if key in merged:
+            planned.append({"group": group, "tier": tier, "entry": entry, "members": members, "count": len(members)})
+        else:
+            for member in members:
+                planned.append({"group": group, "tier": tier, "entry": entry, "members": [member], "count": 1})
+
+    groups_seen = list(OrderedDict.fromkeys(p["group"] for p in planned))
     multi_group = len(groups_seen) > 1
     nodes: list[dict[str, Any]] = []
     spec_groups: list[dict[str, Any]] = []
@@ -211,7 +262,7 @@ def main() -> None:
                     "stroke": stroke,
                     "font_size": 15,
                     "state": "current",
-                    "covers": [m["resource"]["key"] for m in plan["members"]],
+                    "covers": [key_ref(m["resource"]["key"]) for m in plan["members"]],
                 }
                 if tier == "unmapped":
                     node.update({"provider": "external", "variant": "label-only"})
@@ -222,8 +273,8 @@ def main() -> None:
                     if entry.get("native_icon"):
                         node["native_icon"] = entry["native_icon"]
                 nodes.append(node)
-                for key in node["covers"]:
-                    key_to_node[key] = node_id
+                for member in plan["members"]:
+                    key_to_node[member["resource"]["key"]] = node_id
             y += band_h + BAND_GAP
 
     hints: list[dict[str, str]] = []
@@ -286,8 +337,8 @@ def main() -> None:
     )
     if unmapped_types:
         print("WARN unmapped types drawn as label-only cards: " + ", ".join(sorted(unmapped_types)))
-    if len(nodes) > MAX_OVERVIEW_NODES:
-        print(f"WARN {len(nodes)} cards is above the overview maximum of {MAX_OVERVIEW_NODES}; split by group or tier")
+    if len(nodes) > args.max_cards:
+        print(f"WARN {len(nodes)} cards is above {args.max_cards}; narrow --scope or split by group or tier")
 
 
 if __name__ == "__main__":

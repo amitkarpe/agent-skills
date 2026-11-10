@@ -177,6 +177,7 @@ import sys
 
 spec = json.load(open(sys.argv[1], encoding="utf-8"))
 spec["nodes"][0]["covers"] = []
+assert all(key.startswith("k:") for node in spec["nodes"] for key in node.get("covers", []))
 json.dump(spec, open(sys.argv[2], "w", encoding="utf-8"))
 PY2
 if "$python" "$root/scripts/check_coverage.py" "$tmp/discovery.json" "$tmp/dropped.spec.json" >/dev/null 2>&1; then
