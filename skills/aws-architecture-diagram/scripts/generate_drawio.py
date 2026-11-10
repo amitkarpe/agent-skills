@@ -741,22 +741,24 @@ def main() -> None:
     for annotation in spec.get("annotations", []):
         geometry = rect(annotation.get("geometry"), f"annotation {annotation.get('id')}")
         if annotation.get("box"):
-            style = (
-                "rounded=1;arcSize=8;whiteSpace=wrap;html=1;"
+            # The box is its own empty cell; the text stays a transparent cell on top (review rule).
+            vertex(
+                f"{annotation['id']}-box",
+                "",
+                geometry,
+                "rounded=1;arcSize=8;html=1;"
                 f"fillColor={color(annotation.get('fill'), '#FFFFFF')};"
-                f"strokeColor={color(annotation.get('stroke'), '#CBD5E1')};strokeWidth=1;"
-                f"align={annotation.get('align', 'center')};verticalAlign=middle;fontFamily=Arial;"
-                f"fontSize={int(annotation.get('font_size', 14))};fontStyle={int(annotation.get('font_style', 0))};"
-                f"fontColor={color(annotation.get('color'), '#475569')};"
+                f"strokeColor={color(annotation.get('stroke'), '#CBD5E1')};strokeWidth=1;",
+                **{"data-kind": "annotation-box"},
             )
-        else:
-            style = transparent_text_style(
-                align=str(annotation.get("align", "center")),
-                valign=str(annotation.get("vertical_align", "middle")),
-                font_size=int(annotation.get("font_size", 14)),
-                font_color=color(annotation.get("color"), "#475569"),
-                font_style=int(annotation.get("font_style", 0)),
-            )
+            geometry = [geometry[0] + 12, geometry[1] + 6, geometry[2] - 24, geometry[3] - 12]
+        style = transparent_text_style(
+            align=str(annotation.get("align", "center")),
+            valign=str(annotation.get("vertical_align", "middle")),
+            font_size=int(annotation.get("font_size", 14)),
+            font_color=color(annotation.get("color"), "#475569"),
+            font_style=int(annotation.get("font_style", 0)),
+        )
         vertex(
             str(annotation["id"]),
             escape_label(annotation["text"]),
