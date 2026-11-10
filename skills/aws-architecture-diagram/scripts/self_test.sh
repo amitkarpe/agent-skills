@@ -161,4 +161,32 @@ review_dir="$tmp/review"
   "$review_dir/official-test.drawio" --require-official-aws-icons
 [[ -s "$review_dir/official-test.drawio" && -s "$review_dir/official-test.review-summary.md" ]]
 
+# 4. Discovery -> draft spec -> coverage gate (nothing dropped, nothing invented).
+examples="$root/assets/examples/discovery"
+"$python" "$root/scripts/discover_normalize.py" \
+  --input config DEV "$examples/config-select.example.json" \
+  --input terraform DEV "$examples/terraform-show.example.json" \
+  --output "$tmp/discovery.json" --collected-at 2026-11-10T00:00:00+00:00
+"$python" "$root/scripts/discovery_to_spec.py" "$tmp/discovery.json" "$tmp/discovered.spec.json" \
+  --title "Self-test discovered estate"
+"$python" "$root/scripts/check_coverage.py" "$tmp/discovery.json" "$tmp/discovered.spec.json"
+"$python" "$root/scripts/validate_spec.py" "$tmp/discovered.spec.json"
+"$python" - "$tmp/discovered.spec.json" "$tmp/dropped.spec.json" <<'PY2'
+import json
+import sys
+
+spec = json.load(open(sys.argv[1], encoding="utf-8"))
+spec["nodes"][0]["covers"] = []
+json.dump(spec, open(sys.argv[2], "w", encoding="utf-8"))
+PY2
+if "$python" "$root/scripts/check_coverage.py" "$tmp/discovery.json" "$tmp/dropped.spec.json" >/dev/null 2>&1; then
+  printf 'FAIL coverage passed with a dropped resource\n' >&2
+  exit 1
+fi
+if "$python" "$root/scripts/build_and_review.py" "$tmp/discovered.spec.json" "$tmp/no-discovery" \
+  --name nodisc --pass-number 1 --renderer preview >/dev/null 2>&1; then
+  printf 'FAIL build accepted a coverage spec without --discovery\n' >&2
+  exit 1
+fi
+
 printf 'PASS self-test\n'

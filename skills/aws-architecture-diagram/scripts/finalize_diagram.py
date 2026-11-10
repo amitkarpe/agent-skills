@@ -67,6 +67,13 @@ def main() -> None:
             "FAIL pass 2 used the preview renderer; exact draw.io export is required unless --accept-preview is explicit"
         )
 
+    coverage = pass2.get("coverage")
+    pass2_spec = read_json(require(output_dir / str(pass2.get("artefacts", {}).get("spec", ""))))
+    if "coverage" in pass2_spec and not coverage:
+        raise SystemExit("FAIL spec has a coverage block but pass 2 ran without --discovery")
+    if coverage and coverage.get("status") != "PASS":
+        raise SystemExit(f"FAIL pass 2 coverage is {coverage.get('status')}")
+
     artefacts = pass2.get("artefacts", {})
     required_keys = ("spec", "drawio", "svg", "raw_svg", "png", "review_json", "review_markdown")
     source_paths = {key: require(output_dir / str(artefacts.get(key, ""))) for key in required_keys}
@@ -111,6 +118,17 @@ def main() -> None:
         f"- Pass 1: {pass1_review.get('status')} — {len(pass1_review.get('errors', []))} errors, {len(pass1_review.get('warnings', []))} warnings",
         f"- Pass 2: {pass2_review.get('status')} — {len(pass2_review.get('errors', []))} errors, {len(pass2_review.get('warnings', []))} warnings",
         "",
+        *(
+            [
+                "## Discovery coverage",
+                "",
+                f"- {coverage.get('resources')} discovered resources: {coverage.get('drawn')} drawn, "
+                f"{coverage.get('omitted')} listed with an omit reason, {coverage.get('missing')} missing.",
+                "",
+            ]
+            if coverage
+            else []
+        ),
         "## Final artefacts",
         "",
         f"- `{final_paths['drawio'].name}` — editable source",
@@ -142,6 +160,7 @@ def main() -> None:
         "status": pass2_review.get("status"),
         "changes": pass2.get("changes"),
         "accessibility": pass2_review.get("accessibility", {}),
+        "coverage": coverage,
         "renderer_provenance": pass2.get("renderer_provenance", {}),
         "artefacts": {key: path.name for key, path in final_paths.items()},
         "artefact_sha256": {key: sha256(path) for key, path in final_paths.items()},

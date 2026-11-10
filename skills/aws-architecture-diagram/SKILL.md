@@ -38,6 +38,11 @@ Unless the user asks for a different style:
 Do not stop after generating XML. Complete the full loop.
 
 1. Read the user's evidence and identify the diagram type, audience, scope, and primary message.
+   When you have read access to the estate, start from discovery instead of a
+   hand-written spec: read `references/discovery.md`, then run
+   `discover_normalize.py` and `discovery_to_spec.py`, and pass
+   `--discovery discovery.json` to every `build_and_review.py` pass. The build
+   then fails if any discovered resource is neither drawn nor omitted with a reason.
 2. Read `references/aws-design-guidance.md`, `references/visual-design-system.md`, and `references/quality-contract.md`.
 3. Prepare icons:
    - Preferred: latest package from `https://aws.amazon.com/architecture/icons/` using `scripts/prepare_aws_icons.py`.
@@ -140,6 +145,7 @@ to bypass the two-pass render review.
 - `references/visual-design-system.md`: typography, colour, borders, nodes, and connectors.
 - `references/render-review-loop.md`: mandatory two-pass visual QA process.
 - `references/spec-schema.md`: JSON fields and examples.
+- `references/discovery.md`: discovery-first drafts and the coverage gate.
 - `references/xml-pattern.md`: draw.io XML composition and transparent-label rules.
 - `references/chatgpt-project.md`: use from ChatGPT, Codex, and local automation.
 - `references/mcp-workflow.md`: optional local official draw.io MCP workflow.
