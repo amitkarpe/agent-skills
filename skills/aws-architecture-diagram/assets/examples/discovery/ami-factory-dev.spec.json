@@ -45,7 +45,7 @@
     {
       "id": "sns-topic",
       "provider": "aws",
-      "label": "SNS topic\nrelease mail",
+      "label": "SNS topic\nfailure alerts",
       "variant": "icon-left",
       "icon_size": 56,
       "geometry": [
@@ -150,31 +150,6 @@
       ]
     },
     {
-      "id": "rollouts",
-      "provider": "aws",
-      "label": "DEV rollouts\nseparate flow",
-      "variant": "icon-left",
-      "icon_size": 56,
-      "geometry": [
-        1570,
-        150,
-        250,
-        90
-      ],
-      "font_size": 15,
-      "state": "current",
-      "stroke": "#C925D1",
-      "fill": "#FFFFFF",
-      "accent": "#C925D1",
-      "icon_key": "aws-codebuild",
-      "covers": [
-        "k:19f3a44ad8d94ed6",
-        "k:1cd2cd499342b2ee",
-        "k:03841d13565c5cf4",
-        "k:92cc705364530985"
-      ]
-    },
-    {
       "id": "rule-daily",
       "provider": "aws",
       "label": "EventBridge rule\ndaily check",
@@ -221,7 +196,7 @@
     {
       "id": "codebuild",
       "provider": "aws",
-      "label": "CodeBuild\nrelease, runner",
+      "label": "CodeBuild\nrelease steps",
       "variant": "icon-left",
       "icon_size": 56,
       "geometry": [
@@ -237,8 +212,7 @@
       "accent": "#C925D1",
       "icon_key": "aws-codebuild",
       "covers": [
-        "k:1b7d111af040a1f6",
-        "k:e40a79db36ec35b5"
+        "k:1b7d111af040a1f6"
       ]
     },
     {
@@ -396,7 +370,7 @@
     {
       "id": "prod",
       "provider": "aws",
-      "label": "PROD account\nshared AMIs",
+      "label": "PROD account\nAMIs, release mail",
       "variant": "icon-left",
       "icon_size": 56,
       "geometry": [
@@ -588,7 +562,7 @@
       "id": "f06",
       "source": "codebuild",
       "target": "test-hosts",
-      "caption": "6 · test hosts",
+      "caption": "6 · launches tests",
       "kind": "control",
       "exitX": 0.5,
       "exitY": 1,
@@ -605,7 +579,7 @@
       "id": "f07",
       "source": "inspector",
       "target": "test-hosts",
-      "caption": "7 · CIS scan",
+      "caption": "7 · CIS L2 scan",
       "kind": "security",
       "exitX": 0.5,
       "exitY": 0,
@@ -737,16 +711,16 @@
       "id": "x-mail",
       "source": "rule-failed",
       "target": "sns-topic",
-      "caption": "mail",
+      "caption": "alert",
       "kind": "event",
       "exitX": 0,
       "exitY": 0.5,
       "entryX": 1,
       "entryY": 0.5,
       "caption_geometry": [
-        323,
+        322,
         160,
-        44,
+        46,
         22
       ]
     },
@@ -809,7 +783,7 @@
       1270,
       690,
       550,
-      170
+      180
     ],
     "items": [
       {
@@ -5497,6 +5471,26 @@
         "reason": "supporting: GCC agent lab host, not in the release flow"
       },
       {
+        "key": "k:1cd2cd499342b2ee",
+        "reason": "separate flow: DEV rollout pipelines, drawn in their own diagram"
+      },
+      {
+        "key": "k:03841d13565c5cf4",
+        "reason": "separate flow: DEV rollout pipelines, drawn in their own diagram"
+      },
+      {
+        "key": "k:92cc705364530985",
+        "reason": "separate flow: DEV rollout pipelines, drawn in their own diagram"
+      },
+      {
+        "key": "k:19f3a44ad8d94ed6",
+        "reason": "separate flow: DEV rollout build, drawn in their own diagram"
+      },
+      {
+        "key": "k:e40a79db36ec35b5",
+        "reason": "supporting: CI runner for the aws.yml workflow, not in the release flow"
+      },
+      {
         "key": "k:88384d30a6598fbb",
         "reason": "supporting: demo load-balancer alarms, not in the release flow"
       },
@@ -5534,6 +5528,6 @@
   },
   "footer": {
     "status": "Current state",
-    "note": "Every Config-recorded resource is drawn or listed with a reason (977). Grey cards: GovTech AMI, built AMIs, SSM pointers and PROD are outside Config recording."
+    "note": "Sources: AWS Config discovery of DEV (977 resources, each drawn or listed with a reason) and aws-factory SPEC.md. Grey cards are outside Config recording."
   }
 }
