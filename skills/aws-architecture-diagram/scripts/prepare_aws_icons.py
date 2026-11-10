@@ -168,7 +168,15 @@ def main() -> None:
         safe_extract(package_path, extracted)
         extract_nested_zips(extracted)
 
-        icons = [p for p in extracted.rglob("*") if p.is_file() and p.suffix.lower() in ICON_EXTENSIONS]
+        # Skip macOS AppleDouble metadata ("._Name.svg", "__MACOSX/"): they carry the icon suffix but no image.
+        icons = [
+            p
+            for p in extracted.rglob("*")
+            if p.is_file()
+            and p.suffix.lower() in ICON_EXTENSIONS
+            and not p.name.startswith("._")
+            and "__MACOSX" not in p.parts
+        ]
         if not icons:
             raise SystemExit("no SVG or PNG icons found in package")
 

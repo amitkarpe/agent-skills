@@ -25,6 +25,7 @@ The JSON specification is the architecture contract and the source of truth for 
 | `annotations` | no | Notes and explanatory text |
 | `legend` | no | `auto`, `false`, or explicit legend object |
 | `footer` | no | Owner, status, date, note |
+| `coverage` | no | Discovery coverage record; see below and `discovery.md` |
 
 ## Accessibility
 
@@ -143,6 +144,26 @@ Use `icon-above` for compact AWS services inside subnets. Use `icon-left` for pr
 - `caption`: concise verb or payload.
 - `caption_geometry`: strongly recommended for important or long routes.
 - `unlabeled_reason`: required when `caption` is omitted.
+
+## Discovery coverage
+
+A spec drafted from discovery carries:
+
+```json
+{
+  "coverage": {
+    "discovery": "discovery.json",
+    "discovery_sha256": "<sha256 of the discovery file>",
+    "omitted": [{"key": "DEV/aws_iam_role_policy_attachment.notify", "reason": "iam-detail: IAM detail folded into its role"}],
+    "relation_hints": [{"source": "dev-...-codebuild", "target": "dev-...-s3", "relation": "Is associated with Bucket"}]
+  }
+}
+```
+
+and each drawn node lists the discovery keys it stands for in `covers`.
+Every key must be in exactly one `covers` list or in `omitted` with a reason.
+`check_coverage.py` enforces this, and `build_and_review.py` runs it when the
+spec has a `coverage` block (pass `--discovery`).
 
 ## Annotations
 

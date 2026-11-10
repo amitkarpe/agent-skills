@@ -1,0 +1,861 @@
+{
+ "schema_version": 1,
+ "note": "Maps discovered resource types to a diagram role. role=show draws a node; fold lists the resource in coverage.omitted with the fold reason. config may be one type or a list. icon_key must be in native-aws4-map.json lookup/direct_shapes; native_icon must be an mxgraph.aws4 resourceIcon name. name_folds fold AWS-managed or landing-zone resources by name, whatever their type. Unknown types are drawn as label-only cards and reported, never dropped.",
+ "tiers": [
+  "edge",
+  "compute",
+  "integration",
+  "data",
+  "delivery",
+  "security",
+  "operations"
+ ],
+ "tier_labels": {
+  "edge": "Entry and edge",
+  "compute": "Compute",
+  "integration": "Integration and events",
+  "data": "Data and storage",
+  "delivery": "Build and delivery",
+  "security": "Security and identity",
+  "operations": "Operations and monitoring"
+ },
+ "fold_reasons": {
+  "network": "network plumbing; draw the VPC or subnet as a boundary by hand when it matters",
+  "config": "configuration detail of its parent resource",
+  "iam-detail": "IAM detail folded into its role",
+  "dns-record": "DNS record folded into its hosted zone",
+  "platform": "account baseline, landing-zone or AWS-managed resource, not part of the workload"
+ },
+ "types": [
+  {
+   "config": [
+    "AWS::EC2::Instance"
+   ],
+   "terraform": [
+    "aws_instance"
+   ],
+   "label": "EC2 instance",
+   "icon_key": "amazon-ec2",
+   "tier": "compute",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::AutoScaling::AutoScalingGroup"
+   ],
+   "terraform": [
+    "aws_autoscaling_group"
+   ],
+   "label": "Auto Scaling group",
+   "icon_key": "amazon-ec2-auto-scaling",
+   "tier": "compute",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::Lambda::Function"
+   ],
+   "terraform": [
+    "aws_lambda_function"
+   ],
+   "label": "Lambda function",
+   "native_icon": "lambda",
+   "tier": "compute",
+   "role": "show",
+   "icon_key": "aws-lambda"
+  },
+  {
+   "config": [
+    "AWS::ECS::Cluster"
+   ],
+   "terraform": [
+    "aws_ecs_cluster"
+   ],
+   "label": "ECS cluster",
+   "native_icon": "ecs",
+   "tier": "compute",
+   "role": "show",
+   "icon_key": "amazon-elastic-container-service"
+  },
+  {
+   "config": [
+    "AWS::ECS::Service"
+   ],
+   "terraform": [
+    "aws_ecs_service"
+   ],
+   "label": "ECS service",
+   "native_icon": "ecs",
+   "tier": "compute",
+   "role": "show",
+   "icon_key": "amazon-elastic-container-service"
+  },
+  {
+   "config": [
+    "AWS::ElasticLoadBalancingV2::LoadBalancer"
+   ],
+   "terraform": [
+    "aws_lb",
+    "aws_alb"
+   ],
+   "label": "Load balancer",
+   "icon_key": "elastic-load-balancing-application-load-balancer",
+   "tier": "edge",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::CloudFront::Distribution"
+   ],
+   "terraform": [
+    "aws_cloudfront_distribution"
+   ],
+   "label": "CloudFront",
+   "icon_key": "amazon-cloudfront",
+   "tier": "edge",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::Route53::HostedZone"
+   ],
+   "terraform": [
+    "aws_route53_zone"
+   ],
+   "label": "Route 53 zone",
+   "icon_key": "amazon-route-53",
+   "tier": "edge",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::ApiGateway::RestApi"
+   ],
+   "terraform": [
+    "aws_api_gateway_rest_api",
+    "aws_apigatewayv2_api"
+   ],
+   "label": "API Gateway",
+   "native_icon": "api_gateway",
+   "tier": "edge",
+   "role": "show",
+   "icon_key": "amazon-api-gateway"
+  },
+  {
+   "config": [
+    "AWS::ApiGatewayV2::Api"
+   ],
+   "terraform": [],
+   "label": "API Gateway",
+   "native_icon": "api_gateway",
+   "tier": "edge",
+   "role": "show",
+   "icon_key": "amazon-api-gateway"
+  },
+  {
+   "config": [
+    "AWS::SQS::Queue"
+   ],
+   "terraform": [
+    "aws_sqs_queue"
+   ],
+   "label": "SQS queue",
+   "native_icon": "sqs",
+   "tier": "integration",
+   "role": "show",
+   "icon_key": "amazon-simple-queue-service"
+  },
+  {
+   "config": [
+    "AWS::SNS::Topic"
+   ],
+   "terraform": [
+    "aws_sns_topic"
+   ],
+   "label": "SNS topic",
+   "native_icon": "sns",
+   "tier": "integration",
+   "role": "show",
+   "icon_key": "amazon-simple-notification-service"
+  },
+  {
+   "config": [
+    "AWS::Events::Rule"
+   ],
+   "terraform": [
+    "aws_cloudwatch_event_rule",
+    "aws_scheduler_schedule"
+   ],
+   "label": "EventBridge rule",
+   "native_icon": "eventbridge",
+   "tier": "integration",
+   "role": "show",
+   "icon_key": "amazon-eventbridge"
+  },
+  {
+   "config": [
+    "AWS::StepFunctions::StateMachine"
+   ],
+   "terraform": [
+    "aws_sfn_state_machine"
+   ],
+   "label": "Step Functions",
+   "icon_key": "aws-step-functions",
+   "tier": "integration",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::S3::Bucket"
+   ],
+   "terraform": [
+    "aws_s3_bucket"
+   ],
+   "label": "S3 bucket",
+   "icon_key": "amazon-simple-storage-service",
+   "tier": "data",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::RDS::DBInstance"
+   ],
+   "terraform": [
+    "aws_db_instance"
+   ],
+   "label": "RDS database",
+   "icon_key": "amazon-rds",
+   "tier": "data",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::RDS::DBCluster"
+   ],
+   "terraform": [
+    "aws_rds_cluster"
+   ],
+   "label": "RDS cluster",
+   "icon_key": "amazon-rds",
+   "tier": "data",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::DynamoDB::Table"
+   ],
+   "terraform": [
+    "aws_dynamodb_table"
+   ],
+   "label": "DynamoDB table",
+   "native_icon": "dynamodb",
+   "tier": "data",
+   "role": "show",
+   "icon_key": "amazon-dynamodb"
+  },
+  {
+   "config": [
+    "AWS::CodeBuild::Project"
+   ],
+   "terraform": [
+    "aws_codebuild_project"
+   ],
+   "label": "CodeBuild project",
+   "icon_key": "aws-codebuild",
+   "tier": "delivery",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::CodePipeline::Pipeline"
+   ],
+   "terraform": [
+    "aws_codepipeline"
+   ],
+   "label": "CodePipeline",
+   "icon_key": "aws-codepipeline",
+   "tier": "delivery",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::ImageBuilder::ImagePipeline"
+   ],
+   "terraform": [
+    "aws_imagebuilder_image_pipeline"
+   ],
+   "label": "Image Builder pipeline",
+   "icon_key": "amazon-ec2-image-builder",
+   "tier": "delivery",
+   "role": "show",
+   "native_icon": "ec2_image_builder"
+  },
+  {
+   "config": [
+    "AWS::ECR::Repository"
+   ],
+   "terraform": [
+    "aws_ecr_repository"
+   ],
+   "label": "ECR repository",
+   "native_icon": "ecr",
+   "tier": "delivery",
+   "role": "show",
+   "icon_key": "amazon-elastic-container-registry"
+  },
+  {
+   "config": [
+    "AWS::EC2::Image"
+   ],
+   "terraform": [
+    "aws_ami",
+    "aws_ami_copy"
+   ],
+   "label": "AMI",
+   "icon_key": "amazon-ec2-ami",
+   "tier": "delivery",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::KMS::Key"
+   ],
+   "terraform": [
+    "aws_kms_key"
+   ],
+   "label": "KMS key",
+   "icon_key": "aws-key-management-service",
+   "tier": "security",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::IAM::Role"
+   ],
+   "terraform": [
+    "aws_iam_role"
+   ],
+   "label": "IAM role",
+   "native_icon": "iam_role",
+   "tier": "security",
+   "role": "show",
+   "icon_key": "aws-identity-and-access-management"
+  },
+  {
+   "config": [
+    "AWS::SecretsManager::Secret"
+   ],
+   "terraform": [
+    "aws_secretsmanager_secret"
+   ],
+   "label": "Secrets Manager secret",
+   "native_icon": "secrets_manager",
+   "tier": "security",
+   "role": "show",
+   "icon_key": "aws-secrets-manager"
+  },
+  {
+   "config": [
+    "AWS::GuardDuty::Detector"
+   ],
+   "terraform": [
+    "aws_guardduty_detector"
+   ],
+   "label": "GuardDuty",
+   "icon_key": "amazon-guardduty",
+   "tier": "security",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::Inspector2::Enabler",
+    "AWS::InspectorV2::Activation"
+   ],
+   "terraform": [
+    "aws_inspector2_enabler"
+   ],
+   "label": "Inspector",
+   "icon_key": "amazon-inspector",
+   "tier": "security",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::SSM::Parameter"
+   ],
+   "terraform": [
+    "aws_ssm_parameter"
+   ],
+   "label": "SSM parameter",
+   "icon_key": "aws-systems-manager-parameter-store",
+   "tier": "operations",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::SSM::Document"
+   ],
+   "terraform": [
+    "aws_ssm_document"
+   ],
+   "label": "SSM document",
+   "native_icon": "systems_manager",
+   "tier": "operations",
+   "role": "show",
+   "icon_key": "aws-systems-manager"
+  },
+  {
+   "config": [
+    "AWS::CloudWatch::Alarm"
+   ],
+   "terraform": [
+    "aws_cloudwatch_metric_alarm"
+   ],
+   "label": "CloudWatch alarm",
+   "icon_key": "amazon-cloudwatch",
+   "tier": "operations",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::Logs::LogGroup"
+   ],
+   "terraform": [
+    "aws_cloudwatch_log_group"
+   ],
+   "label": "Log group",
+   "icon_key": "amazon-cloudwatch",
+   "tier": "operations",
+   "role": "show"
+  },
+  {
+   "config": [
+    "AWS::EC2::VPC",
+    "AWS::EC2::DHCPOptions",
+    "AWS::EC2::FlowLog",
+    "AWS::EC2::PrefixList",
+    "AWS::EC2::TransitGatewayAttachment",
+    "AWS::EC2::NetworkInsightsPath",
+    "AWS::EC2::VPCBlockPublicAccessOptions",
+    "AWS::Route53Resolver::ResolverRule",
+    "AWS::Route53Resolver::ResolverRuleAssociation"
+   ],
+   "terraform": [
+    "aws_vpc",
+    "aws_flow_log",
+    "aws_ec2_transit_gateway_vpc_attachment",
+    "aws_vpc_dhcp_options"
+   ],
+   "fold": "network"
+  },
+  {
+   "config": [
+    "AWS::EC2::Subnet"
+   ],
+   "terraform": [
+    "aws_subnet"
+   ],
+   "fold": "network"
+  },
+  {
+   "config": [
+    "AWS::EC2::SecurityGroup"
+   ],
+   "terraform": [
+    "aws_security_group",
+    "aws_security_group_rule",
+    "aws_vpc_security_group_ingress_rule",
+    "aws_vpc_security_group_egress_rule"
+   ],
+   "fold": "network"
+  },
+  {
+   "config": [
+    "AWS::EC2::RouteTable",
+    "AWS::EC2::SubnetRouteTableAssociation"
+   ],
+   "terraform": [
+    "aws_route_table",
+    "aws_route_table_association",
+    "aws_route"
+   ],
+   "fold": "network"
+  },
+  {
+   "config": [
+    "AWS::EC2::InternetGateway"
+   ],
+   "terraform": [
+    "aws_internet_gateway"
+   ],
+   "fold": "network"
+  },
+  {
+   "config": [
+    "AWS::EC2::NatGateway"
+   ],
+   "terraform": [
+    "aws_nat_gateway"
+   ],
+   "fold": "network"
+  },
+  {
+   "config": [
+    "AWS::EC2::EIP"
+   ],
+   "terraform": [
+    "aws_eip"
+   ],
+   "fold": "network"
+  },
+  {
+   "config": [
+    "AWS::EC2::NetworkInterface"
+   ],
+   "terraform": [
+    "aws_network_interface"
+   ],
+   "fold": "network"
+  },
+  {
+   "config": [
+    "AWS::EC2::VPCEndpoint"
+   ],
+   "terraform": [
+    "aws_vpc_endpoint"
+   ],
+   "fold": "network"
+  },
+  {
+   "config": [
+    "AWS::EC2::NetworkAcl"
+   ],
+   "terraform": [
+    "aws_network_acl"
+   ],
+   "fold": "network"
+  },
+  {
+   "config": [
+    "AWS::EC2::Volume"
+   ],
+   "terraform": [
+    "aws_ebs_volume",
+    "aws_volume_attachment"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::EC2::LaunchTemplate"
+   ],
+   "terraform": [
+    "aws_launch_template"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::ElasticLoadBalancingV2::Listener"
+   ],
+   "terraform": [
+    "aws_lb_listener",
+    "aws_lb_listener_rule",
+    "aws_lb_target_group",
+    "aws_lb_target_group_attachment"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::ECS::TaskDefinition",
+    "AWS::ECS::CapacityProvider"
+   ],
+   "terraform": [
+    "aws_ecs_task_definition"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::Lambda::Permission"
+   ],
+   "terraform": [
+    "aws_lambda_permission",
+    "aws_lambda_event_source_mapping"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::S3::BucketPolicy"
+   ],
+   "terraform": [
+    "aws_s3_bucket_policy",
+    "aws_s3_bucket_public_access_block",
+    "aws_s3_bucket_versioning",
+    "aws_s3_bucket_lifecycle_configuration",
+    "aws_s3_bucket_server_side_encryption_configuration",
+    "aws_s3_bucket_ownership_controls",
+    "aws_s3_bucket_notification"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::Events::Target",
+    "AWS::Events::EventBus",
+    "AWS::Scheduler::ScheduleGroup"
+   ],
+   "terraform": [
+    "aws_cloudwatch_event_target",
+    "aws_cloudwatch_event_bus",
+    "aws_codebuild_webhook"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::SNS::Subscription"
+   ],
+   "terraform": [
+    "aws_sns_topic_subscription",
+    "aws_sns_topic_policy",
+    "aws_sqs_queue_policy"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::KMS::Alias"
+   ],
+   "terraform": [
+    "aws_kms_alias"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::ImageBuilder::ImageRecipe",
+    "AWS::ImageBuilder::Component",
+    "AWS::ImageBuilder::InfrastructureConfiguration",
+    "AWS::ImageBuilder::DistributionConfiguration",
+    "AWS::ImageBuilder::Workflow"
+   ],
+   "terraform": [
+    "aws_imagebuilder_image_recipe",
+    "aws_imagebuilder_component",
+    "aws_imagebuilder_infrastructure_configuration",
+    "aws_imagebuilder_distribution_configuration",
+    "aws_imagebuilder_workflow"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::SSM::Association",
+    "AWS::SSM::AssociationCompliance",
+    "AWS::SSM::ManagedInstanceInventory"
+   ],
+   "terraform": [
+    "aws_ssm_association"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::Logs::MetricFilter"
+   ],
+   "terraform": [
+    "aws_cloudwatch_log_metric_filter",
+    "aws_cloudwatch_log_subscription_filter"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::SecretsManager::SecretVersion"
+   ],
+   "terraform": [
+    "aws_secretsmanager_secret_version"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::IAM::Policy",
+    "AWS::IAM::Group"
+   ],
+   "terraform": [
+    "aws_iam_policy",
+    "aws_iam_role_policy",
+    "aws_iam_role_policy_attachment",
+    "aws_iam_policy_attachment",
+    "aws_iam_instance_profile"
+   ],
+   "fold": "iam-detail"
+  },
+  {
+   "config": [
+    "AWS::IAM::ManagedPolicy"
+   ],
+   "terraform": [],
+   "fold": "iam-detail"
+  },
+  {
+   "config": [
+    "AWS::IAM::InstanceProfile"
+   ],
+   "terraform": [],
+   "fold": "iam-detail"
+  },
+  {
+   "config": [
+    "AWS::Route53::RecordSet"
+   ],
+   "terraform": [
+    "aws_route53_record"
+   ],
+   "fold": "dns-record"
+  },
+  {
+   "config": [
+    "AWS::Backup::BackupPlan"
+   ],
+   "terraform": [
+    "aws_backup_plan"
+   ],
+   "label": "Backup plan",
+   "native_icon": "backup",
+   "tier": "operations",
+   "role": "show",
+   "icon_key": "aws-backup"
+  },
+  {
+   "config": [
+    "AWS::WAFv2::WebACL"
+   ],
+   "terraform": [
+    "aws_wafv2_web_acl"
+   ],
+   "label": "WAF web ACL",
+   "native_icon": "waf",
+   "tier": "edge",
+   "role": "show",
+   "icon_key": "aws-waf"
+  },
+  {
+   "config": [
+    "AWS::KinesisFirehose::DeliveryStream"
+   ],
+   "terraform": [
+    "aws_kinesis_firehose_delivery_stream"
+   ],
+   "label": "Firehose stream",
+   "native_icon": "kinesis_data_firehose",
+   "tier": "integration",
+   "role": "show",
+   "icon_key": "amazon-data-firehose"
+  },
+  {
+   "config": [
+    "AWS::BedrockAgentCore::Runtime"
+   ],
+   "terraform": [
+    "aws_bedrockagentcore_agent_runtime"
+   ],
+   "label": "AgentCore runtime",
+   "native_icon": "bedrock_agentcore",
+   "tier": "compute",
+   "role": "show",
+   "icon_key": "amazon-bedrock-agentcore"
+  },
+  {
+   "config": [
+    "AWS::Athena::WorkGroup"
+   ],
+   "terraform": [
+    "aws_athena_workgroup"
+   ],
+   "label": "Athena workgroup",
+   "native_icon": "athena",
+   "tier": "data",
+   "role": "show",
+   "icon_key": "amazon-athena"
+  },
+  {
+   "config": [
+    "AWS::Cassandra::Keyspace"
+   ],
+   "terraform": [
+    "aws_keyspaces_keyspace"
+   ],
+   "label": "Keyspaces keyspace",
+   "native_icon": "keyspaces",
+   "tier": "data",
+   "role": "show",
+   "icon_key": "amazon-keyspaces"
+  },
+  {
+   "config": [
+    "AWS::Backup::BackupSelection",
+    "AWS::WAFv2::IPSet",
+    "AWS::GuardDuty::Filter",
+    "AWS::ECR::PullThroughCacheRule",
+    "AWS::BedrockAgentCore::RuntimeEndpoint",
+    "AWS::BedrockAgentCore::WorkloadIdentity",
+    "AWS::BedrockAgentCore::TokenVault"
+   ],
+   "terraform": [
+    "aws_backup_selection",
+    "aws_wafv2_ip_set",
+    "aws_guardduty_filter",
+    "aws_ecr_pull_through_cache_rule"
+   ],
+   "fold": "config"
+  },
+  {
+   "config": [
+    "AWS::Config::ResourceCompliance",
+    "AWS::Config::ConformancePackCompliance",
+    "AWS::Config::ConfigurationRecorder",
+    "AWS::CloudFormation::Stack",
+    "AWS::S3::AccountPublicAccessBlock",
+    "AWS::ResourceExplorer2::Index",
+    "AWS::CodeDeploy::DeploymentConfig",
+    "AWS::AppConfig::DeploymentStrategy"
+   ],
+   "terraform": [
+    "aws_config_configuration_recorder",
+    "aws_s3_account_public_access_block"
+   ],
+   "fold": "platform"
+  }
+ ],
+ "name_folds": [
+  {
+   "pattern": "^AWSServiceRoleFor",
+   "fold": "platform"
+  },
+  {
+   "pattern": "^AWSReservedSSO_",
+   "fold": "platform"
+  },
+  {
+   "pattern": "^(CodeDeployDefault|AppConfig)\\.",
+   "fold": "platform"
+  },
+  {
+   "pattern": "^alias/aws/",
+   "fold": "platform"
+  },
+  {
+   "pattern": "^DO-NOT-DELETE-",
+   "fold": "platform"
+  },
+  {
+   "pattern": "^StackSet-",
+   "fold": "platform"
+  }
+ ]
+}

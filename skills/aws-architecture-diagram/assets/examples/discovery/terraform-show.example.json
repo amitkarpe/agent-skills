@@ -1,0 +1,77 @@
+{
+ "format_version": "1.0",
+ "values": {
+  "root_module": {
+   "resources": [
+    {
+     "address": "aws_sqs_queue.events",
+     "mode": "managed",
+     "type": "aws_sqs_queue",
+     "name": "events",
+     "values": {
+      "name": "factory-events"
+     }
+    },
+    {
+     "address": "aws_lambda_function.notify",
+     "mode": "managed",
+     "type": "aws_lambda_function",
+     "name": "notify",
+     "values": {
+      "function_name": "factory-notify",
+      "tags": {
+       "Name": "factory-notify"
+      }
+     },
+     "depends_on": [
+      "aws_sqs_queue.events",
+      "aws_iam_role.notify",
+      "data.aws_caller_identity.me"
+     ]
+    },
+    {
+     "address": "aws_iam_role.notify",
+     "mode": "managed",
+     "type": "aws_iam_role",
+     "name": "notify",
+     "values": {
+      "name": "factory-notify-role"
+     }
+    },
+    {
+     "address": "aws_iam_role_policy_attachment.notify",
+     "mode": "managed",
+     "type": "aws_iam_role_policy_attachment",
+     "name": "notify",
+     "values": {}
+    },
+    {
+     "address": "data.aws_caller_identity.me",
+     "mode": "data",
+     "type": "aws_caller_identity",
+     "name": "me",
+     "values": {}
+    }
+   ],
+   "child_modules": [
+    {
+     "address": "module.mail",
+     "resources": [
+      {
+       "address": "module.mail.aws_sns_topic.release",
+       "mode": "managed",
+       "type": "aws_sns_topic",
+       "name": "release",
+       "values": {
+        "name": "factory-release-mail"
+       },
+       "depends_on": [
+        "aws_lambda_function.notify"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

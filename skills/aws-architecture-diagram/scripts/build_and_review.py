@@ -31,6 +31,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--require-official-aws-icons", action="store_true")
     parser.add_argument("--strict", action="store_true")
     parser.add_argument("--preview-scale", type=float, default=1.0)
+    parser.add_argument(
+        "--discovery",
+        type=Path,
+        help="discovery.json; required when the spec has a coverage block (see references/discovery.md)",
+    )
+    parser.add_argument(
+        "--allow-native-icons",
+        action="store_true",
+        help="let a discovery spec use draw.io native shapes instead of the official AWS icon package",
+    )
     return parser.parse_args()
 
 
@@ -99,6 +109,29 @@ def main() -> None:
     manifest = output_dir / f"{stem}.manifest.json"
     spec_snapshot = output_dir / f"{stem}.spec.json"
     raw_svg = output_dir / f"{stem}.renderer-raw.svg"
+
+    coverage_report: dict[str, Any] | None = None
+    spec_data = json.loads(spec.read_text(encoding="utf-8"))
+    if "coverage" in spec_data or args.discovery:
+        if not args.discovery:
+            raise SystemExit("FAIL spec has a coverage block; pass --discovery DISCOVERY.json")
+        coverage_json = output_dir / f"{stem}.coverage.json"
+        completed = run(
+            [
+                sys.executable,
+                str(scripts / "check_coverage.py"),
+                str(args.discovery.expanduser().resolve()),
+                str(spec),
+                "--output-json",
+                str(coverage_json),
+            ]
+        )
+        if completed.returncode:
+            raise SystemExit(completed.returncode)
+        coverage_report = read_report(coverage_json)
+        if not args.allow_native_icons:
+            # A discovery diagram is a deliverable: official AWS icons, never placeholder shapes.
+            args.require_official_aws_icons = True
 
     validate_spec_command = [sys.executable, str(scripts / "validate_spec.py"), str(spec)]
     if args.strict:
@@ -232,6 +265,11 @@ def main() -> None:
         "status": report.get("status"),
         "source_spec": str(spec),
         "accessibility": report.get("accessibility", {}),
+        "coverage": (
+            {k: coverage_report.get(k) for k in ("status", "resources", "drawn", "omitted", "missing", "discovery_sha256")}
+            if coverage_report
+            else None
+        ),
         "renderer_provenance": {
             "raw_svg_sha256": sha256(raw_svg),
             "accessible_svg_sha256": sha256(svg),

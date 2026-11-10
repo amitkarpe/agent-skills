@@ -330,6 +330,10 @@ def main() -> None:
                 errors.append(f"legend is outside page: {legend_rect}")
             if not legend.get("items"):
                 warnings.append("explicit legend has no items")
+            # generate_drawio.py: first row at +44, rows 32 apart, each about 24 tall with a small margin.
+            needed = 44 + 32 * len(legend.get("items", []))
+            if legend.get("items") and legend_rect[3] < needed:
+                errors.append(f"legend items overflow the box: height {legend_rect[3]} < {needed} for {len(legend['items'])} items")
         except ValueError as exc:
             errors.append(str(exc))
 

@@ -3,3 +3,6 @@
 *.tmp
 __pycache__/
 *.py[cod]
+
+# Official AWS icon cache: downloaded by prepare_aws_icons.py, about 24 MB, refreshed by AWS.
+skills/aws-architecture-diagram/assets/aws-official/current/
