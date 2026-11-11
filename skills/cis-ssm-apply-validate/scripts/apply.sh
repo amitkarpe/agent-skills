@@ -87,6 +87,13 @@ log "Starting apply workflow"
 AWS_ARGS=()
 [[ -n "$PROFILE" ]] && AWS_ARGS+=(--profile "$PROFILE")
 [[ -n "$REGION" ]] && AWS_ARGS+=(--region "$REGION")
+
+# PROD gate (aws-factory POLICY.md, 3 Nov 2026): PROD live hosts keep their software. Refuse PROD account 021577063369
+# unless Amit gave a recorded exception; pass its link in ALLOW_PROD_CHANGE (for example the GitHub comment URL).
+ACCOUNT_ID=$(aws sts get-caller-identity ${AWS_ARGS[@]+"${AWS_ARGS[@]}"} --query Account --output text) || error "Cannot read the account"
+if [[ "$ACCOUNT_ID" == "021577063369" && -z "${ALLOW_PROD_CHANGE:-}" ]]; then
+  error "PROD account: apply is refused. Set ALLOW_PROD_CHANGE=<link to Amit's recorded exception> to continue."
+fi
 DOCUMENT_FORMAT="$(document_format_from_path "$DOCUMENT_FILE")"
 NORMALIZED_PARAMETERS_FILE="$OUTPUT_DIR/parameters-normalized.json"
 
@@ -215,6 +222,15 @@ jq '
 cp "$PARAMETERS_FILE" "$OUTPUT_DIR/parameters-input.json" || error "Failed to copy original parameters file"
 cp "$NORMALIZED_PARAMETERS_FILE" "$OUTPUT_DIR/parameters-used.json" || error "Failed to copy normalized parameters file"
 
+# Do not send twice (Codex review, 3 Nov 2026): send-command has no idempotency token. If the same document ran or runs
+# on this instance in the last 60 minutes (for example after a lost response), stop and reconcile by hand.
+RECENT=$(aws ssm list-commands ${AWS_ARGS[@]+"${AWS_ARGS[@]}"} --instance-id "$INSTANCE_ID" \
+  --filters "key=DocumentName,value=$DOCUMENT_NAME" "key=InvokedAfter,value=$(date -u -d '-60 min' +%Y-%m-%dT%H:%M:%SZ)" \
+  --query 'Commands[].[CommandId,Status]' --output text) || error "Cannot list recent commands"
+if [[ -n "$RECENT" && -z "${ALLOW_RESEND:-}" ]]; then
+  echo "$RECENT" > "$OUTPUT_DIR/recent-commands.txt"
+  error "The same document ran on this instance in the last 60 minutes: $RECENT. Check it, then set ALLOW_RESEND=1 to send again."
+fi
 # Send command
 log "Sending command to instance: $INSTANCE_ID"
 aws ssm send-command ${AWS_ARGS[@]+"${AWS_ARGS[@]}"} \

@@ -3,6 +3,17 @@ name: cis-inspector-scan
 description: Run an AWS Inspector CIS scan on a single EC2 instance, enforce readiness rules, fetch results, and save durable evidence with recovery-aware bash helpers.
 ---
 
+## aws-factory values (local change, 3 Nov 2026)
+
+| Account | Where a scan host goes | Values |
+|---|---|---|
+| DEV 672172129528 | ami-factory VPC `vpc-0a39d3d1a08a5372a` only | subnet `subnet-0e7d918c3cc2e4543`, security group `sg-00f90ef8fce5fcbd8`, profile `ami-factory-aws-factory-build`. Launch: `release/ops.sh scan-host dev <ami>` |
+| PROD 021577063369 | VPC `vpc-0f57b9747206d0406` | subnet `subnet-030dad3e03eb22435`, security group `sg-03d7bf0983959dc50`, profile `lifebit-cloudos-role`. Launch: `release/ops.sh scan-host prod <ami>` |
+
+- Do not use the GCC NonProd VPC `vpc-0d0f0471d36b4b529` for scans: no Inspector endpoints there (scan TIMED_OUT, 3 Nov 2026).
+- PROD: `accountIds: ["SELF"]`. Start a scan at least 10 minutes after metadata tags are turned on. A shared tag on many hosts works (proof: 3 hosts, 729 checks).
+- A tag key with a space (for example `Patch Group`) blocks metadata tags. Rename it first, with Amit's word.
+
 # CIS Inspector Scan
 
 Run an AWS Inspector CIS scan on a single EC2 instance, enforce readiness rules,
