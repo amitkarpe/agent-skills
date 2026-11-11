@@ -1,6 +1,6 @@
 ---
 name: nessus-cis-csv-analysis
-description: Parse Nessus/Tenable CIS Compliance Remediation Instruction CSV exports into a deterministic multi-host HCR report. Use when analyzing CIS/HCR CSVs, separating FAILED/WARNING/manual-review findings from PASSED controls, creating a self-contained Advanced HTML report, or overlaying an optional Risk Acceptance register and structured TISO risk-assessment workbook.
+description: Parse Nessus/Tenable CIS Compliance Remediation Instruction CSV exports into a deterministic multi-host CIS (HCR) report. Use when analyzing CIS/HCR CSVs, separating FAILED/WARNING/manual-review findings from PASSED controls, creating a self-contained Advanced HTML report, or overlaying an optional Risk Acceptance register and structured TISO risk-assessment workbook.
 ---
 
 # Nessus CIS CSV Analysis
@@ -65,7 +65,7 @@ If an optional workbook does not contain the expected structured headers, fail c
 Run the Advanced generator from this skill directory:
 
 ```text
-python3 scripts/hcr_advanced_report.py <nessus.csv> --html-out <report.html>
+python3 scripts/cis_advanced_report.py <nessus.csv> --html-out <report.html>
 ```
 
 Optional overlays:
@@ -96,4 +96,4 @@ Before presenting a generated report, verify:
 - AWS Inspector comparison or AWS mutation;
 - arbitrary TISO workbook inference without structured risk fields;
 - universal parsing for unrelated Nessus export formats;
-- committing generated HCR reports or source assessment files to this repository.
+- committing generated CIS (HCR) reports or source assessment files to this repository.

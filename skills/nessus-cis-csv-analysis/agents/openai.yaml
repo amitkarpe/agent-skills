@@ -1,6 +1,6 @@
 interface:
-  display_name: "Nessus CIS HCR Analysis"
-  short_description: "Build multi-host HCR reports with Risk Acceptance"
+  display_name: "Nessus CIS Analysis (HCR)"
+  short_description: "Build multi-host CIS (HCR) reports with Risk Acceptance"
   default_prompt: "Use $nessus-cis-csv-analysis to parse this Nessus CIS/HCR CSV and generate one Advanced multi-host HTML report. If Risk Acceptance or TISO risk workbooks are supplied, overlay them without changing scanner truth."
 
 policy:
